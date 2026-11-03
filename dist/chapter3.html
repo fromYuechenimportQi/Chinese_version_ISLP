@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>第三章　线性回归 – 统计学习导论：Python 应用 · 中文译本</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../index.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-fc3b36746e1955fb88c77d3f07db1d35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "没有结果",
+    "search-matching-documents-text": "匹配的文档",
+    "search-copy-link-title": "复制搜索链接",
+    "search-hide-matches-text": "隐藏其它匹配结果",
+    "search-more-match-text": "更多匹配结果",
+    "search-more-matches-text": "更多匹配结果",
+    "search-clear-button-title": "清除",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "取消",
+    "search-submit-button-title": "提交",
+    "search-label": "搜索"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">跳至主要内容</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="工具栏">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="展开或折叠侧边栏导航" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter3.html"><span class="chapter-title">第三章　线性回归</span></a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="搜索" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto" aria-label="网站">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">统计学习导论：Python 应用 · 中文译本</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/fromYuechenimportQi/Chinese_version_ISLP" title="源代码" class="quarto-navigation-tool px-1" aria-label="源代码"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="搜索"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">译者序</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter3.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第三章　线性回归</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">目录</h2>
+   
+  <ul>
+  <li><a href="#简单线性回归simple-linear-regression" id="toc-简单线性回归simple-linear-regression" class="nav-link active" data-scroll-target="#简单线性回归simple-linear-regression">3.1　简单线性回归（Simple Linear Regression）</a>
+  <ul class="collapse">
+  <li><a href="#估计系数" id="toc-估计系数" class="nav-link" data-scroll-target="#估计系数">3.1.1　估计系数</a></li>
+  <li><a href="#评估系数估计值的准确性" id="toc-评估系数估计值的准确性" class="nav-link" data-scroll-target="#评估系数估计值的准确性">3.1.2　评估系数估计值的准确性</a></li>
+  <li><a href="#评估模型的准确性" id="toc-评估模型的准确性" class="nav-link" data-scroll-target="#评估模型的准确性">3.1.3　评估模型的准确性</a></li>
+  </ul></li>
+  <li><a href="#多元线性回归" id="toc-多元线性回归" class="nav-link" data-scroll-target="#多元线性回归">3.2　多元线性回归</a>
+  <ul class="collapse">
+  <li><a href="#估计回归系数" id="toc-估计回归系数" class="nav-link" data-scroll-target="#估计回归系数">3.2.1　估计回归系数</a></li>
+  <li><a href="#几个重要问题" id="toc-几个重要问题" class="nav-link" data-scroll-target="#几个重要问题">3.2.2　几个重要问题</a></li>
+  </ul></li>
+  <li><a href="#回归模型中的其他考虑" id="toc-回归模型中的其他考虑" class="nav-link" data-scroll-target="#回归模型中的其他考虑">3.3 回归模型中的其他考虑</a>
+  <ul class="collapse">
+  <li><a href="#定性预测变量qualitative-predictors" id="toc-定性预测变量qualitative-predictors" class="nav-link" data-scroll-target="#定性预测变量qualitative-predictors">3.3.1 定性预测变量（Qualitative Predictors）</a></li>
+  <li><a href="#线性模型的扩展" id="toc-线性模型的扩展" class="nav-link" data-scroll-target="#线性模型的扩展">3.3.2 线性模型的扩展</a></li>
+  <li><a href="#可能出现的问题" id="toc-可能出现的问题" class="nav-link" data-scroll-target="#可能出现的问题">3.3.3 可能出现的问题</a></li>
+  </ul></li>
+  <li><a href="#营销计划" id="toc-营销计划" class="nav-link" data-scroll-target="#营销计划">3.4 营销计划</a></li>
+  <li><a href="#线性回归与-k-近邻法的比较" id="toc-线性回归与-k-近邻法的比较" class="nav-link" data-scroll-target="#线性回归与-k-近邻法的比较">3.5 线性回归与 <span class="math inline">\(K\)</span> 近邻法的比较</a></li>
+  <li><a href="#实验线性回归" id="toc-实验线性回归" class="nav-link" data-scroll-target="#实验线性回归">3.6 实验：线性回归</a>
+  <ul class="collapse">
+  <li><a href="#导入包" id="toc-导入包" class="nav-link" data-scroll-target="#导入包">3.6.1 导入包</a></li>
+  <li><a href="#简单线性回归" id="toc-简单线性回归" class="nav-link" data-scroll-target="#简单线性回归">3.6.2 简单线性回归</a></li>
+  <li><a href="#多元线性回归-1" id="toc-多元线性回归-1" class="nav-link" data-scroll-target="#多元线性回归-1">3.6.3 多元线性回归</a></li>
+  <li><a href="#多元回归的拟合优度" id="toc-多元回归的拟合优度" class="nav-link" data-scroll-target="#多元回归的拟合优度">3.6.4 多元回归的拟合优度</a></li>
+  <li><a href="#交互项" id="toc-交互项" class="nav-link" data-scroll-target="#交互项">3.6.5 交互项</a></li>
+  <li><a href="#预测变量的非线性变换" id="toc-预测变量的非线性变换" class="nav-link" data-scroll-target="#预测变量的非线性变换">3.6.6 预测变量的非线性变换</a></li>
+  <li><a href="#定性预测变量" id="toc-定性预测变量" class="nav-link" data-scroll-target="#定性预测变量">3.6.7 定性预测变量</a></li>
+  </ul></li>
+  <li><a href="#习题" id="toc-习题" class="nav-link" data-scroll-target="#习题">3.7 习题</a>
+  <ul class="collapse">
+  <li><a href="#概念题" id="toc-概念题" class="nav-link" data-scroll-target="#概念题">概念题</a></li>
+  <li><a href="#应用题" id="toc-应用题" class="nav-link" data-scroll-target="#应用题">应用题</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">第三章　线性回归</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>本章介绍线性回归 (Linear Regression)。这是一种十分简单的监督学习（supervised learning）方法，尤其适合用于预测定量响应（quantitative response）。线性回归由来已久，无数教材都以它为主题。与本书后续章节介绍的一些较新的统计学习（statistical learning）方法相比，它或许显得有些平淡，但它至今仍是一种实用且应用广泛的统计学习方法。此外，线性回归也是学习较新方法的良好起点：正如我们将在后续章节中看到的，许多看似复杂精巧的统计学习方法，都可以视为线性回归的推广或扩展。因此，在学习更复杂的学习方法之前，充分理解线性回归有着极其重要的意义。本章将回顾线性回归模型背后的一些核心思想，以及拟合（fit）这一模型时最常用的最小二乘法（least squares approach）。</p>
+<p>回顾第 2 章的 <code>Advertising</code> 数据。图 2.1 展示了某种产品的销售量（<code>sales</code>，单位为千件）如何随电视（<code>TV</code>）、广播（<code>radio</code>）和报纸（<code>newspaper</code>）这三种媒体的广告预算（单位为千美元）而变化。假设我们作为统计顾问，需要根据这些数据，为明年制定一份能够取得较高产品销售量的营销计划。为了提出这样的建议，哪些信息会有帮助？下面列出了一些值得回答的重要问题。</p>
+<ol type="1">
+<li><p><strong>广告预算与销售量之间是否存在关系？</strong></p>
+<p>我们首先应当判断，数据是否提供了广告支出与销售量存在关联（association）的证据。如果证据很弱，那么也许可以说，根本不该在广告上花钱！</p></li>
+<li><p><strong>广告预算与销售量之间的关系有多强？</strong></p>
+<p>假定广告与销售量之间确实存在关系，我们希望知道这种关系的强度。知道广告预算后，是否就能获得大量有关产品销售量的信息？</p></li>
+<li><p><strong>哪些媒体与销售量有关联？</strong></p>
+<p>电视、广播和报纸这三种媒体都与销售量有关联，还是只有其中一种或两种有关联？要回答这个问题，我们必须找到一种方法：在三种媒体都投入了广告费用的情况下，分别辨别出每种媒体对销售量的贡献。</p></li>
+<li><p><strong>每种媒体与销售量之间的关联有多大？</strong></p>
+<p>在某一种媒体上每多投入 1 美元广告费用，销售量会增加多少？我们能多准确地预测这一增量？</p></li>
+<li><p><strong>我们能多准确地预测未来的销售量？</strong></p>
+<p>给定电视、广播或报纸广告的任意投入水平，我们对销售量的预测是多少？这一预测有多准确？</p></li>
+<li><p><strong>这种关系是线性的吗？</strong></p>
+<p>如果各类媒体的广告支出与销售量之间近似呈直线关系，那么线性回归就是合适的工具。如果不是，我们仍有可能对预测变量（predictor）或响应（response）作变换（transform），从而使用线性回归。</p></li>
+<li><p><strong>不同广告媒体之间是否存在协同作用？</strong></p>
+<p>例如，在电视和广播广告上各投入 50,000 美元，所对应的销售量，可能会高于将 100,000 美元全部投入电视或全部投入广播广告的情形。在营销领域，这称为协同效应（synergy effect）；在统计学中，则称为交互效应（interaction effect）。</p></li>
+</ol>
+<p>事实上，线性回归可以用来回答上述每一个问题。我们将先在一般情境下讨论这些问题，然后在第 3.4 节中回到这里的具体情境。</p>
+<section id="简单线性回归simple-linear-regression" class="level2">
+<h2 class="anchored" data-anchor-id="简单线性回归simple-linear-regression">3.1　简单线性回归（Simple Linear Regression）</h2>
+<p>简单线性回归正如其名，是一种非常直观的方法：根据单个预测变量 <span class="math inline">\(X\)</span> 来预测定量响应 <span class="math inline">\(Y\)</span>。它假设 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间近似存在线性关系（linear relationship）。用数学形式，可以将这种线性关系写为</p>
+<p><span class="math display">\[
+Y \approx \beta_0 + \beta_1 X. \tag{3.1}
+\]</span></p>
+<p>这里的“<span class="math inline">\(\approx\)</span>”可以理解为“可近似建模为”。我们有时会将式（3.1）表述为：将 <span class="math inline">\(Y\)</span> 对 <span class="math inline">\(X\)</span> 作回归（regressing <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span>，也写作 <span class="math inline">\(Y\)</span> onto <span class="math inline">\(X\)</span>）。</p>
+<p>例如，<span class="math inline">\(X\)</span> 可以表示电视广告投入（<code>TV</code>），<span class="math inline">\(Y\)</span> 可以表示销售量（<code>sales</code>）。于是，我们可以通过拟合以下模型，将 <code>sales</code> 对 <code>TV</code> 作回归：</p>
+<p><span class="math display">\[
+\mathtt{sales} \approx \beta_0 + \beta_1 \times \mathtt{TV}.
+\]</span></p>
+<p>在式（3.1）中，<span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 是两个未知常数，分别表示线性模型中的截距（intercept）和斜率（slope）。<span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 统称为模型的系数（coefficient）或参数（parameter）。利用训练数据（training data）得到模型系数的估计值（estimate）<span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span> 后，我们就可以针对给定的电视广告投入 <span class="math inline">\(x\)</span>，通过下式预测未来的销售量：</p>
+<p><span class="math display">\[
+\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x, \tag{3.2}
+\]</span></p>
+<p>其中，<span class="math inline">\(\hat{y}\)</span> 表示在 <span class="math inline">\(X=x\)</span> 时对 <span class="math inline">\(Y\)</span> 的预测。这里用帽子符号（hat symbol）“ˆ”表示未知参数或系数的估计值，也用它表示响应的预测值。</p>
+<section id="估计系数" class="level3">
+<h3 class="anchored" data-anchor-id="估计系数">3.1.1　估计系数</h3>
+<p>在实际应用中，<span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 都是未知的。因此，在使用式（3.1）进行预测之前，我们必须先用数据估计这些系数。设</p>
+<p><span class="math display">\[
+(x_1,y_1),\ (x_2,y_2),\ldots,\ (x_n,y_n)
+\]</span></p>
+<p>表示 <span class="math inline">\(n\)</span> 组成对观测（observation pairs），每一组都由 <span class="math inline">\(X\)</span> 的一个测量值和 <span class="math inline">\(Y\)</span> 的一个测量值组成。在 <code>Advertising</code> 的例子中，数据集（data set）包含 <span class="math inline">\(n=200\)</span> 个不同市场的电视广告预算和产品销售量。（回顾图 2.1，其中展示了这些数据。）我们的目标是得到系数估计值 <span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span>，使线性模型（3.1）能够很好地拟合已有数据，也就是说，对 <span class="math inline">\(i=1,\ldots,n\)</span>，都有 <span class="math inline">\(y_i \approx \hat{\beta}_0+\hat{\beta}_1x_i\)</span>。换句话说，我们希望找到一个截距 <span class="math inline">\(\hat{\beta}_0\)</span> 和一个斜率 <span class="math inline">\(\hat{\beta}_1\)</span>，使相应的直线尽可能接近这 <span class="math inline">\(n=200\)</span> 个数据点（data point）。衡量“接近程度”的方法有很多，但其中最常用的方法，是使最小二乘准则（least squares criterion）达到最小；本章采用的就是这种方法。第 6 章将讨论其他方法。</p>
+<p>令 <span class="math inline">\(\hat{y}_i=\hat{\beta}_0+\hat{\beta}_1x_i\)</span> 表示根据 <span class="math inline">\(X\)</span> 的第 <span class="math inline">\(i\)</span> 个取值对 <span class="math inline">\(Y\)</span> 所作的预测。那么，<span class="math inline">\(e_i=y_i-\hat{y}_i\)</span> 就表示第 <span class="math inline">\(i\)</span> 个残差（residual），即第 <span class="math inline">\(i\)</span> 个响应观测值与线性模型对它的预测值之差。我们将残差平方和（residual sum of squares，RSS）定义为</p>
+<p><span class="math display">\[
+\mathrm{RSS}=e_1^2+e_2^2+\cdots+e_n^2,
+\]</span></p>
+<p>也可以等价地写为</p>
+<p><span class="math display">\[
+\mathrm{RSS}=(y_1-\hat{\beta}_0-\hat{\beta}_1x_1)^2
++(y_2-\hat{\beta}_0-\hat{\beta}_1x_2)^2
++\cdots+(y_n-\hat{\beta}_0-\hat{\beta}_1x_n)^2. \tag{3.3}
+\]</span></p>
+<p>最小二乘法选择使 RSS 最小的 <span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span>。利用微积分可以证明，使其达到最小值的解为</p>
+<p><span class="math display">\[
+\begin{aligned}
+\hat{\beta}_1
+&amp;=\frac{\sum_{i=1}^{n}(x_i-\bar{x})(y_i-\bar{y})}
+{\sum_{i=1}^{n}(x_i-\bar{x})^2},\\
+\hat{\beta}_0&amp;=\bar{y}-\hat{\beta}_1\bar{x},
+\end{aligned}
+\tag{3.4}
+\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-1.png" class="img-fluid figure-img"></p>
+<figcaption>图 3.1：Advertising 数据中 sales 对 TV 的最小二乘拟合；灰色竖线表示残差。</figcaption>
+</figure>
+</div>
+<p><strong>图 3.1。</strong> 图中给出了 <code>Advertising</code> 数据中 <code>sales</code> 对 <code>TV</code> 回归的最小二乘拟合（least squares fit）。这一拟合通过使残差平方和最小而得到。每条灰色线段代表一个残差。在这个例子中，线性拟合把握住了这种关系的主要特征，不过在图的左侧，它高估了所呈现的趋势。</p>
+<blockquote class="blockquote">
+<p>图内标签对照：<code>TV</code> 为电视广告预算（单位为千美元）；<code>Sales</code> 为销售量（单位为千件）。原图的标签、刻度、颜色及数据点均保留。</p>
+</blockquote>
+<p>其中，<span class="math inline">\(\bar{y}\equiv\frac{1}{n}\sum_{i=1}^{n}y_i\)</span> 和 <span class="math inline">\(\bar{x}\equiv\frac{1}{n}\sum_{i=1}^{n}x_i\)</span> 是样本均值（sample means）。换句话说，式（3.4）给出了简单线性回归的最小二乘系数估计值（least squares coefficient estimates）。</p>
+<p>图 3.1 展示了对 <code>Advertising</code> 数据进行简单线性回归的拟合结果，其中 <span class="math inline">\(\hat{\beta}_0=7.03\)</span>，<span class="math inline">\(\hat{\beta}_1=0.0475\)</span>。换句话说，根据这一近似，电视广告支出每增加 1,000 美元，对应的产品销售量大约增加 47.5 件。图 3.2 使用同一广告数据，以 <code>sales</code> 为响应、<code>TV</code> 为预测变量，计算了多组 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 取值所对应的 RSS。在两幅图中，红点都表示由式（3.4）给出的那一对最小二乘估计值 <span class="math inline">\((\hat{\beta}_0,\hat{\beta}_1)\)</span>。显然，这组取值使 RSS 达到最小。</p>
+</section>
+<section id="评估系数估计值的准确性" class="level3">
+<h3 class="anchored" data-anchor-id="评估系数估计值的准确性">3.1.2　评估系数估计值的准确性</h3>
+<p>回顾式（2.1），我们假设 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间的真实关系为 <span class="math inline">\(Y=f(X)+\epsilon\)</span>，其中 <span class="math inline">\(f\)</span> 是某个未知函数，<span class="math inline">\(\epsilon\)</span> 是均值为零的随机误差项（random error term）。如果用线性函数（linear function）近似 <span class="math inline">\(f\)</span>，就可以将这种关系写成</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1X+\epsilon. \tag{3.5}
+\]</span></p>
+<p>这里，<span class="math inline">\(\beta_0\)</span> 是截距项，也就是 <span class="math inline">\(X=0\)</span> 时 <span class="math inline">\(Y\)</span> 的期望值（expected value）；<span class="math inline">\(\beta_1\)</span> 是斜率，也就是 <span class="math inline">\(X\)</span> 每增加一个单位时，<span class="math inline">\(Y\)</span> 相应的平均增量。误差项概括了这个简单模型未能涵盖的各种因素：真实关系很可能不是线性的；可能存在其他变量，引起 <span class="math inline">\(Y\)</span> 的变化；还可能存在测量误差（measurement error）。我们通常假设误差项与 <span class="math inline">\(X\)</span> 相互独立（independent）。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-2.png" class="img-fluid figure-img"></p>
+<figcaption>图 3.2：Advertising 数据的 RSS 等高线图和三维图；红点表示最小二乘估计值。</figcaption>
+</figure>
+</div>
+<p><strong>图 3.2。</strong> 以 <code>sales</code> 为响应、<code>TV</code> 为预测变量，绘制 <code>Advertising</code> 数据的 RSS 等高线图（contour plot）和三维图（three-dimensional plot）。红点对应式（3.4）给出的最小二乘估计值 <span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span>。</p>
+<blockquote class="blockquote">
+<p>图内标签对照：<code>RSS</code> 为残差平方和；<span class="math inline">\(\beta_0\)</span> 为截距，<span class="math inline">\(\beta_1\)</span> 为斜率。原图中的数值刻度与等高线标注均保留。</p>
+</blockquote>
+<p>式（3.5）给出的模型定义了总体回归直线（population regression line），它是对 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间真实关系的最佳线性近似。<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> 最小二乘回归系数估计值（3.4）则确定了式（3.2）所表示的最小二乘直线（least squares line）。图 3.3 的左图通过一个简单的模拟例子展示了这两条直线。我们随机生成了 100 个 <span class="math inline">\(X\)</span> 值，再根据模型</p>
+<p><span class="math display">\[
+Y=2+3X+\epsilon, \tag{3.6}
+\]</span></p>
+<p>生成 100 个对应的 <span class="math inline">\(Y\)</span> 值，其中 <span class="math inline">\(\epsilon\)</span> 从均值为零的正态分布（normal distribution）中生成。图 3.3 左图中的红线表示真实关系 <span class="math inline">\(f(X)=2+3X\)</span>，蓝线则表示根据观测数据得到的最小二乘估计。对于真实数据，其真实关系通常是未知的，但我们总可以利用式（3.4）给出的系数估计值计算出最小二乘直线。换句话说，在实际应用中，我们能够获得一组观测值（observations），并据此计算最小二乘直线；然而，总体回归直线是无法观测到的。在图 3.3 的右图中，我们根据式（3.6）给出的模型生成了十个不同的数据集，并绘制了相应的十条最小二乘直线。请注意，由同一个真实模型生成的不同数据集，会得到略有差异的最小二乘直线，但那条无法观测到的总体回归直线始终不变。</p>
+<p>乍看之下，总体回归直线与最小二乘直线的区别可能显得微妙而令人困惑。我们只有一个数据集，那么，用两条不同的直线描述预测变量与响应之间的关系，究竟意味着什么？从根本上说，这两条直线的概念，自然地延伸了统计学中的一种常规做法：利用样本（sample）中的信息，估计一个大总体（population）的特征。例如，假设我们希望了解</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-3.png" class="img-fluid figure-img"></p>
+<figcaption>图3.3：模拟数据中的总体回归直线与不同样本得到的最小二乘直线。</figcaption>
+</figure>
+</div>
+<p><strong>图 3.3。</strong> 一个模拟数据集。左图：红线表示真实关系 <span class="math inline">\(f(X)=2+3X\)</span>，即总体回归直线。蓝线为最小二乘直线，它是根据图中黑色观测点得到的 <span class="math inline">\(f(X)\)</span> 的最小二乘估计。右图：总体回归直线仍以红色表示，最小二乘直线以深蓝色表示。浅蓝色表示十条最小二乘直线，每条都根据一组独立的随机观测值计算得到。各条最小二乘直线互不相同，但平均而言，它们相当接近总体回归直线。</p>
+<p>某个随机变量（random variable）<span class="math inline">\(Y\)</span> 的总体均值（population mean）<span class="math inline">\(\mu\)</span>。遗憾的是，<span class="math inline">\(\mu\)</span> 未知，但我们可以获得来自 <span class="math inline">\(Y\)</span> 的 <span class="math inline">\(n\)</span> 个观测值 <span class="math inline">\(y_1,\ldots,y_n\)</span>，并用它们估计 <span class="math inline">\(\mu\)</span>。一个合理的估计值是 <span class="math inline">\(\hat{\mu}=\bar{y}\)</span>，其中 <span class="math inline">\(\bar{y}=\frac{1}{n}\sum_{i=1}^n y_i\)</span> 为样本均值。样本均值和总体均值并不相同，但一般来说，样本均值能够很好地估计总体均值。同样，线性回归中的未知系数 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 定义了总体回归直线。我们试图用式（3.4）给出的 <span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span> 来估计这些未知系数。这些系数估计值定义了最小二乘直线。</p>
+<p>从偏差（bias）的概念来看，将线性回归与随机变量均值的估计作类比，是恰当的。如果用样本均值 <span class="math inline">\(\hat{\mu}\)</span> 估计 <span class="math inline">\(\mu\)</span>，这一估计就是无偏的（unbiased），意思是平均而言，我们期望 <span class="math inline">\(\hat{\mu}\)</span> 等于 <span class="math inline">\(\mu\)</span>。这究竟意味着什么？它意味着：对于某一组具体的观测值 <span class="math inline">\(y_1,\ldots,y_n\)</span>，<span class="math inline">\(\hat{\mu}\)</span> 可能高估 <span class="math inline">\(\mu\)</span>；对于另一组观测值，<span class="math inline">\(\hat{\mu}\)</span> 又可能低估 <span class="math inline">\(\mu\)</span>。但如果我们能从大量观测数据集得到大量 <span class="math inline">\(\mu\)</span> 的估计值，再对它们取平均，这个平均值就会恰好等于 <span class="math inline">\(\mu\)</span>。因此，无偏估计量（unbiased estimator）不会系统性地高估或低估真实参数。式（3.4）给出的最小二乘系数估计也具有无偏性：如果根据某个特定数据集估计 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span>，所得估计值不会恰好等于 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span>。但如果能对大量数据集得到的估计值取平均，其平均值就会准确地落在真实值上！事实上，从图 3.3 的右图可以看到，将许多条分别根据不同数据集估计出的最小二乘直线取平均，所得结果与真实的总体回归直线相当接近。</p>
+<p>继续以估计随机变量 <span class="math inline">\(Y\)</span> 的总体均值 <span class="math inline">\(\mu\)</span> 作类比，自然会产生这样一个问题：样本均值 <span class="math inline">\(\hat{\mu}\)</span> 作为 <span class="math inline">\(\mu\)</span> 的估计值，究竟有多准确？我们已经知道，对许多数据集得到的 <span class="math inline">\(\hat{\mu}\)</span> 取平均，结果会非常接近 <span class="math inline">\(\mu\)</span>；但单个估计值 <span class="math inline">\(\hat{\mu}\)</span> 可能大幅低估或高估 <span class="math inline">\(\mu\)</span>。那么，单个 <span class="math inline">\(\hat{\mu}\)</span> 会偏离多远？通常，我们通过计算 <span class="math inline">\(\hat{\mu}\)</span> 的标准误（standard error）来回答，记为 <span class="math inline">\(\mathrm{SE}(\hat{\mu})\)</span>。我们有如下熟知的公式：</p>
+<p><span class="math display">\[
+\mathrm{Var}(\hat{\mu})=\mathrm{SE}(\hat{\mu})^2=\frac{\sigma^2}{n},\tag{3.7}
+\]</span></p>
+<p>其中，<span class="math inline">\(\sigma\)</span> 是 <span class="math inline">\(Y\)</span> 的各个实现值 <span class="math inline">\(y_i\)</span> 的标准差（standard deviation）。<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> 粗略地说，标准误告诉我们，估计值 <span class="math inline">\(\hat{\mu}\)</span> 与 <span class="math inline">\(\mu\)</span> 的实际值平均相差多少。式（3.7）还说明，这种偏离如何随 <span class="math inline">\(n\)</span> 缩小：观测值越多，<span class="math inline">\(\hat{\mu}\)</span> 的标准误越小。同理，我们也可以问，<span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span> 与真实值 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 有多接近。计算 <span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span> 的标准误时，使用下式：</p>
+<p><span class="math display">\[
+\mathrm{SE}(\hat{\beta}_0)^2=\sigma^2\left[\frac{1}{n}+\frac{\bar{x}^2}{\sum_{i=1}^n(x_i-\bar{x})^2}\right],
+\qquad
+\mathrm{SE}(\hat{\beta}_1)^2=\frac{\sigma^2}{\sum_{i=1}^n(x_i-\bar{x})^2},\tag{3.8}
+\]</span></p>
+<p>其中，<span class="math inline">\(\sigma^2=\mathrm{Var}(\epsilon)\)</span>。要使这些公式严格成立，需要假设各个观测值的误差 <span class="math inline">\(\epsilon_i\)</span> 具有相同的方差（variance）<span class="math inline">\(\sigma^2\)</span>，且彼此不相关（uncorrelated）。图 3.1 显然并不满足这一条件，但这些公式仍能给出良好的近似。注意，当各 <span class="math inline">\(x_i\)</span> 更加分散时，公式中的 <span class="math inline">\(\mathrm{SE}(\hat{\beta}_1)\)</span> 会更小；直观地说，在这种情况下，我们有更多依据来估计斜率。还可以看到，如果 <span class="math inline">\(\bar{x}=0\)</span>，则 <span class="math inline">\(\mathrm{SE}(\hat{\beta}_0)\)</span> 与 <span class="math inline">\(\mathrm{SE}(\hat{\mu})\)</span> 相同（此时 <span class="math inline">\(\hat{\beta}_0\)</span> 等于 <span class="math inline">\(\bar{y}\)</span>）。一般来说，<span class="math inline">\(\sigma^2\)</span> 未知，但可以根据数据估计。<span class="math inline">\(\sigma\)</span> 的这一估计称为残差标准误（residual standard error），由公式 <span class="math inline">\(\mathrm{RSE}=\sqrt{\mathrm{RSS}/(n-2)}\)</span> 给出。严格地说，当 <span class="math inline">\(\sigma^2\)</span> 是由数据估计得到时，应写作 <span class="math inline">\(\widehat{\mathrm{SE}}(\hat{\beta}_1)\)</span>，表明这里进行过估计；但为简化记号，我们省略这个额外的帽子符号。</p>
+<p>标准误可用于计算置信区间（confidence interval）。95% 置信区间定义为一个取值范围，这个范围以 95% 的概率包含参数的未知真值。区间的上下限根据数据样本计算得到。95% 置信区间具有这样的性质：如果反复抽取样本，并为每个样本构造置信区间，那么其中 95% 的区间会包含参数的未知真值。在线性回归中，<span class="math inline">\(\beta_1\)</span> 的 95% 置信区间近似为</p>
+<p><span class="math display">\[
+\hat{\beta}_1\pm2\cdot\mathrm{SE}(\hat{\beta}_1).\tag{3.9}
+\]</span></p>
+<p>也就是说，区间</p>
+<p><span class="math display">\[
+\left[\hat{\beta}_1-2\cdot\mathrm{SE}(\hat{\beta}_1),\ \hat{\beta}_1+2\cdot\mathrm{SE}(\hat{\beta}_1)\right]\tag{3.10}
+\]</span></p>
+<p>包含 <span class="math inline">\(\beta_1\)</span> 真值的概率约为 95%。<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> 同样，<span class="math inline">\(\beta_0\)</span> 的置信区间近似为</p>
+<p><span class="math display">\[
+\hat{\beta}_0\pm2\cdot\mathrm{SE}(\hat{\beta}_0).\tag{3.11}
+\]</span></p>
+<p>对于广告数据，<span class="math inline">\(\beta_0\)</span> 的 95% 置信区间为 <span class="math inline">\([6.130,7.935]\)</span>，<span class="math inline">\(\beta_1\)</span> 的 95% 置信区间为 <span class="math inline">\([0.042,0.053]\)</span>。因此，我们可以得出结论：在没有任何广告投入时，平均销售量会落在 6,130 至 7,935 件之间。此外，电视广告支出每增加 1,000 美元，平均销售量会增加 42 至 53 件。</p>
+<p>标准误还可用于对系数进行假设检验（hypothesis test）。最常见的检验，是检验原假设（null hypothesis）</p>
+<p><span class="math display">\[
+H_0:\ X\text{ 与 }Y\text{ 之间不存在关系}\tag{3.12}
+\]</span></p>
+<p>与之相对的备择假设（alternative hypothesis）为</p>
+<p><span class="math display">\[
+H_a:\ X\text{ 与 }Y\text{ 之间存在某种关系}.\tag{3.13}
+\]</span></p>
+<p>数学上，这对应于检验</p>
+<p><span class="math display">\[
+H_0:\ \beta_1=0
+\qquad\text{与}\qquad
+H_a:\ \beta_1\ne0,
+\]</span></p>
+<p>因为当 <span class="math inline">\(\beta_1=0\)</span> 时，模型（3.5）化为 <span class="math inline">\(Y=\beta_0+\epsilon\)</span>，<span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 不再有关联。检验原假设时，我们需要判断，作为 <span class="math inline">\(\beta_1\)</span> 估计值的 <span class="math inline">\(\hat{\beta}_1\)</span> 是否离零足够远，以至于我们能够确信 <span class="math inline">\(\beta_1\)</span> 非零。多远才算足够远？这当然取决于 <span class="math inline">\(\hat{\beta}_1\)</span> 的准确性，也就是取决于 <span class="math inline">\(\mathrm{SE}(\hat{\beta}_1)\)</span>。如果 <span class="math inline">\(\mathrm{SE}(\hat{\beta}_1)\)</span> 很小，即使 <span class="math inline">\(\hat{\beta}_1\)</span> 的取值较小，也可能提供 <span class="math inline">\(\beta_1\ne0\)</span> 的强有力证据，进而说明 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间存在关系。相反，如果 <span class="math inline">\(\mathrm{SE}(\hat{\beta}_1)\)</span> 很大，那么 <span class="math inline">\(\hat{\beta}_1\)</span> 的绝对值必须足够大，才能使我们拒绝原假设。实际中，我们计算 <span class="math inline">\(t\)</span> 统计量（<span class="math inline">\(t\)</span>-statistic）：</p>
+<p><span class="math display">\[
+t=\frac{\hat{\beta}_1-0}{\mathrm{SE}(\hat{\beta}_1)},\tag{3.14}
+\]</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Intercept</code></td>
+<td style="text-align: right;">7.0325</td>
+<td style="text-align: right;">0.4578</td>
+<td style="text-align: right;">15.36</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>TV</code></td>
+<td style="text-align: right;">0.0475</td>
+<td style="text-align: right;">0.0027</td>
+<td style="text-align: right;">17.67</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.1。</strong> 对 <code>Advertising</code> 数据，以电视广告预算为预测变量、产品售出件数为响应的最小二乘回归模型系数。电视广告预算每增加 1,000 美元，对应销售量约增加 50 件。（回顾：<code>sales</code> 变量以千件为单位，<code>TV</code> 变量以千美元为单位。）</p>
+<p>式（3.14）衡量 <span class="math inline">\(\hat{\beta}_1\)</span> 距离 0 有多少个标准差。如果 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间确实没有关系，那么我们预期式（3.14）服从自由度为 <span class="math inline">\(n-2\)</span> 的 <span class="math inline">\(t\)</span> 分布。<span class="math inline">\(t\)</span> 分布呈钟形，当 <span class="math inline">\(n\)</span> 大于约 30 时，它与标准正态分布（standard normal distribution）十分相似。因此，在假设 <span class="math inline">\(\beta_1=0\)</span> 的条件下，很容易计算观测到绝对值等于或大于 <span class="math inline">\(|t|\)</span> 的数值的概率。我们把这个概率称为 <span class="math inline">\(p\)</span> 值（<span class="math inline">\(p\)</span>-value）。粗略地说，<span class="math inline">\(p\)</span> 值可以这样理解：如果预测变量和响应之间实际上不存在关联，那么，仅仅由于偶然性而观测到如此明显关联的可能性很小，就会得到较小的 <span class="math inline">\(p\)</span> 值。因此，看到较小的 <span class="math inline">\(p\)</span> 值时，我们便可以推断预测变量与响应之间存在关联。当 <span class="math inline">\(p\)</span> 值足够小时，我们拒绝原假设，也就是认为 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间存在关系。拒绝原假设时，常用的 <span class="math inline">\(p\)</span> 值阈值为 5% 或 1%；第 13 章会更详细地讨论这一主题。当 <span class="math inline">\(n=30\)</span> 时，这两个阈值分别对应式（3.14）中约为 2 和 2.75 的 <span class="math inline">\(t\)</span> 统计量。</p>
+<p>表 3.1 给出了 <code>Advertising</code> 数据中，以电视广告预算预测产品售出件数的最小二乘模型的详细结果。注意，<span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span> 相对于各自的标准误都很大，因此 <span class="math inline">\(t\)</span> 统计量也很大；如果 <span class="math inline">\(H_0\)</span> 成立，出现这类数值的概率几乎为零。由此可以得出 <span class="math inline">\(\beta_0\ne0\)</span> 且 <span class="math inline">\(\beta_1\ne0\)</span>。<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</section>
+<section id="评估模型的准确性" class="level3">
+<h3 class="anchored" data-anchor-id="评估模型的准确性">3.1.3　评估模型的准确性</h3>
+<p>当我们拒绝原假设（3.12）、支持备择假设（3.13）之后，自然希望量化模型对数据的拟合程度。线性回归拟合的质量，通常用两个相互关联的量来评估：残差标准误（RSE）和 <span class="math inline">\(R^2\)</span> 统计量（<span class="math inline">\(R^2\)</span> statistic）。</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>统计量</th>
+<th style="text-align: right;">数值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>残差标准误</td>
+<td style="text-align: right;">3.26</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(R^2\)</span></td>
+<td style="text-align: right;">0.612</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(F\)</span> 统计量</td>
+<td style="text-align: right;">312.1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.2。</strong> 对 <code>Advertising</code> 数据，以电视广告预算预测产品售出件数的最小二乘模型的更多信息。</p>
+<p>表 3.2 给出了产品售出件数对电视广告预算作线性回归的 RSE、<span class="math inline">\(R^2\)</span> 统计量和 <span class="math inline">\(F\)</span> 统计量（<span class="math inline">\(F\)</span>-statistic，将在第 3.2.2 节介绍）。</p>
+<section id="残差标准误" class="level4">
+<h4 class="anchored" data-anchor-id="残差标准误">残差标准误</h4>
+<p>回顾模型（3.5），每个观测值都对应一个误差项 <span class="math inline">\(\epsilon\)</span>。由于这些误差项的存在，即使我们知道真实回归直线，也就是即使 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 已知，仍无法根据 <span class="math inline">\(X\)</span> 完美地预测 <span class="math inline">\(Y\)</span>。RSE 是 <span class="math inline">\(\epsilon\)</span> 的标准差的估计值。粗略地说，它表示响应偏离真实回归直线的平均程度。其计算公式为</p>
+<p><span class="math display">\[
+\mathrm{RSE}=\sqrt{\frac{1}{n-2}\mathrm{RSS}}
+=\sqrt{\frac{1}{n-2}\sum_{i=1}^n(y_i-\hat{y}_i)^2}.\tag{3.15}
+\]</span></p>
+<p>注意，RSS 已在第 3.1.1 节定义，公式为</p>
+<p><span class="math display">\[
+\mathrm{RSS}=\sum_{i=1}^n(y_i-\hat{y}_i)^2.\tag{3.16}
+\]</span></p>
+<p>对于广告数据，从表 3.2 的线性回归输出可以看到，RSE 为 3.26。换句话说，各个市场的实际销售量平均偏离真实回归直线约 3,260 件。也可以这样理解：即使模型正确，而且未知系数 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 的真值已被准确获知，任何根据电视广告投入作出的销售量预测，平均仍会相差约 3,260 件。当然，3,260 件是否是可以接受的预测误差，取决于具体问题。在广告数据集中，各市场的平均销售量约为 14,000 件，因此相对误差为 <span class="math inline">\(3,260/14,000=23\%\)</span>。</p>
+<p>RSE 可用来衡量模型（3.5）对数据的失拟（lack of fit）程度。如果模型得到的预测值非常接近真实结果，即对 <span class="math inline">\(i=1,\ldots,n\)</span> 都有 <span class="math inline">\(\hat{y}_i\approx y_i\)</span>，那么式（3.15）就会很小，我们可以认为模型对数据的拟合很好。另一方面，如果一个或多个观测的 <span class="math inline">\(\hat{y}_i\)</span> 与 <span class="math inline">\(y_i\)</span> 相差很远，RSE 就可能相当大，表明模型拟合较差。</p>
+</section>
+<section id="r2-统计量" class="level4">
+<h4 class="anchored" data-anchor-id="r2-统计量"><span class="math inline">\(R^2\)</span> 统计量</h4>
+<p>RSE 给出了模型（3.5）对数据失拟程度的一种绝对度量。但是，它与 <span class="math inline">\(Y\)</span> 使用相同的单位，因此什么样的 RSE 才算好，往往并不明确。</p>
+<p><span class="math inline">\(R^2\)</span> 统计量提供了另一种拟合度量。它采用比例的形式，即所解释的方差比例，因此取值始终介于 0 与 1 之间，不受 <span class="math inline">\(Y\)</span> 的尺度影响。</p>
+<p>计算 <span class="math inline">\(R^2\)</span> 时，使用公式</p>
+<p><span class="math display">\[
+R^2=\frac{\mathrm{TSS}-\mathrm{RSS}}{\mathrm{TSS}}=1-\frac{\mathrm{RSS}}{\mathrm{TSS}}.\tag{3.17}
+\]</span></p>
+<p>其中，<span class="math inline">\(\mathrm{TSS}=\sum(y_i-\bar{y})^2\)</span> 为总平方和（total sum of squares），RSS 由式（3.16）定义。TSS 衡量响应 <span class="math inline">\(Y\)</span> 的总变异，可以理解为回归之前响应本身所具有的变异程度。相比之下，RSS 衡量进行回归后仍未被解释的变异。因此，<span class="math inline">\(\mathrm{TSS}-\mathrm{RSS}\)</span> 衡量回归所解释（或消除）的响应变异，而 <span class="math inline">\(R^2\)</span> 衡量能够用 <span class="math inline">\(X\)</span> 解释的 <span class="math inline">\(Y\)</span> 变异所占的比例。<span class="math inline">\(R^2\)</span> 接近 1，说明回归解释了响应中很大比例的变异；接近 0，则说明回归没有解释多少变异。这可能是因为线性模型不正确，也可能是因为误差方差 <span class="math inline">\(\sigma^2\)</span> 较大，或者两者兼有。表 3.2 中的 <span class="math inline">\(R^2\)</span> 为 0.61，因此，<code>sales</code> 中略低于三分之二的变异，可以通过它对 <code>TV</code> 的线性回归来解释。</p>
+<p>与 RSE（3.15）相比，<span class="math inline">\(R^2\)</span> 统计量（3.17）在解释上有一个优点：它始终介于 0 与 1 之间。但什么样的 <span class="math inline">\(R^2\)</span> 才算好，仍然可能难以判断，而且通常取决于应用情境。例如，在某些物理学问题中，我们可能知道数据确实来自一个残差很小的线性模型。这时，预期的 <span class="math inline">\(R^2\)</span> 应极其接近 1；明显偏小的 <span class="math inline">\(R^2\)</span> 可能意味着产生这些数据的实验存在严重问题。另一方面，在生物学、心理学、营销学等领域的典型应用中，线性模型（3.5）至多只是对数据的极粗略近似，而其他未测量因素造成的残差往往很大。在这种情况下，预测变量可能只能解释响应方差中很小的一部分，远低于 0.1 的 <span class="math inline">\(R^2\)</span> 也许反而更符合实际！</p>
+<p><span class="math inline">\(R^2\)</span> 统计量衡量 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 的线性关系。回顾相关（correlation）的定义：</p>
+<p><span class="math display">\[
+\mathrm{Cor}(X,Y)=\frac{\sum_{i=1}^n(x_i-\bar{x})(y_i-\bar{y})}{\sqrt{\sum_{i=1}^n(x_i-\bar{x})^2}\sqrt{\sum_{i=1}^n(y_i-\bar{y})^2}},\tag{3.18}
+\]</span></p>
+<p>它同样衡量 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间的线性关系。<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> 这提示我们，也许可以用 <span class="math inline">\(r=\mathrm{Cor}(X,Y)\)</span> 代替 <span class="math inline">\(R^2\)</span>，评估线性模型的拟合情况。事实上，可以证明，在简单线性回归中，<span class="math inline">\(R^2=r^2\)</span>。</p>
+<p><strong><code>sales</code> 对 <code>radio</code> 的简单回归</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Intercept</code></td>
+<td style="text-align: right;">9.312</td>
+<td style="text-align: right;">0.563</td>
+<td style="text-align: right;">16.54</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>radio</code></td>
+<td style="text-align: right;">0.203</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">9.92</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>sales</code> 对 <code>newspaper</code> 的简单回归</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Intercept</code></td>
+<td style="text-align: right;">12.351</td>
+<td style="text-align: right;">0.621</td>
+<td style="text-align: right;">19.88</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>newspaper</code></td>
+<td style="text-align: right;">0.055</td>
+<td style="text-align: right;">0.017</td>
+<td style="text-align: right;">3.30</td>
+<td style="text-align: right;">0.00115</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.3。</strong> <code>Advertising</code> 数据的其他简单线性回归模型。上表为产品售出件数对广播广告预算作简单线性回归的系数；下表为产品售出件数对报纸广告预算作简单线性回归的系数。广播广告支出每增加 1,000 美元，对应平均销售量约增加 203 件；报纸广告支出增加同样金额，对应平均销售量约增加 55 件。（注意：<code>sales</code> 变量以千件为单位，<code>radio</code> 和 <code>newspaper</code> 变量以千美元为单位。）</p>
+<p>换句话说，相关系数的平方与 <span class="math inline">\(R^2\)</span> 统计量相同。不过，下一节将讨论多元线性回归（multiple linear regression）问题，即同时使用多个预测变量来预测响应。预测变量与响应之间相关性的概念，不能直接扩展到这种情境，因为相关衡量的是一对变量之间的关联，而非更多变量之间的关联。我们将看到，<span class="math inline">\(R^2\)</span> 可以发挥这一作用。</p>
+</section>
+</section>
+</section>
+<section id="多元线性回归" class="level2">
+<h2 class="anchored" data-anchor-id="多元线性回归">3.2　多元线性回归</h2>
+<p>简单线性回归是一种根据单个预测变量预测响应的实用方法。但实际中，我们往往有不止一个预测变量。例如，对于 <code>Advertising</code> 数据，我们已经考察了 <code>sales</code> 与电视广告投入的关系。我们还掌握了广播和报纸广告支出的数据，可能希望知道，这两种媒体是否也与销售量有关联。如何扩展广告数据的分析，将这两个额外的预测变量纳入其中？</p>
+<p>一种选择是分别拟合三个简单线性回归，每个都使用不同的广告媒体作为预测变量。例如，可以拟合一个简单线性回归，根据广播广告支出预测销售量，结果见表 3.3 的上表。我们发现，广播广告支出每增加 1,000 美元，对应销售量约增加 203 件。表 3.3 的下表列出了 <code>sales</code> 对报纸广告预算作简单线性回归的最小二乘系数。报纸广告预算每增加 1,000 美元，对应销售量约增加 55 件。</p>
+<p>不过，对每个预测变量分别拟合简单线性回归模型，并不能完全令人满意。首先，给定三种广告媒体的预算后，该如何得到一个统一的销售量预测并不清楚，因为每项预算都对应一个单独的回归方程。其次，每个回归方程在估计系数时，都忽略了其他两种媒体。我们很快就会看到，如果数据集中这 200 个市场的媒体预算彼此相关，那么，这种做法对各媒体预算与销售量关联的估计，就可能具有很大的误导性。</p>
+<p>更好的方法是扩展简单线性回归模型（3.5），使其能够直接容纳多个预测变量。为此，可以在同一个模型中，为每个预测变量分别设置一个斜率系数。一般来说，假设有 <span class="math inline">\(p\)</span> 个不同的预测变量，则多元线性回归模型为</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1X_1+\beta_2X_2+\cdots+\beta_pX_p+\epsilon,\tag{3.19}
+\]</span></p>
+<p>其中，<span class="math inline">\(X_j\)</span> 表示第 <span class="math inline">\(j\)</span> 个预测变量，<span class="math inline">\(\beta_j\)</span> 则量化该变量与响应之间的关联。我们将 <span class="math inline">\(\beta_j\)</span> 解释为：<strong>在保持其他所有预测变量不变的条件下</strong>，<span class="math inline">\(X_j\)</span> 每增加一个单位时，<span class="math inline">\(Y\)</span> 所受到的平均影响。在广告例子中，式（3.19）变为</p>
+<p><span class="math display">\[
+\mathtt{sales}=\beta_0+\beta_1\times\mathtt{TV}+\beta_2\times\mathtt{radio}+\beta_3\times\mathtt{newspaper}+\epsilon.\tag{3.20}
+\]</span></p>
+<section id="估计回归系数" class="level3">
+<h3 class="anchored" data-anchor-id="估计回归系数">3.2.1　估计回归系数</h3>
+<p>与简单线性回归一样，式（3.19）中的回归系数 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span> 都是未知的，必须进行估计。得到估计值 <span class="math inline">\(\hat{\beta}_0,\hat{\beta}_1,\ldots,\hat{\beta}_p\)</span> 后，就可以用下式预测：</p>
+<p><span class="math display">\[
+\hat{y}=\hat{\beta}_0+\hat{\beta}_1x_1+\hat{\beta}_2x_2+\cdots+\hat{\beta}_px_p.\tag{3.21}
+\]</span></p>
+<p>参数估计仍采用简单线性回归中介绍过的最小二乘法。我们选择 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span>，使残差平方和最小：</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathrm{RSS}&amp;=\sum_{i=1}^n(y_i-\hat{y}_i)^2\\
+&amp;=\sum_{i=1}^n(y_i-\hat{\beta}_0-\hat{\beta}_1x_{i1}-\hat{\beta}_2x_{i2}-\cdots-\hat{\beta}_px_{ip})^2.
+\end{aligned}\tag{3.22}
+\]</span></p>
+<p>使式（3.22）达到最小的 <span class="math inline">\(\hat{\beta}_0,\hat{\beta}_1,\ldots,\hat{\beta}_p\)</span>，就是多元最小二乘回归系数估计值。与式（3.4）给出的简单线性回归估计不同，多元回归系数估计的形式略为复杂，用矩阵代数（matrix algebra）表示最为方便。因此，这里不再给出具体表达式。任何统计软件包都可以计算这些系数估计值，本章后面将介绍如何在 R 中完成这一计算。图 3.4 展示了对一个含 <span class="math inline">\(p=2\)</span> 个预测变量的示例数据集作最小二乘拟合的例子。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-4.png" class="img-fluid figure-img"></p>
+<figcaption>图3.4：两个预测变量和一个响应的最小二乘回归平面。</figcaption>
+</figure>
+</div>
+<p><strong>图 3.4。</strong> 在含两个预测变量和一个响应的三维情境中，最小二乘回归直线变成一个平面。这个平面的选择，使每个观测点（红色）到平面的竖直距离的平方和最小。</p>
+<p>表 3.4 给出了 <code>Advertising</code> 数据中，用 <code>TV</code>、<code>radio</code> 和 <code>newspaper</code> 广告预算预测产品销售量的多元回归系数估计。可以这样解释这些结果：对于给定的电视和报纸广告投入，广播广告支出每增加 1,000 美元，对应产品销售量约增加 189 件。将这些系数估计与表 3.1 和表 3.3 比较，可以看到，多元回归中 <code>TV</code> 和 <code>radio</code> 的系数估计，与简单线性回归的系数估计十分相似。然而，表 3.3 中 <code>newspaper</code> 的回归系数估计显著（significant）非零，而在多元回归模型中，<code>newspaper</code> 的系数估计接近零，对应的 <span class="math inline">\(p\)</span> 值约为 0.86，不再显著。这说明简单回归和多元回归的系数可能有很大差别。原因在于：简单回归中的斜率表示忽略 <code>TV</code> 和 <code>radio</code> 等其他预测变量时，报纸广告支出每增加 1,000 美元所对应的产品销售量平均增量；多元回归中的 <code>newspaper</code> 系数则表示，<strong>在保持 <code>TV</code> 和 <code>radio</code> 不变时</strong>，报纸广告支出每增加 1,000 美元所对应的产品销售量平均增量。</p>
+<p>多元回归提示 <code>sales</code> 与 <code>newspaper</code> 没有关系，而简单线性回归却得出相反结论，这合理吗？</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Intercept</code></td>
+<td style="text-align: right;">2.939</td>
+<td style="text-align: right;">0.3119</td>
+<td style="text-align: right;">9.42</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>TV</code></td>
+<td style="text-align: right;">0.046</td>
+<td style="text-align: right;">0.0014</td>
+<td style="text-align: right;">32.81</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="odd">
+<td><code>radio</code></td>
+<td style="text-align: right;">0.189</td>
+<td style="text-align: right;">0.0086</td>
+<td style="text-align: right;">21.89</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>newspaper</code></td>
+<td style="text-align: right;">−0.001</td>
+<td style="text-align: right;">0.0059</td>
+<td style="text-align: right;">−0.18</td>
+<td style="text-align: right;">0.8599</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.4。</strong> 对 <code>Advertising</code> 数据，以 <code>TV</code>、<code>radio</code> 和 <code>newspaper</code> 广告预算预测产品售出件数的多元线性回归最小二乘系数估计值。</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;"><code>TV</code></th>
+<th style="text-align: right;"><code>radio</code></th>
+<th style="text-align: right;"><code>newspaper</code></th>
+<th style="text-align: right;"><code>sales</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>TV</code></td>
+<td style="text-align: right;">1.0000</td>
+<td style="text-align: right;">0.0548</td>
+<td style="text-align: right;">0.0567</td>
+<td style="text-align: right;">0.7822</td>
+</tr>
+<tr class="even">
+<td><code>radio</code></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">1.0000</td>
+<td style="text-align: right;">0.3541</td>
+<td style="text-align: right;">0.5762</td>
+</tr>
+<tr class="odd">
+<td><code>newspaper</code></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">1.0000</td>
+<td style="text-align: right;">0.2283</td>
+</tr>
+<tr class="even">
+<td><code>sales</code></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">1.0000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.5。</strong> <code>Advertising</code> 数据中 <code>TV</code>、<code>radio</code>、<code>newspaper</code> 和 <code>sales</code> 的相关矩阵（correlation matrix）。</p>
+<p>事实上，这是合理的。考察表 3.5 中三个预测变量与响应变量的相关矩阵，可以看到，<code>radio</code> 与 <code>newspaper</code> 的相关为 0.35。这说明，报纸广告投入较高的市场，广播广告投入往往也较高。现在假定多元回归是正确的：报纸广告与销售量没有关联，而广播广告与销售量有关联。那么，广播广告投入较多的市场，销售量往往较高；而相关矩阵表明，在这些市场，报纸广告投入往往也较高。因此，在只考察 <code>sales</code> 与 <code>newspaper</code> 的简单线性回归中，我们会看到，较高的 <code>newspaper</code> 往往对应较高的 <code>sales</code>，即使报纸广告与销售量并无直接关联。于是，报纸广告就成为广播广告的替代指标（surrogate）；广播广告与销售量关联的“功劳”，被记在了报纸广告头上。</p>
+<p>这种略显反直觉的结果，在现实生活中十分常见。不妨用一个荒诞的例子来说明：收集某个海滨社区一段时间的数据，将鲨鱼袭击次数对冰淇淋销售量作回归，就会看到正向关系，类似于 <code>sales</code> 与 <code>newspaper</code> 之间的关系。当然，（至少目前）还没有人建议，为减少鲨鱼袭击而在海滩禁止销售冰淇淋。实际上，较高气温会吸引更多人去海滩，进而增加冰淇淋销售量，也增加鲨鱼袭击次数。如果将鲨鱼袭击次数同时对冰淇淋销售量和气温作多元回归，就会发现，控制气温后，冰淇淋销售量不再是显著的预测变量；这也符合直觉。</p>
+</section>
+<section id="几个重要问题" class="level3">
+<h3 class="anchored" data-anchor-id="几个重要问题">3.2.2　几个重要问题</h3>
+<p>进行多元线性回归时，我们通常希望回答几个重要问题。</p>
+<ol type="1">
+<li>在预测变量 <span class="math inline">\(X_1,X_2,\ldots,X_p\)</span> 中，是否至少有一个对预测响应有用？</li>
+<li>是所有预测变量都有助于解释 <span class="math inline">\(Y\)</span>，还是只有其中一个子集有用？</li>
+<li>模型对数据的拟合有多好？</li>
+<li>给定一组预测变量取值，应预测怎样的响应值？这一预测有多准确？</li>
+</ol>
+<p>下面依次讨论这些问题。</p>
+<section id="一响应与预测变量之间是否存在关系" class="level4">
+<h4 class="anchored" data-anchor-id="一响应与预测变量之间是否存在关系">一：响应与预测变量之间是否存在关系？</h4>
+<p>回顾简单线性回归，为判断响应与预测变量之间是否存在关系，只需检查 <span class="math inline">\(\beta_1\)</span> 是否等于零。在有 <span class="math inline">\(p\)</span> 个预测变量的多元回归中，我们需要问的是：这些回归系数是否全部为零，即是否有 <span class="math inline">\(\beta_1=\beta_2=\cdots=\beta_p=0\)</span>。与简单线性回归一样，用假设检验回答这个问题。我们检验原假设</p>
+<p><span class="math display">\[
+H_0:\ \beta_1=\beta_2=\cdots=\beta_p=0
+\]</span></p>
+<p>与之相对的备择假设为</p>
+<p><span class="math display">\[
+H_a:\ \text{至少有一个 }\beta_j\text{ 非零}.
+\]</span></p>
+<p>这一检验通过计算 <span class="math inline">\(F\)</span> 统计量完成：</p>
+<p><span class="math display">\[
+F=\frac{(\mathrm{TSS}-\mathrm{RSS})/p}{\mathrm{RSS}/(n-p-1)},\tag{3.23}
+\]</span></p>
+<p>其中，与简单线性回归一样，<span class="math inline">\(\mathrm{TSS}=\sum(y_i-\bar{y})^2\)</span>，<span class="math inline">\(\mathrm{RSS}=\sum(y_i-\hat{y}_i)^2\)</span>。如果线性模型的假设正确，可以证明</p>
+<p><span class="math display">\[
+E\{\mathrm{RSS}/(n-p-1)\}=\sigma^2,
+\]</span></p>
+<p>而且在 <span class="math inline">\(H_0\)</span> 成立时，</p>
+<p><span class="math display">\[
+E\{(\mathrm{TSS}-\mathrm{RSS})/p\}=\sigma^2.
+\]</span></p>
+<p>因此，当响应与预测变量之间没有关系时，预期 <span class="math inline">\(F\)</span> 统计量应接近 1。反之，如果 <span class="math inline">\(H_a\)</span> 成立，则 <span class="math inline">\(E\{(\mathrm{TSS}-\mathrm{RSS})/p\}&gt;\sigma^2\)</span>，所以预期 <span class="math inline">\(F\)</span> 大于 1。</p>
+<p>表 3.6 给出了将 <code>sales</code> 对 <code>radio</code>、<code>TV</code> 和 <code>newspaper</code> 作多元线性回归所得到的 <span class="math inline">\(F\)</span> 统计量。该例中，<span class="math inline">\(F\)</span> 统计量为 570，远大于 1，因此提供了反对原假设 <span class="math inline">\(H_0\)</span> 的有力证据。换句话说，较大的 <span class="math inline">\(F\)</span> 统计量表明，至少有一种广告媒体一定与销售量有关。但如果 <span class="math inline">\(F\)</span> 统计量更接近 1 呢？它必须多大，才能使我们拒绝 <span class="math inline">\(H_0\)</span>、认为两者存在关系？</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>统计量</th>
+<th style="text-align: right;">数值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>残差标准误</td>
+<td style="text-align: right;">1.69</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(R^2\)</span></td>
+<td style="text-align: right;">0.897</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(F\)</span> 统计量</td>
+<td style="text-align: right;">570</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.6。</strong> <code>Advertising</code> 数据中，以 <code>TV</code>、<code>newspaper</code> 和 <code>radio</code> 广告预算预测产品售出件数的最小二乘模型的更多信息。该模型的其他信息已在表 3.4 中给出。</p>
+<p>答案取决于 <span class="math inline">\(n\)</span> 和 <span class="math inline">\(p\)</span>。当 <span class="math inline">\(n\)</span> 很大时，<span class="math inline">\(F\)</span> 统计量即使只略大于 1，也可能提供反对 <span class="math inline">\(H_0\)</span> 的证据。相反，当 <span class="math inline">\(n\)</span> 较小时，需要更大的 <span class="math inline">\(F\)</span> 统计量才能拒绝 <span class="math inline">\(H_0\)</span>。当 <span class="math inline">\(H_0\)</span> 成立，且误差 <span class="math inline">\(\epsilon_i\)</span> 服从正态分布时，<span class="math inline">\(F\)</span> 统计量服从 <span class="math inline">\(F\)</span> 分布（<span class="math inline">\(F\)</span>-distribution）。<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> 对于任意给定的 <span class="math inline">\(n\)</span> 和 <span class="math inline">\(p\)</span>，任何统计软件包都可以利用这一分布，计算 <span class="math inline">\(F\)</span> 统计量对应的 <span class="math inline">\(p\)</span> 值。根据该 <span class="math inline">\(p\)</span> 值，就可以决定是否拒绝 <span class="math inline">\(H_0\)</span>。对于广告数据，表 3.6 中 <span class="math inline">\(F\)</span> 统计量对应的 <span class="math inline">\(p\)</span> 值基本为零，因此，我们有极强的证据表明，至少一种媒体与销售量增加有关联。</p>
+<p>式（3.23）检验的是所有系数均为零的原假设。有时，我们想检验某个包含 <span class="math inline">\(q\)</span> 个系数的特定子集是否均为零，对应的原假设为</p>
+<p><span class="math display">\[
+H_0:\ \beta_{p-q+1}=\beta_{p-q+2}=\cdots=\beta_p=0,
+\]</span></p>
+<p>为方便起见，这里把准备删去的变量放在列表末尾。这时，另拟合一个模型，使用除最后 <span class="math inline">\(q\)</span> 个变量之外的所有变量。假设该模型的残差平方和为 <span class="math inline">\(\mathrm{RSS}_0\)</span>，则相应的 <span class="math inline">\(F\)</span> 统计量为</p>
+<p><span class="math display">\[
+F=\frac{(\mathrm{RSS}_0-\mathrm{RSS})/q}{\mathrm{RSS}/(n-p-1)}.\tag{3.24}
+\]</span></p>
+<p>注意，表 3.4 为每个预测变量都给出了 <span class="math inline">\(t\)</span> 统计量和 <span class="math inline">\(p\)</span> 值。它们提供的信息是：在控制其他预测变量后，这个预测变量是否与响应有关。事实上，这些检验分别与这样一个 <span class="math inline">\(F\)</span> 检验完全等价：<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> 从模型中只删去该变量，其余变量全部保留，即式（3.24）中 <span class="math inline">\(q=1\)</span> 的情况。因此，它反映的是将该变量加入模型所产生的部分效应（partial effect）。例如，前面讨论过，这些 <span class="math inline">\(p\)</span> 值表明 <code>TV</code> 和 <code>radio</code> 与 <code>sales</code> 有关；但在保持 <code>TV</code> 和 <code>radio</code> 不变时，没有证据说明 <code>newspaper</code> 与 <code>sales</code> 有关联。</p>
+<p>既然有每个变量各自的 <span class="math inline">\(p\)</span> 值，为什么还需要考察整体的 <span class="math inline">\(F\)</span> 统计量？毕竟，只要有一个变量的 <span class="math inline">\(p\)</span> 值很小，似乎就说明至少有一个预测变量与响应有关。然而，这一逻辑有缺陷，尤其是在预测变量数目 <span class="math inline">\(p\)</span> 很大时。</p>
+<p>例如，设 <span class="math inline">\(p=100\)</span>，且 <span class="math inline">\(H_0:\beta_1=\beta_2=\cdots=\beta_p=0\)</span> 成立，即没有任何变量真正与响应有关。这时，各变量对应的 <span class="math inline">\(p\)</span> 值（如表 3.4 中的那一类）会有约 5% 仅因偶然而低于 0.05。换句话说，即使预测变量与响应之间没有任何真实关联，我们仍预期会看到约五个较小的 <span class="math inline">\(p\)</span> 值。<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a> 事实上，仅因偶然而观测到至少一个低于 0.05 的 <span class="math inline">\(p\)</span> 值，很有可能发生！因此，如果用各自的 <span class="math inline">\(t\)</span> 统计量及其对应 <span class="math inline">\(p\)</span> 值，判断变量与响应之间是否存在任何关联，就很有可能错误地认为存在关系。不过，<span class="math inline">\(F\)</span> 统计量没有这个问题，因为它考虑了预测变量的数目。因此，如果 <span class="math inline">\(H_0\)</span> 成立，无论预测变量有多少、观测值有多少，<span class="math inline">\(F\)</span> 统计量产生低于 0.05 的 <span class="math inline">\(p\)</span> 值的概率都只有 5%。</p>
+<p>当 <span class="math inline">\(p\)</span> 相对较小，尤其是明显小于 <span class="math inline">\(n\)</span> 时，可以用 <span class="math inline">\(F\)</span> 统计量检验预测变量与响应之间是否存在任何关联。但有时，我们拥有大量变量。如果 <span class="math inline">\(p&gt;n\)</span>，需要估计的系数 <span class="math inline">\(\beta_j\)</span> 比可用于估计它们的观测值还多。这时，我们甚至无法用最小二乘法拟合多元线性回归模型，因此不能使用 <span class="math inline">\(F\)</span> 统计量，本章目前介绍的多数其他概念也不再适用。当 <span class="math inline">\(p\)</span> 较大时，可以使用下一部分介绍的某些方法，例如前向选择（forward selection）。第 6 章将更详细地讨论这种高维（high-dimensional）情境。</p>
+</section>
+<section id="二确定重要变量" class="level4">
+<h4 class="anchored" data-anchor-id="二确定重要变量">二：确定重要变量</h4>
+<p>如前所述，多元回归分析的第一步，是计算 <span class="math inline">\(F\)</span> 统计量并检查对应的 <span class="math inline">\(p\)</span> 值。如果据此认为至少有一个预测变量与响应有关，自然就会想知道，究竟是哪几个变量在发挥作用！我们可以查看表 3.4 那样的各变量 <span class="math inline">\(p\)</span> 值，但前面已经讨论过，如果 <span class="math inline">\(p\)</span> 很大，就可能产生一些错误发现；第 13 章还会深入讨论这一点。</p>
+<p>有可能所有预测变量都与响应有关，但更常见的情况是，响应只与其中一部分预测变量有关。确定哪些预测变量与响应有关，进而拟合仅包含这些变量的单个模型，这项任务称为变量选择（variable selection）。第 6 章将详细研究变量选择问题，这里只简要概述几种经典方法。</p>
+<p>理想情况下，我们希望尝试许多不同模型，每个模型包含不同的预测变量子集，并由此进行变量选择。例如，<span class="math inline">\(p=2\)</span> 时，可以考虑四个模型：（1）不包含任何变量；（2）只包含 <span class="math inline">\(X_1\)</span>；（3）只包含 <span class="math inline">\(X_2\)</span>；（4）同时包含 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span>。</p>
+<p>随后，我们可以从考察过的所有模型中选出最佳模型。如何判断哪个模型最好？可以使用多种统计量衡量模型质量，包括 Mallow 的 <span class="math inline">\(C_p\)</span>（Mallow’s <span class="math inline">\(C_p\)</span>）、赤池信息准则（Akaike information criterion，AIC）、贝叶斯信息准则（Bayesian information criterion，BIC）和调整后的 <span class="math inline">\(R^2\)</span>（adjusted <span class="math inline">\(R^2\)</span>）。第 6 章会进一步介绍它们。还可以绘制残差等各种模型输出，寻找其中的规律，以判断哪个模型最好。</p>
+<p>遗憾的是，<span class="math inline">\(p\)</span> 个变量的子集对应的模型共有 <span class="math inline">\(2^p\)</span> 个。即使 <span class="math inline">\(p\)</span> 只是中等大小，也无法尝试所有可能的预测变量子集。例如，<span class="math inline">\(p=2\)</span> 时，只需考虑 <span class="math inline">\(2^2=4\)</span> 个模型；但 <span class="math inline">\(p=30\)</span> 时，就需要考虑 <span class="math inline">\(2^{30}=1,073,741,824\)</span> 个模型！这不切实际。因此，除非 <span class="math inline">\(p\)</span> 很小，否则不能穷举所有 <span class="math inline">\(2^p\)</span> 个模型，而需要自动、高效地选择一组较少的候选模型。有三种经典方法：</p>
+<ul>
+<li><strong>前向选择。</strong> 从空模型（null model）开始，即只含截距、不含预测变量的模型。然后拟合 <span class="math inline">\(p\)</span> 个简单线性回归，把使 RSS 最小的变量加入空模型。接着，再加入一个变量，使新的二变量模型的 RSS 最小。重复这一过程，直到满足某个停止规则。</li>
+<li><strong>后向选择（backward selection）。</strong> 从包含所有变量的模型开始，删去 <span class="math inline">\(p\)</span> 值最大的变量，也就是统计上最不显著的变量。拟合新的、包含 <span class="math inline">\(p-1\)</span> 个变量的模型，再删去其中 <span class="math inline">\(p\)</span> 值最大的变量。如此反复，直到满足停止规则。例如，可以在所有剩余变量的 <span class="math inline">\(p\)</span> 值均低于某个阈值时停止。</li>
+<li><strong>混合选择（mixed selection）。</strong> 结合前向选择和后向选择。从不含任何变量的模型开始，像前向选择一样加入使拟合最好的变量，接着逐个加入更多变量。当然，正如 <code>Advertising</code> 例子所示，当新的预测变量加入模型时，已有变量的 <span class="math inline">\(p\)</span> 值可能变大。因此，如果任何一步中，模型内某个变量的 <span class="math inline">\(p\)</span> 值超过某一阈值，就将它删去。持续交替进行前向和后向步骤，直到模型中所有变量的 <span class="math inline">\(p\)</span> 值都足够小，而模型外的变量即使被加入，其 <span class="math inline">\(p\)</span> 值也会较大。</li>
+</ul>
+<p>当 <span class="math inline">\(p&gt;n\)</span> 时，不能采用后向选择，而前向选择始终可以使用。前向选择是一种贪心（greedy）方法，早期纳入的变量，后来可能变得多余。混合选择可以弥补这一问题。</p>
+</section>
+<section id="三模型拟合" class="level4">
+<h4 class="anchored" data-anchor-id="三模型拟合">三：模型拟合</h4>
+<p>最常用的两种模型拟合数值度量是 RSE 和 <span class="math inline">\(R^2\)</span>，后者表示被解释的方差比例。它们的计算和解释方式，与简单线性回归相同。</p>
+<p>回顾简单回归，<span class="math inline">\(R^2\)</span> 等于响应与预测变量之间相关系数的平方。在多元线性回归中，它等于 <span class="math inline">\(\mathrm{Cor}(Y,\hat{Y})^2\)</span>，即响应与拟合线性模型之间相关系数的平方。事实上，这个拟合线性模型有一个性质：在所有可能的线性模型中，它使这一相关最大。</p>
+<p><span class="math inline">\(R^2\)</span> 接近 1，说明模型解释了响应变量中很大一部分方差。例如，表 3.6 中，对 <code>Advertising</code> 数据同时用三种广告媒体预测 <code>sales</code> 的模型，<span class="math inline">\(R^2\)</span> 为 0.8972；而只用 <code>TV</code> 和 <code>radio</code> 预测 <code>sales</code> 的模型，<span class="math inline">\(R^2\)</span> 为 0.89719。换句话说，在已经包含 <code>TV</code> 和 <code>radio</code> 的模型中再纳入报纸广告，会使 <span class="math inline">\(R^2\)</span> 略有增加，尽管表 3.4 中报纸广告的 <span class="math inline">\(p\)</span> 值并不显著。事实上，向模型中加入更多变量，<span class="math inline">\(R^2\)</span> 总会增加，即使这些变量与响应的关联很弱。这是因为，增加一个变量总会使训练数据上的残差平方和下降，但测试数据（testing data）上的残差平方和未必如此。因此，同样根据训练数据计算的 <span class="math inline">\(R^2\)</span> 必然增加。在只含 <code>TV</code> 和 <code>radio</code> 的模型中加入报纸广告，<span class="math inline">\(R^2\)</span> 只增加了极少量，这进一步表明，可以将 <code>newspaper</code> 从模型中删除。实质上，<code>newspaper</code> 并未真正改善模型对训练样本的拟合，纳入它反而可能因过拟合（overfitting），使模型在独立测试样本上表现较差。</p>
+<p>相比之下，只用 <code>TV</code> 作预测变量的模型，其 <span class="math inline">\(R^2\)</span> 为 0.61（表 3.2）。加入 <code>radio</code> 后，<span class="math inline">\(R^2\)</span> 明显改善。这表明，同时用电视和广播广告支出预测销售量，明显优于只用电视广告。还可以检查仅含 <code>TV</code> 和 <code>radio</code> 的模型中 <code>radio</code> 系数的 <span class="math inline">\(p\)</span> 值，进一步量化这种改善。</p>
+<p>只含 <code>TV</code> 和 <code>radio</code> 的模型，其 RSE 为 1.681；再加入 <code>newspaper</code> 的模型，其 RSE 为 1.686（表 3.6）。相比之下，只含 <code>TV</code> 的模型，其 RSE 为 3.26（表 3.2）。这印证了前面的结论：在训练数据上，同时用电视和广播广告支出预测销售量，远比只用电视广告支出准确。此外，既然已用 <code>TV</code> 和 <code>radio</code> 作预测变量，就没有必要再使用 <code>newspaper</code>。细心的读者可能会问：既然加入 <code>newspaper</code> 后 RSS 必然下降，RSE 为什么反而会上升？一般来说，RSE 的定义为</p>
+<p><span class="math display">\[
+\mathrm{RSE}=\sqrt{\frac{1}{n-p-1}\mathrm{RSS}},\tag{3.25}
+\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-5.png" class="img-fluid figure-img"></p>
+<figcaption>图3.5：Advertising数据中sales对TV与radio的线性回归平面及残差。</figcaption>
+</figure>
+</div>
+<p><strong>图 3.5。</strong> <code>Advertising</code> 数据中，以 <code>TV</code> 和 <code>radio</code> 为预测变量对 <code>sales</code> 进行线性回归拟合。从残差的分布形态，可以看出数据中存在明显的非线性关系（non-linear relationship）。正残差，即平面上方可见的那些残差，往往沿 45 度直线分布；在这条线上，电视和广播广告预算均等分配。负残差大多不可见，它们往往远离这条线，对应预算分配更不均衡的情况。</p>
+<p>对于简单线性回归，式（3.25）就简化为式（3.15）。因此，如果 RSS 的下降相对于 <span class="math inline">\(p\)</span> 的增加较小，包含更多变量的模型反而可能具有更大的 RSE。</p>
+<p>除了考察刚才讨论的 RSE 和 <span class="math inline">\(R^2\)</span>，绘制数据图也很有帮助。图形概览能够揭示数值统计量看不出的模型问题。例如，图 3.5 给出了 <code>TV</code>、<code>radio</code> 与 <code>sales</code> 的三维图。有些观测点在最小二乘回归平面上方，有些在下方。具体来说，当广告资金大部分只用于电视或只用于广播时，线性模型似乎高估了销售量；当预算分配给这两种媒体时，它又低估了销售量。这种明显的非线性规律提示，不同广告媒体之间存在协同效应或交互效应：将媒体结合使用，比只使用某一种媒体更能促进销售量增加。第 3.3.2 节将讨论如何利用交互项（interaction term）扩展线性模型，以容纳这类协同效应。</p>
+</section>
+<section id="四预测" class="level4">
+<h4 class="anchored" data-anchor-id="四预测">四：预测</h4>
+<p>拟合多元回归模型后，很容易根据预测变量 <span class="math inline">\(X_1,X_2,\ldots,X_p\)</span> 的一组取值，利用式（3.21）预测响应 <span class="math inline">\(Y\)</span>。不过，这种预测涉及三类不确定性。</p>
+<ol type="1">
+<li><p>系数估计值 <span class="math inline">\(\hat{\beta}_0,\hat{\beta}_1,\ldots,\hat{\beta}_p\)</span> 是对 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span> 的估计。也就是说，最小二乘平面（least squares plane）</p>
+<p><span class="math display">\[
+\hat{Y}=\hat{\beta}_0+\hat{\beta}_1X_1+\cdots+\hat{\beta}_pX_p
+\]</span></p>
+<p>只是对真实总体回归平面（population regression plane）</p>
+<p><span class="math display">\[
+f(X)=\beta_0+\beta_1X_1+\cdots+\beta_pX_p
+\]</span></p>
+<p>的估计。系数估计的不准确，与第 2 章介绍的可约误差（reducible error）有关。我们可以计算置信区间，以判断 <span class="math inline">\(\hat{Y}\)</span> 与 <span class="math inline">\(f(X)\)</span> 有多接近。</p></li>
+<li><p>当然，在实际中，用线性模型表示 <span class="math inline">\(f(X)\)</span> 几乎总是在近似现实，因此还存在另一种可能缩小的误差来源，称为模型偏差（model bias）。所以，使用线性模型时，我们实际上估计的是真实曲面的最佳线性近似。不过，这里先忽略这种差异，按线性模型正确来处理。</p></li>
+<li><p>即使知道 <span class="math inline">\(f(X)\)</span>，也就是即使知道 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span> 的真值，仍无法完美地预测响应，因为模型（3.20）中有随机误差 <span class="math inline">\(\epsilon\)</span>。第 2 章将它称为不可约误差（irreducible error）。那么，<span class="math inline">\(Y\)</span> 会偏离 <span class="math inline">\(\hat{Y}\)</span> 多少？我们用预测区间（prediction interval）回答。预测区间总比置信区间宽，因为它既包含对 <span class="math inline">\(f(X)\)</span> 的估计误差，即可约误差，也包含单个点会偏离总体回归平面多少的不确定性，即不可约误差。</p></li>
+</ol>
+<p>我们用置信区间量化大量城市的<strong>平均销售量</strong>的不确定性。例如，假定每个城市都投入 100,000 美元电视广告和 20,000 美元广播广告，则 95% 置信区间为 <span class="math inline">\([10,985,11,528]\)</span>。其含义是，这样构造的区间中，95% 会包含 <span class="math inline">\(f(X)\)</span> 的真值。<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> 另一方面，预测区间用于量化<strong>某个特定城市</strong>销售量的不确定性。如果该城市投入 100,000 美元电视广告和 20,000 美元广播广告，则 95% 预测区间为 <span class="math inline">\([7,930,14,580]\)</span>。其含义是，这样构造的区间中，95% 会包含该城市 <span class="math inline">\(Y\)</span> 的真值。注意，两个区间都以 11,256 为中心，但预测区间明显更宽。这反映出，与许多地区的平均销售量相比，某个特定城市的销售量具有更大的不确定性。</p>
+</section>
+</section>
+</section>
+<section id="回归模型中的其他考虑" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="回归模型中的其他考虑">3.3 回归模型中的其他考虑</h2>
+<section id="定性预测变量qualitative-predictors" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="定性预测变量qualitative-predictors">3.3.1 定性预测变量（Qualitative Predictors）</h3>
+<p>到目前为止，我们一直假设线性回归模型中的所有变量都是定量的。但实际情况并非总是如此；有些预测变量往往是定性的。</p>
+<p>例如，图 3.6 所示的 <code>Credit</code> 数据集记录了若干信用卡持有人的变量。响应变量为 <code>balance</code>（每个人的平均信用卡欠款），定量预测变量包括 <code>age</code>（年龄）、<code>cards</code>（信用卡数量）、<code>education</code>（受教育年限）、<code>income</code>（收入，以千美元计）、<code>limit</code>（信用额度）和 <code>rating</code>（信用评级）。图 3.6 的每个面板都是一对变量的散点图，变量由相应的行标签和列标签标明。例如，“Balance”右侧紧邻的散点图展示的是 <code>balance</code> 与 <code>age</code> 的关系，而“Age”右侧紧邻的图对应的是 <code>age</code> 与 <code>cards</code> 的关系。除了这些定量变量，还有四个定性变量：<code>own</code>（是否拥有住房）、<code>student</code>（是否为学生）、<code>status</code>（婚姻状况）和 <code>region</code>（地区，取值为 East、West 或 South）。</p>
+<section id="只有两个水平的预测变量" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="只有两个水平的预测变量">只有两个水平的预测变量</h4>
+<p>假设我们想研究拥有住房者与未拥有住房者的信用卡欠款有何差别，暂且忽略其他变量。如果一个定性预测变量，也称为因子（factor），只有两个水平（level），即只有两个可能取值，那么将它纳入回归模型非常简单。只需构造一个取两个数值的指示变量（indicator variable），也称为虚拟变量（dummy variable）。<sup><a href="#fn10" id="fnref10">10</a></sup>例如，根据 <code>own</code> 变量，可以构造如下形式的新变量：</p>
+<p><span class="math display">\[
+x_i=\begin{cases}
+1 &amp; \text{第 }i\text{ 个人拥有住房},\\
+0 &amp; \text{第 }i\text{ 个人未拥有住房}.
+\end{cases}\tag{3.26}
+\]</span></p>
+<p>将这个变量作为回归方程中的预测变量，就得到模型</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1x_i+\epsilon_i=
+\begin{cases}
+\beta_0+\beta_1+\epsilon_i &amp; \text{第 }i\text{ 个人拥有住房},\\
+\beta_0+\epsilon_i &amp; \text{第 }i\text{ 个人未拥有住房}.
+\end{cases}\tag{3.27}
+\]</span></p>
+<p>现在，<span class="math inline">\(\beta_0\)</span> 可以解释为未拥有住房者的平均信用卡欠款，<span class="math inline">\(\beta_0+\beta_1\)</span> 是拥有住房者的平均信用卡欠款，而 <span class="math inline">\(\beta_1\)</span> 是拥有住房者与未拥有住房者之间平均信用卡欠款的差额。</p>
+<p>表 3.7 给出了模型 (3.27) 的系数估计值及其他相关信息。估计未拥有住房者的平均信用卡欠款为 509.80 美元，而拥有住房者的欠款比他们多 19.73 美元，总计为 <span class="math inline">\(509.80+19.73=529.53\)</span> 美元。不过，</p>
+<aside class="footnote" id="fn10">
+<a href="#fnref10">10</a> 在机器学习领域，通过构造虚拟变量来处理定性预测变量称为“独热编码（one-hot encoding）”。
+</aside>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-6.png" class="img-fluid figure-img"></p>
+<figcaption>图3.6 Credit数据集的散点图矩阵</figcaption>
+</figure>
+</div>
+<p><strong>图 3.6</strong> <code>Credit</code> 数据集包含若干潜在客户的 <code>balance</code>、<code>age</code>、<code>cards</code>、<code>education</code>、<code>income</code>、<code>limit</code> 和 <code>rating</code> 信息。</p>
+<p>图内标签对照：Balance＝信用卡欠款；Age＝年龄；Cards＝信用卡数量；Education＝受教育年限；Income＝收入；Limit＝信用额度；Rating＝信用评级。</p>
+<p>我们注意到，虚拟变量的 <span class="math inline">\(p\)</span> 值很高。这表明，没有统计证据支持平均信用卡欠款因是否拥有住房而存在差别。</p>
+<p>在 (3.27) 中，将拥有住房者编码为 1、未拥有住房者编码为 0，是任意作出的选择。这不会影响回归拟合结果，但会改变系数的解释。如果将未拥有住房者编码为 1、拥有住房者编码为 0，那么 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 的估计值将分别为 529.53 和 <span class="math inline">\(-19.73\)</span>，由此得到未拥有住房者的信用卡欠款预测值仍为 <span class="math inline">\(529.53-19.73=509.80\)</span> 美元，拥有住房者的预测值为 529.53 美元。或者，也可以不采用 0/1 编码，而构造虚拟变量</p>
+<p><span class="math display">\[
+x_i=\begin{cases}
+1 &amp; \text{第 }i\text{ 个人拥有住房},\\
+-1 &amp; \text{第 }i\text{ 个人未拥有住房},
+\end{cases}
+\]</span></p>
+<p>并在回归方程中使用这个变量。这将得到模型</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1x_i+\epsilon_i=
+\begin{cases}
+\beta_0+\beta_1+\epsilon_i &amp; \text{第 }i\text{ 个人拥有住房},\\
+\beta_0-\beta_1+\epsilon_i &amp; \text{第 }i\text{ 个人未拥有住房}.
+\end{cases}
+\]</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>项</th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Intercept</code></td>
+<td style="text-align: right;">509.80</td>
+<td style="text-align: right;">33.13</td>
+<td style="text-align: right;">15.389</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>own[Yes]</code></td>
+<td style="text-align: right;">19.73</td>
+<td style="text-align: right;">46.05</td>
+<td style="text-align: right;">0.429</td>
+<td style="text-align: right;">0.6690</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.7</strong> 在 <code>Credit</code> 数据集中，将 <code>balance</code> 对 <code>own</code> 回归得到的最小二乘系数估计值。线性模型见 (3.27)，即按照 (3.26) 将是否拥有住房编码为虚拟变量。</p>
+<p>此时，<span class="math inline">\(\beta_0\)</span> 可以解释为总体平均信用卡欠款（忽略是否拥有住房的效应），而 <span class="math inline">\(\beta_1\)</span> 表示拥有住房者和未拥有住房者的信用卡欠款分别高于和低于该平均值的数额。<sup><a href="#fn11" id="fnref11">11</a></sup>在本例中，<span class="math inline">\(\beta_0\)</span> 的估计值为 519.665 美元，恰好位于未拥有住房者平均值 509.80 美元与拥有住房者平均值 529.53 美元的中间。<span class="math inline">\(\beta_1\)</span> 的估计值为 9.865 美元，等于两组平均差额 19.73 美元的一半。需要注意的是，无论采用哪种编码方案，拥有住房者与未拥有住房者的最终信用卡欠款预测值都完全相同。差别只在于如何解释系数。</p>
+<aside class="footnote" id="fn11">
+<a href="#fnref11">11</a> 严格地说，<span class="math inline">\(\beta_0\)</span> 是拥有住房者平均欠款与未拥有住房者平均欠款之和的一半。因此，只有当两组人数相等时，<span class="math inline">\(\beta_0\)</span> 才恰好等于总体平均值。
+</aside>
+</section>
+<section id="有两个以上水平的定性预测变量" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="有两个以上水平的定性预测变量">有两个以上水平的定性预测变量</h4>
+<p>当一个定性预测变量有两个以上的水平时，单个虚拟变量无法表示所有可能取值。这时，可以构造更多虚拟变量。例如，对于 <code>region</code> 变量，我们构造两个虚拟变量。第一个可以是</p>
+<p><span class="math display">\[
+x_{i1}=\begin{cases}
+1 &amp; \text{第 }i\text{ 个人来自 South},\\
+0 &amp; \text{第 }i\text{ 个人不来自 South},
+\end{cases}\tag{3.28}
+\]</span></p>
+<p>第二个可以是</p>
+<p><span class="math display">\[
+x_{i2}=\begin{cases}
+1 &amp; \text{第 }i\text{ 个人来自 West},\\
+0 &amp; \text{第 }i\text{ 个人不来自 West}.
+\end{cases}\tag{3.29}
+\]</span></p>
+<p>然后，将这两个变量都用于回归方程，得到模型</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\epsilon_i=
+\begin{cases}
+\beta_0+\beta_1+\epsilon_i &amp; \text{第 }i\text{ 个人来自 South},\\
+\beta_0+\beta_2+\epsilon_i &amp; \text{第 }i\text{ 个人来自 West},\\
+\beta_0+\epsilon_i &amp; \text{第 }i\text{ 个人来自 East}.
+\end{cases}\tag{3.30}
+\]</span></p>
+<p>现在，<span class="math inline">\(\beta_0\)</span> 可以解释为 East 地区人群的平均信用卡欠款，<span class="math inline">\(\beta_1\)</span> 是 South 与 East 地区人群的平均欠款之差，<span class="math inline">\(\beta_2\)</span> 是 West 与 East 地区人群的平均欠款之差。虚拟变量的个数总比水平数少一个。没有对应虚拟变量的那个水平——本例中为 East——称为基准水平（baseline）。</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>项</th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Intercept</code></td>
+<td style="text-align: right;">531.00</td>
+<td style="text-align: right;">46.32</td>
+<td style="text-align: right;">11.464</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>region[South]</code></td>
+<td style="text-align: right;"><span class="math inline">\(-12.50\)</span></td>
+<td style="text-align: right;">56.68</td>
+<td style="text-align: right;"><span class="math inline">\(-0.221\)</span></td>
+<td style="text-align: right;">0.8260</td>
+</tr>
+<tr class="odd">
+<td><code>region[West]</code></td>
+<td style="text-align: right;"><span class="math inline">\(-18.69\)</span></td>
+<td style="text-align: right;">65.02</td>
+<td style="text-align: right;"><span class="math inline">\(-0.287\)</span></td>
+<td style="text-align: right;">0.7740</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.8</strong> 在 <code>Credit</code> 数据集中，将 <code>balance</code> 对 <code>region</code> 回归得到的最小二乘系数估计值。线性模型见 (3.30)，即通过 (3.28) 和 (3.29) 两个虚拟变量对 <code>region</code> 编码。</p>
+<p>从表 3.8 可知，基准水平 East 的 <code>balance</code> 估计值为 531.00 美元。估计 South 地区人群的欠款比 East 地区少 18.69 美元，而 West 地区人群的欠款比 East 地区少 12.50 美元。不过，两个虚拟变量系数估计值对应的 <span class="math inline">\(p\)</span> 值都很大，表明没有统计证据支持 South 与 East 之间或 West 与 East 之间的平均信用卡欠款存在真实差异。<sup><a href="#fn12" id="fnref12">12</a></sup>同样，选哪个水平作为基准类别是任意的，无论如何选择，各组的最终预测值都相同。但系数及其 <span class="math inline">\(p\)</span> 值确实取决于虚拟变量的编码方式。我们可以不依赖单个系数，而使用 <span class="math inline">\(F\)</span> 检验来检验 <span class="math inline">\(H_0:\beta_1=\beta_2=0\)</span>；该检验不依赖编码方式。这个 <span class="math inline">\(F\)</span> 检验的 <span class="math inline">\(p\)</span> 值为 0.96，表明我们不能拒绝 <code>balance</code> 与 <code>region</code> 之间没有关系的原假设。</p>
+<aside class="footnote" id="fn12">
+<a href="#fnref12">12</a> 理论上，South 与 West 之间仍可能存在差异，尽管这里的数据并未显示出这样的差异。
+</aside>
+<p>采用这种虚拟变量方法，可以方便地同时纳入定量和定性预测变量。例如，若要同时用定量变量 <code>income</code> 和定性变量 <code>student</code> 对 <code>balance</code> 进行回归，只需为 <code>student</code> 构造一个虚拟变量，然后以 <code>income</code> 和这个虚拟变量作为信用卡欠款的预测变量，拟合多元回归模型。</p>
+<p>除了这里采用的虚拟变量方法，还有许多其他定性变量编码方式。这些方法会得到等价的模型拟合结果，但系数及其解释不同；它们旨在衡量特定的对比（contrast）。这一主题超出了本书的范围。</p>
+</section>
+</section>
+<section id="线性模型的扩展" class="level3">
+<h3 class="anchored" data-anchor-id="线性模型的扩展">3.3.2 线性模型的扩展</h3>
+<p>标准线性回归模型 (3.19) 的结果易于解释，而且在许多实际问题上表现很好。不过，它作出了若干限制很强的假设，而这些假设在实践中往往并不成立。其中两个最重要的假设是：预测变量与响应之间的关系具有可加性（additivity）和线性（linearity）。可加性假设意味着，预测变量 <span class="math inline">\(X_j\)</span> 与响应 <span class="math inline">\(Y\)</span> 之间的关联不依赖于其他预测变量的取值。线性假设则意味着，无论 <span class="math inline">\(X_j\)</span> 取何值，<span class="math inline">\(X_j\)</span> 每变化一个单位所伴随的响应 <span class="math inline">\(Y\)</span> 的变化量都是恒定的。在后续章节中，我们将考察一些能够放宽这两个</p>
+<p>假设的复杂方法。这里先简要介绍扩展线性模型的一些常见经典方法。</p>
+<section id="去掉可加性假设" class="level4">
+<h4 class="anchored" data-anchor-id="去掉可加性假设">去掉可加性假设</h4>
+<p>在前面对 <code>Advertising</code> 数据的分析中，我们得出结论：<code>TV</code> 和 <code>radio</code> 似乎都与 <code>sales</code> 相关联。这一结论所依据的线性模型假定，增加某一种媒体的广告投入对 <code>sales</code> 的效应，独立于其他媒体的广告投入。例如，线性模型 (3.20) 表明，无论 <code>radio</code> 上投入多少，<code>TV</code> 每增加一个单位所伴随的 <code>sales</code> 平均增量始终为 <span class="math inline">\(\beta_1\)</span>。</p>
+<p>不过，这个简单模型可能并不正确。假设在广播广告上投入资金实际上会增强电视广告的效果，那么 <code>TV</code> 的斜率项就应该随 <code>radio</code> 的增加而增大。这种情况下，若总预算固定为 100,000 美元，将一半投入 <code>radio</code>、另一半投入 <code>TV</code>，可能比把全部预算投入 <code>TV</code> 或 <code>radio</code> 带来更大的 <code>sales</code> 增长。这在营销学中称为协同效应，在统计学中称为交互效应。图 3.5 表明，广告数据中可能存在这种效应。注意，当 <code>TV</code> 或 <code>radio</code> 中任意一个的投入较低时，实际 <code>sales</code> 低于线性模型的预测值；但当广告投入分配给两种媒体时，模型又往往低估 <code>sales</code>。</p>
+<p>考虑包含两个变量的标准线性回归模型：</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1X_1+\beta_2X_2+\epsilon.
+\]</span></p>
+<p>根据这个模型，<span class="math inline">\(X_1\)</span> 增加一个单位，伴随的是 <span class="math inline">\(Y\)</span> 平均增加 <span class="math inline">\(\beta_1\)</span> 个单位。注意，<span class="math inline">\(X_2\)</span> 的存在并不改变这一结论，也就是说，无论 <span class="math inline">\(X_2\)</span> 取何值，<span class="math inline">\(X_1\)</span> 增加一个单位都伴随 <span class="math inline">\(Y\)</span> 增加 <span class="math inline">\(\beta_1\)</span> 个单位。扩展这一模型的一种方法是加入第三个预测变量，称为交互项（interaction term），通过计算 <span class="math inline">\(X_1\)</span> 与 <span class="math inline">\(X_2\)</span> 的乘积来构造。由此得到模型</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1X_1+\beta_2X_2+\beta_3X_1X_2+\epsilon.\tag{3.31}
+\]</span></p>
+<p>加入这个交互项为什么能够放宽可加性假设？注意，(3.31) 可以改写为</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y&amp;=\beta_0+(\beta_1+\beta_3X_2)X_1+\beta_2X_2+\epsilon\\
+&amp;=\beta_0+\widetilde{\beta}_1X_1+\beta_2X_2+\epsilon,
+\end{aligned}\tag{3.32}
+\]</span></p>
+<p>其中 <span class="math inline">\(\widetilde{\beta}_1=\beta_1+\beta_3X_2\)</span>。由于 <span class="math inline">\(\widetilde{\beta}_1\)</span> 现在是 <span class="math inline">\(X_2\)</span> 的函数，<span class="math inline">\(X_1\)</span> 与 <span class="math inline">\(Y\)</span> 之间的关联便不再恒定：<span class="math inline">\(X_2\)</span> 的取值发生变化，就会改变 <span class="math inline">\(X_1\)</span> 与 <span class="math inline">\(Y\)</span> 之间的关联。同理，<span class="math inline">\(X_1\)</span> 的取值发生变化，也会改变 <span class="math inline">\(X_2\)</span> 与 <span class="math inline">\(Y\)</span> 之间的关联。</p>
+<p>例如，假设我们想研究一家工厂的生产能力，希望根据生产线数量 <code>lines</code> 和工人总数 <code>workers</code> 来预测产量 <code>units</code>。增加生产线数量的效应很可能</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>项</th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Intercept</code></td>
+<td style="text-align: right;">6.7502</td>
+<td style="text-align: right;">0.248</td>
+<td style="text-align: right;">27.23</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>TV</code></td>
+<td style="text-align: right;">0.0191</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">12.70</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="odd">
+<td><code>radio</code></td>
+<td style="text-align: right;">0.0289</td>
+<td style="text-align: right;">0.009</td>
+<td style="text-align: right;">3.24</td>
+<td style="text-align: right;">0.0014</td>
+</tr>
+<tr class="even">
+<td><code>TV</code><span class="math inline">\(\times\)</span><code>radio</code></td>
+<td style="text-align: right;">0.0011</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">20.73</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.9</strong> 对于 <code>Advertising</code> 数据，按照 (3.33) 将 <code>sales</code> 对 <code>TV</code>、<code>radio</code> 及其交互项回归所得到的最小二乘系数估计值。</p>
+<p>取决于工人数，因为如果没有工人操作生产线，增加生产线也不会提高产量。因此，在预测 <code>units</code> 的线性模型中加入 <code>lines</code> 与 <code>workers</code> 的交互项应当是合适的。假设拟合模型后得到</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathtt{units}&amp;\approx 1.2+3.4\times\mathtt{lines}+0.22\times\mathtt{workers}+1.4\times(\mathtt{lines}\times\mathtt{workers})\\
+&amp;=1.2+(3.4+1.4\times\mathtt{workers})\times\mathtt{lines}+0.22\times\mathtt{workers}.
+\end{aligned}
+\]</span></p>
+<p>换句话说，每增加一条生产线，产量就会增加 <span class="math inline">\(3.4+1.4\times\mathtt{workers}\)</span>。因此，<code>workers</code> 越多，<code>lines</code> 的效应就越强。</p>
+<p>现在回到 <code>Advertising</code> 的例子。使用 <code>radio</code>、<code>TV</code> 及二者的交互项预测 <code>sales</code> 的线性模型为</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathtt{sales}&amp;=\beta_0+\beta_1\times\mathtt{TV}+\beta_2\times\mathtt{radio}+\beta_3\times(\mathtt{radio}\times\mathtt{TV})+\epsilon\\
+&amp;=\beta_0+(\beta_1+\beta_3\times\mathtt{radio})\times\mathtt{TV}+\beta_2\times\mathtt{radio}+\epsilon.
+\end{aligned}\tag{3.33}
+\]</span></p>
+<p>我们可以将 <span class="math inline">\(\beta_3\)</span> 解释为：广播广告每增加一个单位，电视广告的效果所增加的量；反过来也一样。拟合模型 (3.33) 得到的系数见表 3.9。</p>
+<p>表 3.9 的结果强烈表明，包含交互项的模型优于仅含主效应（main effect）的模型。交互项 <code>TV</code><span class="math inline">\(\times\)</span><code>radio</code> 的 <span class="math inline">\(p\)</span> 值极低，为 <span class="math inline">\(H_a:\beta_3\ne0\)</span> 提供了有力证据。换句话说，真实关系显然不具有可加性。模型 (3.33) 的 <span class="math inline">\(R^2\)</span> 为 96.8%，而只使用 <code>TV</code> 和 <code>radio</code>、不含交互项的模型，其 <span class="math inline">\(R^2\)</span> 仅为 89.7%。这意味着，拟合可加模型后 <code>sales</code> 中仍未得到解释的变异，有 <span class="math inline">\((96.8-89.7)/(100-89.7)=69\%\)</span> 被交互项解释了。表 3.9 的系数估计值表明，电视广告增加 1,000 美元，伴随的销售量增长为 <span class="math inline">\((\hat\beta_1+\hat\beta_3\times\mathtt{radio})\times1{,}000=19+1.1\times\mathtt{radio}\)</span> 件；广播广告增加 1,000 美元，伴随的销售量增长则为 <span class="math inline">\((\hat\beta_2+\hat\beta_3\times\mathtt{TV})\times1{,}000=29+1.1\times\mathtt{TV}\)</span> 件。</p>
+<p>本例中，<code>TV</code>、<code>radio</code> 及其交互项的 <span class="math inline">\(p\)</span> 值都达到统计显著性（表 3.9），因此显然应该将这三个变量全部纳入模型。然而，有时交互项的 <span class="math inline">\(p\)</span> 值很小，对应主效应（本例中为 <code>TV</code> 和 <code>radio</code>）的 <span class="math inline">\(p\)</span> 值却并不小。层级原则（hierarchical principle）指出，如果在模型中纳入一个交互项，</p>
+<p>就应该同时纳入对应的主效应，即使它们的系数所对应的 <span class="math inline">\(p\)</span> 值并不显著。换句话说，如果 <span class="math inline">\(X_1\)</span> 与 <span class="math inline">\(X_2\)</span> 的交互作用似乎很重要，那么即使它们系数估计值的 <span class="math inline">\(p\)</span> 值很大，也应将 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 都纳入模型。这条原则的理由是，如果 <span class="math inline">\(X_1\times X_2\)</span> 与响应有关，那么 <span class="math inline">\(X_1\)</span> 或 <span class="math inline">\(X_2\)</span> 的系数是否恰好为零就不那么重要了。此外，<span class="math inline">\(X_1\times X_2\)</span> 通常与 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 相关，因此将它们排除往往会改变交互项的含义。</p>
+<p>在上一个例子中，我们考察了两个定量变量 <code>TV</code> 和 <code>radio</code> 的交互作用。然而，交互作用的概念同样适用于定性变量，以及定量与定性变量的组合。事实上，定性变量与定量变量之间的交互作用有一个很直观的解释。考虑 3.3.1 节的 <code>Credit</code> 数据集，假设希望用 <code>income</code>（定量变量）和 <code>student</code>（定性变量）预测 <code>balance</code>。没有交互项时，模型为</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathtt{balance}_i&amp;\approx\beta_0+\beta_1\times\mathtt{income}_i+
+\begin{cases}
+\beta_2 &amp; \text{第 }i\text{ 个人是学生},\\
+0 &amp; \text{第 }i\text{ 个人不是学生}
+\end{cases}\\
+&amp;=\beta_1\times\mathtt{income}_i+
+\begin{cases}
+\beta_0+\beta_2 &amp; \text{第 }i\text{ 个人是学生},\\
+\beta_0 &amp; \text{第 }i\text{ 个人不是学生}.
+\end{cases}
+\end{aligned}\tag{3.34}
+\]</span></p>
+<p>注意，这相当于为数据拟合两条平行直线，学生与非学生各一条。两条直线的截距不同，分别为 <span class="math inline">\(\beta_0+\beta_2\)</span> 和 <span class="math inline">\(\beta_0\)</span>，但斜率相同，都为 <span class="math inline">\(\beta_1\)</span>。图 3.7 左图展示了这一点。直线平行意味着，<code>income</code> 每增加一个单位对 <code>balance</code> 的平均效应，不依赖于这个人是否为学生。这可能是模型的一项严重局限，因为实际上收入变化对学生与非学生信用卡欠款的效应可能很不一样。</p>
+<p>可以通过加入一个交互变量来解决这一局限，这个变量由 <code>income</code> 与 <code>student</code> 的虚拟变量相乘得到。此时模型变为</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathtt{balance}_i&amp;\approx\beta_0+\beta_1\times\mathtt{income}_i+
+\begin{cases}
+\beta_2+\beta_3\times\mathtt{income}_i &amp; \text{是学生},\\
+0 &amp; \text{不是学生}
+\end{cases}\\
+&amp;=\begin{cases}
+(\beta_0+\beta_2)+(\beta_1+\beta_3)\times\mathtt{income}_i &amp; \text{是学生},\\
+\beta_0+\beta_1\times\mathtt{income}_i &amp; \text{不是学生}.
+\end{cases}
+\end{aligned}\tag{3.35}
+\]</span></p>
+<p>学生与非学生仍各有一条不同的回归直线。但现在两条回归直线不仅截距不同，分别为 <span class="math inline">\(\beta_0+\beta_2\)</span> 和 <span class="math inline">\(\beta_0\)</span>，斜率也不同，分别为 <span class="math inline">\(\beta_1+\beta_3\)</span> 和 <span class="math inline">\(\beta_1\)</span>。这样就允许收入变化对学生与非学生的信用卡欠款产生不同效应。图 3.7 右图</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-7.png" class="img-fluid figure-img"></p>
+<figcaption>图3.7 学生与非学生的收入和信用卡欠款回归直线</figcaption>
+</figure>
+</div>
+<p><strong>图 3.7</strong> 对于 <code>Credit</code> 数据，图中给出分别使用 <code>income</code> 预测学生与非学生 <code>balance</code> 的最小二乘直线。左图：拟合模型 (3.34)，<code>income</code> 与 <code>student</code> 之间没有交互项。右图：拟合模型 (3.35)，其中含有 <code>income</code> 与 <code>student</code> 的交互项。</p>
+<p>图内标签对照：Income＝收入；Balance＝信用卡欠款；student＝学生；non-student＝非学生。</p>
+<p>展示了模型 (3.35) 对学生与非学生的 <code>income</code> 和 <code>balance</code> 之间关系的估计。我们注意到，学生对应的斜率小于非学生的斜率。这表明，相比非学生，学生收入增加时所伴随的信用卡欠款增幅较小。</p>
+</section>
+<section id="非线性关系non-linear-relationships" class="level4">
+<h4 class="anchored" data-anchor-id="非线性关系non-linear-relationships">非线性关系（Non-linear Relationships）</h4>
+<p>如前所述，线性回归模型 (3.19) 假设响应与预测变量之间存在线性关系。但在有些情况下，真实关系可能是非线性的。这里介绍一种直接扩展线性模型以适应非线性关系的简单方法，即多项式回归（polynomial regression）。后续章节将介绍更复杂的方法，用于在更一般的情形下进行非线性拟合。</p>
+<p>考虑图 3.8，其中展示了 <code>Auto</code> 数据集中若干汽车的 <code>mpg</code>（每加仑燃油可行驶的英里数）与 <code>horsepower</code>（马力）之间的关系。橙色直线表示线性回归拟合结果。<code>mpg</code> 与 <code>horsepower</code> 之间有明显关联，但这种关系显然是非线性的：数据呈现出曲线关系。要在线性模型中纳入非线性关联，一种简单的方法是加入预测变量的变换形式。例如，图 3.8 的数据点似乎呈现二次曲线（quadratic）的形状，因此如下模型</p>
+<p><span class="math display">\[
+\mathtt{mpg}=\beta_0+\beta_1\times\mathtt{horsepower}+\beta_2\times\mathtt{horsepower}^2+\epsilon\tag{3.36}
+\]</span></p>
+<p>可能拟合得更好。式 (3.36) 利用 <code>horsepower</code> 的非线性函数预测 <code>mpg</code>，<em>但它仍然是线性模型！</em>也就是说，(3.36) 只是一个令 <span class="math inline">\(X_1=\mathtt{horsepower}\)</span>、<span class="math inline">\(X_2=\mathtt{horsepower}^2\)</span> 的多元线性回归模型。因此，可以使用标准线性回归软件估计 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span> 和 <span class="math inline">\(\beta_2\)</span>，从而得到非线性拟合结果。图 3.8 的蓝色曲线展示了所得的二次拟合。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-8.png" class="img-fluid figure-img"></p>
+<figcaption>图3.8 Auto数据集中的线性、二次和五次多项式拟合</figcaption>
+</figure>
+</div>
+<p><strong>图 3.8</strong> <code>Auto</code> 数据集。图中展示了若干汽车的 <code>mpg</code> 与 <code>horsepower</code>。橙色直线是线性回归拟合结果。蓝色曲线是含有 <span class="math inline">\(\mathtt{horsepower}^2\)</span> 的线性回归模型的拟合结果。绿色曲线是包含 <code>horsepower</code> 直至五次的全部多项式项的线性回归模型的拟合结果。</p>
+<p>图内标签对照：Horsepower＝马力；Miles per gallon＝每加仑燃油行驶英里数；Linear＝线性；Degree 2＝二次；Degree 5＝五次。</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>项</th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Intercept</code></td>
+<td style="text-align: right;">56.9001</td>
+<td style="text-align: right;">1.8004</td>
+<td style="text-align: right;">31.6</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td><code>horsepower</code></td>
+<td style="text-align: right;"><span class="math inline">\(-0.4662\)</span></td>
+<td style="text-align: right;">0.0311</td>
+<td style="text-align: right;"><span class="math inline">\(-15.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathtt{horsepower}^2\)</span></td>
+<td style="text-align: right;">0.0012</td>
+<td style="text-align: right;">0.0001</td>
+<td style="text-align: right;">10.1</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.10</strong> 对于 <code>Auto</code> 数据集，将 <code>mpg</code> 对 <code>horsepower</code> 和 <span class="math inline">\(\mathtt{horsepower}^2\)</span> 回归所得到的最小二乘系数估计值。</p>
+<p>二次拟合似乎明显优于仅包含一次项时的拟合。二次拟合的 <span class="math inline">\(R^2\)</span> 为 0.688，而线性拟合为 0.606；表 3.10 中二次项的 <span class="math inline">\(p\)</span> 值也高度显著。</p>
+<p>既然加入 <span class="math inline">\(\mathtt{horsepower}^2\)</span> 能使模型改善这么多，为什么不加入 <span class="math inline">\(\mathtt{horsepower}^3\)</span>、<span class="math inline">\(\mathtt{horsepower}^4\)</span>，甚至 <span class="math inline">\(\mathtt{horsepower}^5\)</span> 呢？图 3.8 的绿色曲线展示了在模型 (3.36) 中加入直至五次的所有多项式项后得到的拟合结果。所得曲线似乎出现了不必要的起伏，也就是说，还不清楚加入这些额外项是否真的改善了对数据的拟合。</p>
+<p>刚才介绍的这种扩展线性模型以适应非线性关系的方法称为多项式回归，因为我们在回归模型中纳入了预测变量的多项式函数。第 7 章将进一步探讨这种方法，以及线性模型的其他非线性扩展。</p>
+</section>
+</section>
+<section id="可能出现的问题" class="level3">
+<h3 class="anchored" data-anchor-id="可能出现的问题">3.3.3 可能出现的问题</h3>
+<p>对某个数据集拟合线性回归模型时，可能遇到许多问题。其中最常见的有：</p>
+<ol type="1">
+<li>响应与预测变量之间的关系是非线性的。</li>
+<li>误差项相关。</li>
+<li>误差项的方差不恒定。</li>
+<li>离群点（outlier）。</li>
+<li>高杠杆点（high-leverage point）。</li>
+<li>共线性（collinearity）。</li>
+</ol>
+<p>在实践中，识别并解决这些问题既是一门科学，也是一门艺术。无数书籍已用大量篇幅讨论这个主题。由于线性回归模型并非本书的主要关注点，这里只简要概述一些要点。</p>
+<section id="数据的非线性" class="level4">
+<h4 class="anchored" data-anchor-id="数据的非线性">1. 数据的非线性</h4>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-9.png" class="img-fluid figure-img"></p>
+<figcaption>图3.9 Auto数据集的线性与二次拟合残差图</figcaption>
+</figure>
+</div>
+<p><strong>图 3.9</strong> <code>Auto</code> 数据集中残差与预测值（或拟合值，fitted value）的关系图。每幅图中的红线是对残差的平滑拟合（smooth fit），用于帮助识别趋势。左图：将 <code>mpg</code> 对 <code>horsepower</code> 作线性回归。残差中明显的模式表明数据存在非线性。右图：将 <code>mpg</code> 对 <code>horsepower</code> 和 <span class="math inline">\(\mathtt{horsepower}^2\)</span> 作线性回归。残差中几乎没有明显模式。</p>
+<p>图内标签对照：Residual Plot for Linear Fit＝线性拟合的残差图；Residual Plot for Quadratic Fit＝二次拟合的残差图；Fitted values＝拟合值；Residuals＝残差。</p>
+<p>线性回归模型假设预测变量与响应之间存在直线关系。如果真实关系远非线性，那么从拟合结果得出的结论几乎都值得怀疑。此外，模型的预测准确性也可能大幅下降。</p>
+<p>残差图（residual plot）是识别非线性的一种有用图形工具。对于简单线性回归模型，可以将残差</p>
+<p><span class="math inline">\(e_i=y_i-\hat y_i\)</span> 对预测变量 <span class="math inline">\(x_i\)</span> 作图。对于多元回归模型，由于有多个预测变量，我们改为将残差对预测值（或拟合值）<span class="math inline">\(\hat y_i\)</span> 作图。理想情况下，残差图应当不呈现任何可辨认的模式。若存在某种模式，可能表明线性模型的某个方面有问题。</p>
+<p>图 3.9 左图展示了图 3.8 中 <code>Auto</code> 数据上将 <code>mpg</code> 对 <code>horsepower</code> 作线性回归的残差图。红线是对残差的平滑拟合，旨在帮助识别趋势。残差呈现出明显的 U 形，为数据中存在非线性提供了强烈证据。相比之下，图 3.9 右图展示的是含二次项的模型 (3.36) 的残差图。残差似乎没有明显模式，表明二次项改善了对数据的拟合。</p>
+<p>如果残差图表明数据中存在非线性关联，一种简单的处理办法是在回归模型中使用预测变量的非线性变换，例如 <span class="math inline">\(\log X\)</span>、<span class="math inline">\(\sqrt X\)</span> 和 <span class="math inline">\(X^2\)</span>。本书后续章节将讨论解决这一问题的其他更复杂的非线性方法。</p>
+</section>
+<section id="误差项的相关性" class="level4">
+<h4 class="anchored" data-anchor-id="误差项的相关性">2. 误差项的相关性</h4>
+<p>线性回归模型的一个重要假设是，误差项 <span class="math inline">\(\epsilon_1,\epsilon_2,\ldots,\epsilon_n\)</span> 互不相关。这是什么意思？例如，如果误差互不相关，那么知道 <span class="math inline">\(\epsilon_i\)</span> 为正，对于判断 <span class="math inline">\(\epsilon_{i+1}\)</span> 的正负几乎没有帮助。回归系数估计值或拟合值的标准误，都是基于误差项互不相关这一假设计算的。如果误差项实际上存在相关性，估计得到的标准误就往往会低估真实的标准误。因此，置信区间和预测区间都会比应有的宽度更窄。例如，一个 95% 置信区间实际包含参数真值的概率，可能远低于 0.95。此外，模型的 <span class="math inline">\(p\)</span> 值也会比应有值更小，这可能导致我们错误地断定某个参数具有统计显著性。也就是说，如果误差项相关，我们可能会对模型产生缺乏依据的信心。</p>
+<p>举一个极端例子，假设我们不小心将数据复制了一遍，导致观测及误差项两两完全相同。如果忽略这一点，计算标准误时就会仿佛拥有大小为 <span class="math inline">\(2n\)</span> 的样本，而实际上只有 <span class="math inline">\(n\)</span> 个样本。使用这 <span class="math inline">\(2n\)</span> 个样本得到的参数估计值与使用 <span class="math inline">\(n\)</span> 个样本时相同，但置信区间宽度却会缩小到原来的 <span class="math inline">\(1/\sqrt2\)</span>！</p>
+<p>误差项之间为什么可能存在相关性？这种相关性常见于时间序列（time series）数据，即在离散时间点测量得到的观测。在许多情况下，相邻时间点观测的误差会呈正相关。要判断给定数据集是否存在这种情况，可以将模型的残差按时间作图。如果误差互不相关，残差应当不呈现可辨认的</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-10.png" class="img-fluid figure-img"></p>
+<figcaption>图3.10 相邻误差相关程度不同的模拟时间序列残差</figcaption>
+</figure>
+</div>
+<p><strong>图 3.10</strong> 模拟时间序列数据集的残差图。生成这些数据时，相邻时间点误差项的相关系数 <span class="math inline">\(\rho\)</span> 设为不同值。</p>
+<p>图内标签对照：Residual＝残差；Observation＝观测序号。三幅图从上到下分别为 <span class="math inline">\(\rho=0.0\)</span>、<span class="math inline">\(0.5\)</span> 和 <span class="math inline">\(0.9\)</span>。</p>
+<p>模式。反之，如果误差项呈正相关，我们可能看到残差出现跟随现象（tracking），即相邻残差的值比较相近。图 3.10 展示了这种情况。上图是对误差互不相关的数据拟合线性回归后得到的残差，看不出与时间有关的趋势。相比之下，下图的数据集中相邻误差的相关系数为 0.9。现在残差中呈现出清晰的模式：相邻残差往往取相近的值。最后，中图展示了更为适中的情形，其中残差的相关系数为 0.5。仍可见跟随现象，但模式不那么明显。</p>
+<p>已有许多方法可以恰当地处理时间序列数据中误差项的相关性。在时间序列之外，误差项也可能相关。例如，考虑一项根据体重预测身高的研究。如果部分研究对象属于同一家庭、有相同饮食，或接触了相同环境因素，误差互不相关的假设就可能不成立。一般而言，误差互不相关这一假设对于线性回归及其他统计方法都极为重要，而良好的实验设计对于降低这种相关性发生的风险至关重要。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-11.png" class="img-fluid figure-img"></p>
+<figcaption>图3.11 对响应作对数变换前后的异方差残差图</figcaption>
+</figure>
+</div>
+<p><strong>图 3.11</strong> 残差图。每幅图的红线都是对残差的平滑拟合，用于帮助识别趋势。蓝线沿残差的外侧分位数延伸，以突出模式。左图：漏斗形状表明存在异方差性（heteroscedasticity）。右图：对响应作对数变换后，不再有异方差性的迹象。</p>
+<p>图内标签对照：Response Y＝响应 <span class="math inline">\(Y\)</span>；Response log(Y)＝响应 <span class="math inline">\(\log(Y)\)</span>；Fitted values＝拟合值；Residuals＝残差。</p>
+</section>
+<section id="误差项方差不恒定" class="level4">
+<h4 class="anchored" data-anchor-id="误差项方差不恒定">3. 误差项方差不恒定</h4>
+<p>线性回归模型的另一个重要假设是，误差项的方差恒定，即 <span class="math inline">\(\operatorname{Var}(\epsilon_i)=\sigma^2\)</span>。线性模型的标准误、置信区间和假设检验都依赖这一假设。</p>
+<p>遗憾的是，误差项的方差不恒定的情况很常见。例如，误差项的方差可能随响应取值增大而增大。残差图中出现漏斗形状，可以用来识别误差方差不恒定，即异方差性。图 3.11 左图就是一个例子，残差的幅度往往随拟合值的增大而增大。遇到这个问题时，一种可能的解决办法是使用 <span class="math inline">\(\log Y\)</span> 或 <span class="math inline">\(\sqrt Y\)</span> 这样的凹函数（concave function）变换响应 <span class="math inline">\(Y\)</span>。这种变换对较大的响应值压缩更多，从而减轻异方差性。图 3.11 右图展示了用 <span class="math inline">\(\log Y\)</span> 变换响应后的残差图。此时残差看起来具有恒定方差，不过数据中似乎存在轻微的非线性关系。</p>
+<p>有时，我们对每个响应的方差有较充分的了解。例如，第 <span class="math inline">\(i\)</span> 个响应可能是 <span class="math inline">\(n_i\)</span> 个原始观测的平均值。如果这些原始观测互不相关，方差均为 <span class="math inline">\(\sigma^2\)</span>，那么它们平均值的方差为 <span class="math inline">\(\sigma_i^2=\sigma^2/n_i\)</span>。在这种情况下，一种简单的补救办法是用加权最小二乘法（weighted least squares）拟合模型，令权重与方差的倒数成正比，即本例中取 <span class="math inline">\(w_i=n_i\)</span>。大多数线性回归软件都允许为观测指定权重。</p>
+</section>
+<section id="离群点" class="level4">
+<h4 class="anchored" data-anchor-id="离群点">4. 离群点</h4>
+<p>离群点是指其 <span class="math inline">\(y_i\)</span> 与模型预测值相差很远的</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-12.png" class="img-fluid figure-img"></p>
+<figcaption>图3.12 离群点及其残差和学生化残差</figcaption>
+</figure>
+</div>
+<p><strong>图 3.12</strong> 左图：红线为最小二乘回归直线，蓝线为移除离群点后的回归直线。中图：残差图清晰地识别出了离群点。右图：离群点的学生化残差（studentized residual）为 6；通常我们预期取值位于 <span class="math inline">\(-3\)</span> 与 3 之间。</p>
+<p>图内标签对照：Fitted Values＝拟合值；Residuals＝残差；Studentized Residuals＝学生化残差；<span class="math inline">\(X\)</span>、<span class="math inline">\(Y\)</span> 保留原符号。</p>
+<p>数据点。离群点可能由多种原因造成，例如在数据收集过程中错误地记录了一次观测。</p>
+<p>图 3.12 左图的红点（第 20 个观测）展示了一个典型离群点。红色实线是最小二乘回归拟合结果，蓝色虚线则是移除离群点后的最小二乘拟合结果。本例中，移除离群点对最小二乘直线几乎没有影响：斜率基本不变，截距仅有微小下降。如果一个离群点的预测变量取值并不异常，那么它对最小二乘拟合的影响通常很小。不过，即使离群点对最小二乘拟合没有多大影响，仍可能造成其他问题。例如，本例中将离群点纳入回归时，RSE 为 1.09，而移除它后仅为 0.77。由于所有置信区间和 <span class="math inline">\(p\)</span> 值的计算都要用到 RSE，单个数据点造成的这种大幅增加可能影响对拟合结果的解释。同样，纳入该离群点会使 <span class="math inline">\(R^2\)</span> 从 0.892 降至 0.805。</p>
+<p>残差图可以用于识别离群点。本例中，图 3.12 中图的残差图清楚地显示了离群点。但在实践中，往往很难判断残差要多大才应将该点视为离群点。为解决这个问题，可以不对残差本身作图，而对学生化残差作图：将每个残差 <span class="math inline">\(e_i\)</span> 除以其估计标准误，就得到学生化残差。学生化残差绝对值大于 3 的观测可能是离群点。图 3.12 右图中，离群点的学生化残差超过 6，而其他所有观测的学生化残差都位于 <span class="math inline">\(-2\)</span> 与 2 之间。</p>
+<p>如果认为离群点源于数据收集或记录错误，一种解决办法是直接移除这个观测。但这样做必须谨慎，因为离群点也可能表明模型存在缺陷，例如遗漏了某个预测变量。</p>
+</section>
+<section id="高杠杆点" class="level4">
+<h4 class="anchored" data-anchor-id="高杠杆点">5. 高杠杆点</h4>
+<p>刚才我们看到，离群点是指在给定预测变量 <span class="math inline">\(x_i\)</span> 的情况下，响应 <span class="math inline">\(y_i\)</span> 异常的观测。相比之下，高杠杆观测的异常之处在于 <span class="math inline">\(x_i\)</span> 的取值。例如，图 3.13 左图中的第 41 个观测</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-13.png" class="img-fluid figure-img"></p>
+<figcaption>图3.13 高杠杆点及其对回归直线的影响</figcaption>
+</figure>
+</div>
+<p><strong>图 3.13</strong> 左图：第 41 个观测是高杠杆点，第 20 个则不是。红线为使用全部数据的拟合结果，蓝线为移除第 41 个观测后的拟合结果。中图：红色观测的 <span class="math inline">\(X_1\)</span> 取值和 <span class="math inline">\(X_2\)</span> 取值单独来看都不异常，但它仍然位于数据主体之外，因此具有高杠杆。右图：第 41 个观测同时具有较高杠杆和较大残差。</p>
+<p>图内标签对照：Leverage＝杠杆值；Studentized Residuals＝学生化残差；<span class="math inline">\(X\)</span>、<span class="math inline">\(Y\)</span>、<span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 保留原符号。</p>
+<p>具有高杠杆，因为这个观测的预测变量取值相对于其他观测较大。（注意，图 3.13 的数据与图 3.12 相同，只是多了一个高杠杆观测。）红色实线是对这些数据的最小二乘拟合，蓝色虚线是移除第 41 个观测后的拟合结果。比较图 3.12 和图 3.13 的左图可见，移除高杠杆观测对最小二乘直线的影响，远大于移除离群点的影响。事实上，高杠杆观测往往对估计的回归直线有相当大的影响。如果最小二乘直线受到仅仅几个观测的强烈影响，就值得警惕，因为这些点一旦有问题，整个拟合结果都可能失效。因此，识别高杠杆观测很重要。</p>
+<p>在简单线性回归中，高杠杆观测比较容易识别：只需寻找预测变量取值超出观测通常范围的数据点。但在包含许多预测变量的多元线性回归中，一个观测的每个预测变量取值可能都处于正常范围之内，然而从整组预测变量来看却异常。图 3.13 中图展示了一个有两个预测变量 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 的数据集。多数观测的预测变量取值位于蓝色虚线椭圆内，但红色观测远在这个范围之外。可是，它的 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 取值单独来看都不异常。因此，如果只检查 <span class="math inline">\(X_1\)</span> 或只检查 <span class="math inline">\(X_2\)</span>，就会漏掉这个高杠杆点。在预测变量超过两个的多元回归中，这个问题更为突出，因为此时没有简单的方法可以同时画出数据的所有维度。</p>
+<p>为了量化一个观测的杠杆程度，我们计算杠杆统计量（leverage statistic）。这个统计量较大，表明对应观测具有高杠杆。对于简单线性回归，</p>
+<p><span class="math display">\[
+h_i=\frac1n+\frac{(x_i-\bar x)^2}{\sum_{i'=1}^{n}(x_{i'}-\bar x)^2}.\tag{3.37}
+\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-14.png" class="img-fluid figure-img"></p>
+<figcaption>图3.14 Credit数据集中的非共线变量和高度共线变量</figcaption>
+</figure>
+</div>
+<p><strong>图 3.14</strong> <code>Credit</code> 数据集的观测散点图。左图：<code>age</code> 与 <code>limit</code> 的关系，这两个变量不共线。右图：<code>rating</code> 与 <code>limit</code> 的关系，存在高度共线性。</p>
+<p>图内标签对照：Limit＝信用额度；Age＝年龄；Rating＝信用评级。</p>
+<p>由这个公式可以清楚地看出，<span class="math inline">\(x_i\)</span> 距离 <span class="math inline">\(\bar x\)</span> 越远，<span class="math inline">\(h_i\)</span> 越大。<span class="math inline">\(h_i\)</span> 可以简单地扩展到多个预测变量的情形，但这里不给出公式。杠杆统计量 <span class="math inline">\(h_i\)</span> 始终位于 <span class="math inline">\(1/n\)</span> 与 1 之间，所有观测的平均杠杆值始终等于 <span class="math inline">\((p+1)/n\)</span>。因此，如果某个观测的杠杆统计量远大于 <span class="math inline">\((p+1)/n\)</span>，我们就可能怀疑它是高杠杆点。</p>
+<p>图 3.13 右图针对左图的数据，将学生化残差对 <span class="math inline">\(h_i\)</span> 作图。第 41 个观测十分突出，既有很高的杠杆统计量，也有很大的学生化残差。换句话说，它既是离群点，也是高杠杆观测。这是一种尤其危险的组合！这幅图还揭示了图 3.12 中第 20 个观测对最小二乘拟合影响相对较小的原因：它的杠杆值低。</p>
+</section>
+<section id="共线性" class="level4">
+<h4 class="anchored" data-anchor-id="共线性">6. 共线性</h4>
+<p>共线性是指两个或更多预测变量之间密切相关的情形。图 3.14 使用 <code>Credit</code> 数据集说明这一概念。图 3.14 左图的两个预测变量 <code>limit</code> 和 <code>age</code> 似乎没有明显关系。相比之下，右图的预测变量 <code>limit</code> 和 <code>rating</code> 高度相关，我们称它们共线。共线性的存在会给回归带来问题，因为此时很难区分共线变量各自对响应的效应。换句话说，由于 <code>limit</code> 和 <code>rating</code> 往往同时增大或同时减小，很难确定它们分别与响应 <code>balance</code> 有怎样的关联。</p>
+<p>图 3.15 展示了共线性可能导致的一些困难。左图是将 <code>balance</code> 对 <code>limit</code> 和 <code>age</code> 回归时，各种可能的系数估计值所对应的 RSS (3.22) 等高线图。每个椭圆代表一组</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-15.png" class="img-fluid figure-img"></p>
+<figcaption>图3.15 共线性对残差平方和等高线及系数估计不确定性的影响</figcaption>
+</figure>
+</div>
+<p><strong>图 3.15</strong> 在 <code>Credit</code> 数据集的不同回归中，RSS 作为参数 <span class="math inline">\(\beta\)</span> 的函数的等高线图。每幅图的黑点表示 RSS 最小时的系数值。左图：将 <code>balance</code> 对 <code>age</code> 和 <code>limit</code> 回归时的 RSS 等高线图，最小值的位置很明确。右图：将 <code>balance</code> 对 <code>rating</code> 和 <code>limit</code> 回归时的 RSS 等高线图。由于存在共线性，许多不同的系数对 <span class="math inline">\((\beta_{\mathrm{Limit}},\beta_{\mathrm{Rating}})\)</span> 都对应相近的 RSS。</p>
+<p>图内标签对照：<span class="math inline">\(\beta_{\mathrm{Limit}}\)</span>＝<code>limit</code> 的系数；<span class="math inline">\(\beta_{\mathrm{Age}}\)</span>＝<code>age</code> 的系数；<span class="math inline">\(\beta_{\mathrm{Rating}}\)</span>＝<code>rating</code> 的系数。图内等高线数值保持原样。</p>
+<p>具有相同 RSS 的系数，越靠近中心的椭圆对应的 RSS 越小。黑点及相应的虚线表示使 RSS 达到最小的系数估计值，换句话说，就是最小二乘估计值。<code>limit</code> 和 <code>age</code> 的坐标轴范围经过设置，包含了最小二乘估计值两侧各四个标准误范围内的可能系数估计值。因此，图中涵盖了系数的所有合理取值。例如，可以看出，真实的 <code>limit</code> 系数几乎肯定在 0.15 与 0.20 之间。</p>
+<p>相比之下，图 3.15 右图展示了将 <code>balance</code> 对 <code>limit</code> 和 <code>rating</code> 回归时，不同可能系数估计值所对应的 RSS 等高线图；我们已经知道，这两个变量高度共线。此时，等高线沿一条狭窄的谷地延伸，有很大一片范围内的系数估计值能够得到相同的 RSS。因此，数据中很小的变化，就可能使 RSS 最小的那对系数，也就是最小二乘估计值，移动到这条谷地的任意位置。这使系数估计值具有很大的不确定性。注意，此时 <code>limit</code> 系数的刻度范围大约从 <span class="math inline">\(-0.2\)</span> 到 0.2，宽度是与 <code>age</code> 一起回归时 <code>limit</code> 系数合理取值范围的八倍。有趣的是，尽管现在 <code>limit</code> 和 <code>rating</code> 的系数各自具有更大的不确定性，但它们几乎肯定会落在这条等高线谷地的某处。例如，我们不会预期 <code>limit</code> 和 <code>rating</code> 的系数真值分别为 <span class="math inline">\(-0.1\)</span> 和 1，尽管单独看每个系数，这样的取值都算合理。</p>
+<p>由于共线性降低了回归系数估计的准确性，它会使 <span class="math inline">\(\hat\beta_j\)</span> 的标准误增大。回顾一下，每个预测变量的 <span class="math inline">\(t\)</span> 统计量，是用 <span class="math inline">\(\hat\beta_j\)</span> 除以它的</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>模型</th>
+<th>项</th>
+<th style="text-align: right;">系数</th>
+<th style="text-align: right;">标准误</th>
+<th style="text-align: right;"><span class="math inline">\(t\)</span> 统计量</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span> 值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>模型 1</td>
+<td><code>Intercept</code></td>
+<td style="text-align: right;"><span class="math inline">\(-173.411\)</span></td>
+<td style="text-align: right;">43.828</td>
+<td style="text-align: right;"><span class="math inline">\(-3.957\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td>模型 1</td>
+<td><code>age</code></td>
+<td style="text-align: right;"><span class="math inline">\(-2.292\)</span></td>
+<td style="text-align: right;">0.672</td>
+<td style="text-align: right;"><span class="math inline">\(-3.407\)</span></td>
+<td style="text-align: right;">0.0007</td>
+</tr>
+<tr class="odd">
+<td>模型 1</td>
+<td><code>limit</code></td>
+<td style="text-align: right;">0.173</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">34.496</td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="even">
+<td>模型 2</td>
+<td><code>Intercept</code></td>
+<td style="text-align: right;"><span class="math inline">\(-377.537\)</span></td>
+<td style="text-align: right;">45.254</td>
+<td style="text-align: right;"><span class="math inline">\(-8.343\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(&lt;0.0001\)</span></td>
+</tr>
+<tr class="odd">
+<td>模型 2</td>
+<td><code>rating</code></td>
+<td style="text-align: right;">2.202</td>
+<td style="text-align: right;">0.952</td>
+<td style="text-align: right;">2.312</td>
+<td style="text-align: right;">0.0213</td>
+</tr>
+<tr class="even">
+<td>模型 2</td>
+<td><code>limit</code></td>
+<td style="text-align: right;">0.025</td>
+<td style="text-align: right;">0.064</td>
+<td style="text-align: right;">0.384</td>
+<td style="text-align: right;">0.7012</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 3.11</strong> <code>Credit</code> 数据集上两个多元回归模型的结果。模型 1 将 <code>balance</code> 对 <code>age</code> 和 <code>limit</code> 回归，模型 2 将 <code>balance</code> 对 <code>rating</code> 和 <code>limit</code> 回归。由于共线性，第二个回归中 <span class="math inline">\(\hat\beta_{\mathtt{limit}}\)</span> 的标准误增至原来的 12 倍。</p>
+<p>标准误得到的。因此，共线性使 <span class="math inline">\(t\)</span> 统计量减小。这样一来，在存在共线性时，我们可能无法拒绝 <span class="math inline">\(H_0:\beta_j=0\)</span>。这意味着，共线性降低了假设检验的功效（power），即正确检出非零系数的概率。</p>
+<p>表 3.11 比较了分别拟合两个多元回归模型得到的系数估计值。第一个模型将 <code>balance</code> 对 <code>age</code> 和 <code>limit</code> 回归，第二个模型将 <code>balance</code> 对 <code>rating</code> 和 <code>limit</code> 回归。在第一个回归中，<code>age</code> 和 <code>limit</code> 都高度显著，<span class="math inline">\(p\)</span> 值很小。在第二个回归中，<code>limit</code> 与 <code>rating</code> 的共线性使 <code>limit</code> 系数估计值的标准误增至原来的 12 倍，<span class="math inline">\(p\)</span> 值增至 0.701。换句话说，共线性的存在掩盖了 <code>limit</code> 变量的重要性。为了避免这种情况，拟合模型时应当识别并处理潜在的共线性问题。</p>
+<p>检测共线性的一种简单方法是检查预测变量的相关矩阵（correlation matrix）。矩阵中某个元素的绝对值很大，表示有一对变量高度相关，因此数据中存在共线性问题。遗憾的是，并非所有共线性问题都能通过检查相关矩阵发现：即使没有任意一对变量表现出特别高的相关性，三个或更多变量之间仍可能存在共线性。我们将这种情况称为多重共线性（multicollinearity）。评估多重共线性时，比检查相关矩阵更好的方法是计算方差膨胀因子（variance inflation factor，VIF）。VIF 是拟合完整模型时 <span class="math inline">\(\hat\beta_j\)</span> 的方差，与只用该预测变量拟合时 <span class="math inline">\(\hat\beta_j\)</span> 的方差之比。VIF 的最小可能值为 1，表示完全没有共线性。在实践中，预测变量之间通常会有少量共线性。按经验，VIF 超过 5 或 10 时，表明共线性已达到可能造成问题的程度。每个变量的 VIF 可以用下式计算：</p>
+<p><span class="math display">\[
+\operatorname{VIF}(\hat\beta_j)=\frac{1}{1-R^2_{X_j\mid X_{-j}}},
+\]</span></p>
+<p>其中，<span class="math inline">\(R^2_{X_j\mid X_{-j}}\)</span> 是将 <span class="math inline">\(X_j\)</span> 对其他全部预测变量回归所得到的 <span class="math inline">\(R^2\)</span>。如果 <span class="math inline">\(R^2_{X_j\mid X_{-j}}\)</span> 接近 1，就存在共线性，因此 VIF 会很大。</p>
+<p>在 <code>Credit</code> 数据中，将 <code>balance</code> 对 <code>age</code>、<code>rating</code> 和 <code>limit</code> 回归后，这些预测变量的 VIF 分别为 1.01、160.67 和 160.59。正如我们所怀疑的，数据中存在很严重的共线性！</p>
+<p>遇到共线性问题时，有两种简单的解决办法。第一种是从回归中去掉一个有问题的变量。这样做通常不会明显损害回归拟合结果，因为共线性的存在意味着，在已有其他变量的情况下，这个变量所提供的响应信息是冗余的。例如，将 <code>balance</code> 对 <code>age</code> 和 <code>limit</code> 回归，不纳入预测变量 <code>rating</code>，得到的 VIF 就接近最小可能值 1，而 <span class="math inline">\(R^2\)</span> 仅从 0.754 降至 0.75。因此，从预测变量中去掉 <code>rating</code>，就有效解决了共线性问题，且没有损害拟合效果。第二种办法是将共线变量合并为一个预测变量。例如，可以先对 <code>limit</code> 和 <code>rating</code> 进行标准化（standardization），再取它们的平均值，构造一个衡量信用状况的新变量。</p>
+</section>
+</section>
+</section>
+<section id="营销计划" class="level2">
+<h2 class="anchored" data-anchor-id="营销计划">3.4 营销计划</h2>
+<p>现在，我们简要回顾本章开头针对 Advertising 数据集提出的七个问题。</p>
+<ol type="1">
+<li><p><strong>销售量与广告预算之间是否存在关系？</strong></p>
+<p>可以像式（3.20）那样，以 TV、radio 和 newspaper 为预测变量，对 sales 拟合多元回归模型，并检验假设 <span class="math inline">\(H_0:\beta_{\mathrm{TV}}=\beta_{\mathrm{radio}}=\beta_{\mathrm{newspaper}}=0\)</span>，从而回答这一问题。3.2.2 节说明了如何利用 <span class="math inline">\(F\)</span> 统计量来判断是否应当拒绝这个原假设。在本例中，表 3.6 中 <span class="math inline">\(F\)</span> 统计量对应的 <span class="math inline">\(p\)</span> 值极低，清楚地表明广告与销售量之间存在关系。</p></li>
+<li><p><strong>这种关系有多强？</strong></p>
+<p>3.1.3 节讨论了衡量模型准确性的两个指标。首先，RSE 估计响应偏离总体回归直线的标准差。对于 Advertising 数据集，RSE 为 1.69 个单位，而响应的均值为 14.022，因此相对误差约为 12%。其次，<span class="math inline">\(R^2\)</span> 统计量表示预测变量能够解释的响应变异所占的百分比。这些预测变量解释了 sales 方差的近 90%。表 3.6 给出了 RSE 和 <span class="math inline">\(R^2\)</span> 统计量。</p></li>
+<li><p><strong>哪些媒体与销售量相关联？</strong></p>
+<p>要回答这个问题，可以检查各预测变量的 <span class="math inline">\(t\)</span> 统计量对应的 <span class="math inline">\(p\)</span> 值（3.1.2 节）。在表 3.4 的多元线性回归中，TV 和 radio 的 <span class="math inline">\(p\)</span> 值很低，而 newspaper 的 <span class="math inline">\(p\)</span> 值并不低。这表明，只有 TV 和 radio 与 sales 有关。第 6 章将更详细地探讨这个问题。</p></li>
+<li><p><strong>各种媒体与销售量的关联有多大？</strong></p>
+<p>3.1.2 节说明，可以利用 <span class="math inline">\(\hat\beta_j\)</span> 的标准误为 <span class="math inline">\(\beta_j\)</span> 构造置信区间。对于 Advertising 数据集，可以利用表 3.4 的结果，在以三种媒体预算为预测变量的多元回归模型中，计算各系数的 95% 置信区间。这些区间分别为：TV 的 <span class="math inline">\((0.043,0.049)\)</span>、radio 的 <span class="math inline">\((0.172,0.206)\)</span>，以及 newspaper 的 <span class="math inline">\((-0.013,0.011)\)</span>。TV 和 radio 的置信区间都很窄，而且远离零，这为这些媒体与 sales 有关提供了证据。newspaper 的区间却包含零，说明在给定 TV 和 radio 的取值后，该变量并不具有统计显著性。</p>
+<p>3.3.3 节说明，共线性会使标准误很大。newspaper 对应的置信区间如此之宽，会不会是共线性造成的？TV、radio 和 newspaper 的 VIF 值分别为 1.005、1.145 和 1.145，表明没有证据显示存在共线性。</p>
+<p>为了分别评估每种媒体与销售量的关联，可以单独进行三次简单线性回归，结果见表 3.1 和表 3.3。有证据表明，TV 与 sales 之间、radio 与 sales 之间都存在极强的关联。在不考虑 TV 和 radio 取值时，也有证据表明 newspaper 与 sales 之间存在较弱的关联。</p></li>
+<li><p><strong>我们能以多高的准确性预测未来的销售量？</strong></p>
+<p>可以利用式（3.21）预测响应。这一估计的准确性取决于，我们希望预测的是单个响应 <span class="math inline">\(Y=f(X)+\epsilon\)</span>，还是平均响应 <span class="math inline">\(f(X)\)</span>（3.2.2 节）。前者使用预测区间，后者使用置信区间。预测区间总会比置信区间更宽，因为它还考虑了不可约误差 <span class="math inline">\(\epsilon\)</span> 所带来的不确定性。</p></li>
+<li><p><strong>这种关系是线性的吗？</strong></p>
+<p>3.3.3 节说明，可以利用残差图识别非线性。如果关系是线性的，残差图中就不应呈现任何模式。对于 Advertising 数据集，图 3.5 显示出一种非线性效应；这种效应也可以通过残差图观察到。3.3.2 节讨论了如何在线性回归模型中加入预测变量的变换，以适应非线性关系。</p></li>
+<li><p><strong>广告媒体之间是否存在协同作用？</strong></p>
+<p>标准线性回归模型假设预测变量与响应之间具有可加关系。可加模型容易解释，因为每个预测变量与响应的关联都不受其他预测变量取值的影响。然而，对某些数据集而言，可加性假设可能并不符合实际。3.3.2 节说明了如何在回归模型中加入交互项，以适应非可加关系。</p>
+<p>交互项对应的 <span class="math inline">\(p\)</span> 值较小，表明存在这类关系。图 3.5 提示，Advertising 数据集中的关系可能并不可加。在模型中加入交互项后，<span class="math inline">\(R^2\)</span> 从约 90% 大幅提高到近 97%。</p></li>
+</ol>
+</section>
+<section id="线性回归与-k-近邻法的比较" class="level2">
+<h2 class="anchored" data-anchor-id="线性回归与-k-近邻法的比较">3.5 线性回归与 <span class="math inline">\(K\)</span> 近邻法的比较</h2>
+<p>如第 2 章所述，线性回归是一种参数方法（parametric approach），因为它假设 <span class="math inline">\(f(X)\)</span> 具有线性函数形式。参数方法有几个优点。它们通常容易拟合，因为只需估计少量系数。在线性回归中，系数具有简单的解释，而且很容易进行统计显著性检验。不过，参数方法也有缺点：这类方法本身就对 <span class="math inline">\(f(X)\)</span> 的形式作出了较强的假设。如果指定的函数形式与真实形式相差很大，而我们的目标又是提高预测准确性，那么参数方法的表现就会很差。例如，假定 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间为线性关系，而真实关系却远非线性，所得模型对数据的拟合就会很差，据此得出的任何结论也都值得怀疑。</p>
+<p>非参数方法（non-parametric methods）不明确假设 <span class="math inline">\(f(X)\)</span> 的参数形式，因此为回归提供了另一种更灵活的途径。本书将讨论多种非参数方法。这里考虑其中最简单、也最广为人知的方法之一：<span class="math inline">\(K\)</span> 近邻回归（<span class="math inline">\(K\)</span>-nearest neighbors regression，KNN 回归）。KNN 回归与第 2 章讨论的 KNN 分类器密切相关。给定 <span class="math inline">\(K\)</span> 值和预测点 <span class="math inline">\(x_0\)</span>，KNN 回归首先找出距离 <span class="math inline">\(x_0\)</span> 最近的 <span class="math inline">\(K\)</span> 个训练观测，将它们记为 <span class="math inline">\(\mathcal N_0\)</span>。然后，用 <span class="math inline">\(\mathcal N_0\)</span> 中全部训练响应的平均值来估计 <span class="math inline">\(f(x_0)\)</span>。换言之，</p>
+<p><span class="math display">\[
+\hat f(x_0)=\frac{1}{K}\sum_{x_i\in\mathcal N_0}y_i.
+\]</span></p>
+<p>图 3.16 展示了在一个含有 <span class="math inline">\(p=2\)</span> 个预测变量的数据集上得到的两种 KNN 拟合。左图为 <span class="math inline">\(K=1\)</span> 的拟合，右图对应 <span class="math inline">\(K=9\)</span>。当 <span class="math inline">\(K=1\)</span> 时，KNN 拟合完全插值（interpolate）训练观测，因此呈阶梯函数（step function）的形式。<span class="math inline">\(K=9\)</span> 时，KNN 拟合仍为阶梯函数，但对九个观测取平均后，预测值保持不变的区域要小得多，因此拟合也更平滑。一般而言，最优 <span class="math inline">\(K\)</span> 值取决于第 2 章介绍的偏差—方差权衡（bias-variance tradeoff）。较小的 <span class="math inline">\(K\)</span> 值会给出最灵活的拟合，其偏差较低、方差却较高。这种方差源于：某一区域中的预测完全依赖于一个观测。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-16.png" class="img-fluid figure-img"></p>
+<figcaption>图3.16：二维数据上的KNN回归曲面</figcaption>
+</figure>
+</div>
+<p><strong>图 3.16</strong> 在含有 64 个观测（橙色点）的二维数据集上，利用 KNN 回归得到的 <span class="math inline">\(\hat f(X)\)</span>。<strong>左：</strong> <span class="math inline">\(K=1\)</span> 得到粗糙的阶梯函数拟合。<strong>右：</strong> <span class="math inline">\(K=9\)</span> 得到平滑得多的拟合。</p>
+<p>较大的 <span class="math inline">\(K\)</span> 值会给出更平滑、变异更小的拟合：某一区域中的预测是若干数据点的平均值，所以改变一个观测所产生的影响较小。然而，平滑也可能掩盖 <span class="math inline">\(f(X)\)</span> 中的某些结构，从而引入偏差。第 5 章将介绍几种估计测试误差率的方法。这些方法可用于确定 KNN 回归中最优的 <span class="math inline">\(K\)</span> 值。</p>
+<p>在什么情况下，最小二乘线性回归这样的参数方法会优于 KNN 回归这样的非参数方法？答案很简单：<strong>如果选定的参数形式接近 <span class="math inline">\(f\)</span> 的真实形式，参数方法就会优于非参数方法。</strong> 图 3.17 给出了一个例子，其中的数据由一维线性回归模型生成。黑色实线表示 <span class="math inline">\(f(X)\)</span>，蓝色曲线分别对应 <span class="math inline">\(K=1\)</span> 和 <span class="math inline">\(K=9\)</span> 的 KNN 拟合。在这个例子中，<span class="math inline">\(K=1\)</span> 的预测波动过大，而更平滑的 <span class="math inline">\(K=9\)</span> 拟合则接近 <span class="math inline">\(f(X)\)</span> 得多。不过，由于真实关系是线性的，非参数方法很难与线性回归相竞争：非参数方法付出了方差增大的代价，却没有通过偏差的降低获得补偿。图 3.18 左图中的蓝色虚线表示对同一数据的线性回归拟合，它几乎完美。图 3.18 右图显示，对于这组数据，线性回归优于 KNN。绿色实线表示 KNN 的测试集均方误差（mean squared error，MSE）随 <span class="math inline">\(1/K\)</span> 的变化。KNN 的误差明显高于黑色虚线，后者为线性回归的测试 MSE。当 <span class="math inline">\(K\)</span> 值较大时，KNN 在 MSE 上只比最小二乘回归略差；当 <span class="math inline">\(K\)</span> 较小时，其表现则差得多。</p>
+<p>在实际中，<span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 的真实关系很少恰好是线性的。图 3.19 考察了随着 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 关系的非线性程度增加，最小二乘回归与 KNN 的相对表现。上排的真实关系接近线性。在这种情况下，<span class="math inline">\(K\)</span> 值较小时，线性回归的测试 MSE 仍优于 KNN。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-17.png" class="img-fluid figure-img"></p>
+<figcaption>图3.17：一维数据的KNN回归</figcaption>
+</figure>
+</div>
+<p><strong>图 3.17</strong> 在含有 50 个观测的一维数据集上，利用 KNN 回归得到的 <span class="math inline">\(\hat f(X)\)</span>。黑色实线表示真实关系。<strong>左：</strong> 蓝色曲线对应 <span class="math inline">\(K=1\)</span>，对训练数据进行插值（即直接穿过各数据点）。<strong>右：</strong> 蓝色曲线对应 <span class="math inline">\(K=9\)</span>，拟合更平滑。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-18.png" class="img-fluid figure-img"></p>
+<figcaption>图3.18：线性关系下线性回归与KNN的比较</figcaption>
+</figure>
+</div>
+<p><strong>图 3.18</strong> 对图 3.17 所示的同一数据集作进一步考察。<strong>左：</strong> 蓝色虚线为数据的最小二乘拟合。由于 <span class="math inline">\(f(X)\)</span> 实际上是线性的（黑线），最小二乘回归直线对 <span class="math inline">\(f(X)\)</span> 给出了很好的估计。<strong>右：</strong> 水平虚线表示最小二乘法的测试集 MSE，绿色实线表示 KNN 的 MSE 随 <span class="math inline">\(1/K\)</span> 的变化（横轴使用对数尺度）。由于 <span class="math inline">\(f(X)\)</span> 实际上是线性的，线性回归的测试 MSE 低于 KNN 回归。对 KNN 回归而言，<span class="math inline">\(K\)</span> 值很大时效果最好，对应的 <span class="math inline">\(1/K\)</span> 值较小。图中 Mean Squared Error 表示均方误差。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-19.png" class="img-fluid figure-img"></p>
+<figcaption>图3.19：不同非线性程度下线性回归与KNN的比较</figcaption>
+</figure>
+</div>
+<p><strong>图 3.19</strong> <strong>左上：</strong> 当 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间的关系略呈非线性（黑色实线）时，分别展示 <span class="math inline">\(K=1\)</span>（蓝色）和 <span class="math inline">\(K=9\)</span>（红色）的 KNN 拟合。<strong>右上：</strong> 对略呈非线性的数据，展示最小二乘回归的测试集 MSE（黑色水平线），以及 KNN 在不同 <span class="math inline">\(1/K\)</span> 值下的测试集 MSE（绿色）。<strong>左下和右下：</strong> 与上排相同，但 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间的关系具有很强的非线性。图中 Mean Squared Error 表示均方误差。</p>
+<p>不过，当 <span class="math inline">\(K\geq4\)</span> 时，KNN 优于线性回归。第二排的关系偏离线性更明显。在这种情况下，所有 <span class="math inline">\(K\)</span> 值下的 KNN 都明显优于线性回归。注意，随着非线性程度增加，非参数 KNN 方法的测试集 MSE 变化很小，而线性回归的测试集 MSE 却大幅增加。</p>
+<p>图 3.18 和图 3.19 展示的情况是：关系为线性时，KNN 略逊于线性回归；关系为非线性时，KNN 却远优于线性回归。在真实关系未知的实际问题中，我们或许会认为应当优先采用 KNN，因为真实关系若为线性，它最多只比线性回归稍差；真实关系若为非线性，它却可能给出好得多的结果。但实际上，即使真实关系高度非线性，KNN 的结果仍可能不如线性回归。尤其要注意，图 3.18 和图 3.19 展示的都是仅含 <span class="math inline">\(p=1\)</span> 个预测变量的情形。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-3-20.png" class="img-fluid figure-img"></p>
+<figcaption>图3.20：预测变量维数增加时的测试误差</figcaption>
+</figure>
+</div>
+<p><strong>图 3.20</strong> 随着变量个数 <span class="math inline">\(p\)</span> 增加，线性回归（黑色虚线）与 KNN（绿色曲线）的测试 MSE。真实函数与图 3.19 下排相同，是第一个变量的非线性函数，与新增变量无关。存在这些额外噪声变量时，线性回归的表现缓慢变差，而随着 <span class="math inline">\(p\)</span> 增加，KNN 的表现下降得快得多。图中 Mean Squared Error 表示均方误差。</p>
+<p>在更高维的情形中，KNN 的表现往往不如线性回归。</p>
+<p>图 3.20 考虑了与图 3.19 第二排相同的强非线性关系，只是额外加入了与响应无关的噪声预测变量。当 <span class="math inline">\(p=1\)</span> 或 <span class="math inline">\(p=2\)</span> 时，KNN 优于线性回归。但当 <span class="math inline">\(p=3\)</span> 时，两者互有优劣；当 <span class="math inline">\(p\geq4\)</span> 时，线性回归优于 KNN。事实上，维数增加只使线性回归的测试集 MSE 略有恶化，却使 KNN 的 MSE 增加到原来的十倍以上。随维数增加而表现下降，是 KNN 的一个常见问题，其原因是：在更高维空间中，样本量实际上相当于减少了。这个数据集有 50 个训练观测；当 <span class="math inline">\(p=1\)</span> 时，这些信息足以准确估计 <span class="math inline">\(f(X)\)</span>。然而，将 50 个观测分散在 <span class="math inline">\(p=20\)</span> 维空间中，就会出现这样的现象：一个给定观测附近没有邻居。这就是所谓的维数灾难（curse of dimensionality）。也就是说，<span class="math inline">\(p\)</span> 很大时，在 <span class="math inline">\(p\)</span> 维空间中，距离给定测试观测 <span class="math inline">\(x_0\)</span> 最近的 <span class="math inline">\(K\)</span> 个观测也可能离 <span class="math inline">\(x_0\)</span> 很远，导致对 <span class="math inline">\(f(x_0)\)</span> 的预测很差，KNN 拟合也因此很差。一般而言，每个预测变量所对应的观测数较少时，参数方法往往优于非参数方法。</p>
+<p>即使维数较低，从可解释性的角度出发，我们也可能更偏好线性回归。如果 KNN 的测试 MSE 仅比线性回归略低，我们可能愿意牺牲少许预测准确性，以换取一个简单的模型：它只需几个系数就能描述，而且能够给出 <span class="math inline">\(p\)</span> 值。</p>
+</section>
+<section id="实验线性回归" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="实验线性回归">3.6 实验：线性回归</h2>
+<section id="导入包" class="level3">
+<h3 class="anchored" data-anchor-id="导入包">3.6.1 导入包</h3>
+<p>我们在顶层导入通常使用的库。</p>
+<p>In [1]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.pyplot <span class="im">import</span> subplots</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="新导入的对象" class="level4">
+<h4 class="anchored" data-anchor-id="新导入的对象">新导入的对象</h4>
+<p>本实验会陆续介绍新的函数和库。不过，我们先在这里导入它们，以突出这些是本实验中新出现的代码对象。将导入语句放在笔记本靠前的位置，可以提高代码的可读性：只需浏览开头几行，就知道使用了哪些库。</p>
+<p>In [2]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>下面用到这些函数时，我们会提供相关的详细说明。</p>
+<p>除了导入整个模块，也可以只从给定模块导入少量对象。这有助于保持命名空间（namespace）整洁。我们会用到 statsmodels 包中的几个特定对象，在这里将它们导入。</p>
+<p>In [3]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.stats.outliers_influence <span class="op">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> variance_inflation_factor <span class="im">as</span> VIF</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.stats.anova <span class="im">import</span> anova_lm</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>上面的一条导入语句较长，因此插入了续行符 <code>\</code>，以便阅读。</p>
+<p>我们还会使用 ISLP 包中专为本书实验编写的一些函数。</p>
+<p>In [4]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP <span class="im">import</span> load_data</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.models <span class="im">import</span> (ModelSpec <span class="im">as</span> MS,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                         summarize,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                         poly)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="查看对象和命名空间" class="level4">
+<h4 class="anchored" data-anchor-id="查看对象和命名空间">查看对象和命名空间</h4>
+<p>函数 <code>dir()</code> 返回命名空间中的对象列表。</p>
+<p>In [5]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">dir</span>()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[5]:</p>
+<pre class="text"><code>['In',
+ 'MS',
+ '_',
+ '__',
+ '___',
+ '__builtin__',
+ '__builtins__',
+ ...</code></pre>
+<pre class="text"><code> 'poly',
+ 'quit',
+ 'sm',
+ 'summarize']</code></pre>
+<p>这个列表展示了 Python 在顶层能找到的全部对象。其中，<code>__builtins__</code> 之类的对象包含对 <code>print()</code> 等内置函数的引用。</p>
+<p>每个 Python 对象也都有自己的命名空间，同样可以用 <code>dir()</code> 查看。其中既包含对象的属性（attribute），也包含与它相关的方法（method）。例如，数组的列表中会出现 <code>'sum'</code>。</p>
+<p>In [6]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> np.array([<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">11</span>])</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">dir</span>(A)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[6]:</p>
+<pre class="text"><code> ...
+ 'strides',
+ 'sum',
+ 'swapaxes',
+ ...</code></pre>
+<p>这说明对象 <code>A.sum</code> 存在。这里它是一个方法，可以用来计算数组 <code>A</code> 的元素之和；输入 <code>A.sum?</code> 即可查看说明。</p>
+<p>In [7]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>A.<span class="bu">sum</span>()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[7]:</p>
+<pre class="text"><code>19</code></pre>
+</section>
+</section>
+<section id="简单线性回归" class="level3">
+<h3 class="anchored" data-anchor-id="简单线性回归">3.6.2 简单线性回归</h3>
+<p>本节将使用 <code>ISLP.models</code> 中的 <code>ModelSpec()</code> 变换来构造模型矩阵（model matrix），也称设计矩阵（design matrix）。</p>
+<p>我们使用 ISLP 包中的 Boston 房价数据集。Boston 数据集记录了波士顿周边 506 个街区的 medv（房屋价值中位数）。我们将利用 13 个预测变量建立回归模型，以预测 medv；这些预测变量包括 rmvar（每套房屋的平均房间数）、age（1940 年之前建成的自有住房比例）和 lstat（社会经济地位较低的家庭所占百分比）等。我们将使用 statsmodels 完成这项任务，这是一个实现了几种常用回归方法的 Python 包。</p>
+<p>ISLP 包提供了一个简单的数据加载函数 <code>load_data()</code>：</p>
+<p>In [8]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>Boston <span class="op">=</span> load_data(<span class="st">"Boston"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>Boston.columns</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[8]:</p>
+<pre class="text"><code>Index(['crim', 'zn', 'indus', 'chas', 'nox', 'rm', 'age', 'dis',
+       'rad', 'tax', 'ptratio', 'black', 'lstat', 'medv'],
+      dtype='object')</code></pre>
+<p>输入 <code>Boston?</code>，可以进一步了解这些数据。</p>
+<p>首先使用 <code>sm.OLS()</code> 函数拟合简单线性回归模型。响应为 medv，唯一的预测变量为 lstat。对于这个模型，可以手动构造模型矩阵。</p>
+<p>In [9]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> pd.DataFrame({<span class="st">'intercept'</span>: np.ones(Boston.shape[<span class="dv">0</span>]),</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                  <span class="st">'lstat'</span>: Boston[<span class="st">'lstat'</span>]})</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>X[:<span class="dv">4</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[9]:</p>
+<pre class="text"><code>   intercept  lstat
+0        1.0   4.98
+1        1.0   9.14
+2        1.0   4.03
+3        1.0   2.94</code></pre>
+<p>提取响应，然后拟合模型。</p>
+<p>In [10]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> Boston[<span class="st">'medv'</span>]</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> sm.OLS(y, X)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> model.fit()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>注意，<code>sm.OLS()</code> 本身并不拟合模型，而是指定模型；随后由 <code>model.fit()</code> 真正完成拟合。</p>
+<p>ISLP 中的函数 <code>summarize()</code> 会生成一个简表，列出参数估计值、标准误、<span class="math inline">\(t\)</span> 统计量和 <span class="math inline">\(p\)</span> 值。这个函数只接受一个参数，例如这里 <code>fit</code> 方法返回的对象 <code>results</code>，并返回上述汇总结果。</p>
+<p>In [11]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>summarize(results)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[11]:</p>
+<pre class="text"><code>              coef  std err       t  P&gt;|t|
+intercept  34.5538    0.563  61.415    0.0
+lstat      -0.9500    0.039 -24.528    0.0</code></pre>
+<p>在介绍处理已拟合模型的其他方法之前，先概述一个更实用、更通用的模型矩阵 <code>X</code> 构造框架。</p>
+<section id="使用变换拟合与变换" class="level4">
+<h4 class="anchored" data-anchor-id="使用变换拟合与变换">使用变换：拟合与变换</h4>
+<p>上面的模型只有一个预测变量，因此构造 <code>X</code> 很直接。实际中，我们经常拟合包含多个预测变量的模型，通常从数组或数据框中选取这些变量。我们可能希望在拟合模型之前变换变量、指定变量之间的交互，或者将某些变量展开为一组变量（例如多项式）。sklearn 包为这类任务提供了一个特定概念：变换对象（transform）。它是一个以某些参数为输入而创建的对象，主要有两个方法：<code>fit()</code> 和 <code>transform()</code>。</p>
+<p>通过 ISLP 库中的变换 <code>ModelSpec()</code>，我们提供了一种指定模型并构造模型矩阵的通用方法。<code>ModelSpec()</code>（在开头导入时改名为 <code>MS()</code>）会创建变换对象，然后使用 <code>transform()</code> 和 <code>fit()</code> 这两个方法构造相应的模型矩阵。</p>
+<p>我们先用 Boston 数据框中仅含 lstat 这一个预测变量的简单回归模型来介绍这一过程；在本实验及本书其他实验中，还会反复将其用于更复杂的任务。本例中，通过表达式 <code>design = MS(['lstat'])</code> 创建变换对象。</p>
+<p><code>fit()</code> 方法接收原始数组，并可能按照变换对象的设定进行一些初步计算。例如，它可能计算用于中心化和缩放的均值与标准差。<code>transform()</code> 方法将拟合得到的变换应用于数据数组，生成模型矩阵。</p>
+<p>In [12]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>design <span class="op">=</span> MS([<span class="st">'lstat'</span>])</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>design <span class="op">=</span> design.fit(Boston)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> design.transform(Boston)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>X[:<span class="dv">4</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[12]:</p>
+<pre class="text"><code>   intercept  lstat
+0        1.0   4.98
+1        1.0   9.14
+2        1.0   4.03
+3        1.0   2.94</code></pre>
+<p>在这个简单例子中，<code>fit()</code> 方法做的事情很少：只检查 <code>design</code> 中指定的变量 <code>'lstat'</code> 是否存在于 Boston 中。随后，<code>transform()</code> 构造一个包含两列的模型矩阵：一列为截距，另一列为变量 lstat。</p>
+<p>这两个操作可以通过 <code>fit_transform()</code> 方法合并。</p>
+<p>In [13]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>design <span class="op">=</span> MS([<span class="st">'lstat'</span>])</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> design.fit_transform(Boston)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>X[:<span class="dv">4</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[13]:</p>
+<pre class="text"><code>   intercept  lstat
+0        1.0   4.98
+1        1.0   9.14
+2        1.0   4.03
+3        1.0   2.94</code></pre>
+<p>注意，与上一个将两步分开执行的代码块一样，<code>fit()</code> 操作会改变 <code>design</code> 对象。在拟合包含交互和变换的更复杂模型时，这条处理流程的作用会更加清楚。</p>
+<p>现在回到已经拟合的回归模型。<code>results</code> 对象有若干可用于推断的方法。我们已经介绍了用于显示拟合关键信息的函数 <code>summarize()</code>。如果需要完整而详尽的拟合汇总，可以使用 <code>summary()</code> 方法（这里不展示输出）。</p>
+<p>In [14]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>results.summary()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>还可以通过 <code>results</code> 的 <code>params</code> 属性提取拟合得到的系数。</p>
+<p>In [15]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>results.params</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[15]:</p>
+<pre class="text"><code>intercept    34.553841
+lstat        -0.950049
+dtype: float64</code></pre>
+<p>对于给定的 lstat 值，<code>get_prediction()</code> 方法可以给出 medv 的预测值，以及预测的置信区间和预测区间。</p>
+<p>首先创建一个新的数据框；在这里，它只包含变量 lstat，以及我们希望进行预测的各个 lstat 值。然后使用 <code>design</code> 的 <code>transform()</code> 方法创建相应的模型矩阵。</p>
+<p>In [16]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>new_df <span class="op">=</span> pd.DataFrame({<span class="st">'lstat'</span>:[<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>]})</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>newX <span class="op">=</span> design.transform(new_df)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>newX</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[16]:</p>
+<pre class="text"><code>   intercept  lstat
+0        1.0      5
+1        1.0     10
+2        1.0     15</code></pre>
+<p>接着计算 <code>newX</code> 处的预测值，并提取 <code>predicted_mean</code> 属性进行查看。</p>
+<p>In [17]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>new_predictions <span class="op">=</span> results.get_prediction(newX)<span class="op">;</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>new_predictions.predicted_mean</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[17]:</p>
+<pre class="text"><code>array([29.80359411, 25.05334734, 20.30310057])</code></pre>
+<p>可以为预测值生成置信区间。</p>
+<p>In [18]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>new_predictions.conf_int(alpha<span class="op">=</span><span class="fl">0.05</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[18]:</p>
+<pre class="text"><code>array([[29.00741194, 30.59977628],
+       [24.47413202, 25.63256267],
+       [19.73158815, 20.87461299]])</code></pre>
+<p>设置 <code>obs=True</code>，即可计算预测区间：</p>
+<p>In [19]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>new_predictions.conf_int(obs<span class="op">=</span><span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.05</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[19]:</p>
+<pre class="text"><code>array([[17.56567478, 42.04151344],
+       [12.82762635, 37.27906833],
+       [ 8.0777421 , 32.52845905]])</code></pre>
+<p>例如，lstat 为 10 时，对应的 95% 置信区间为 <span class="math inline">\((24.47,25.63)\)</span>，95% 预测区间为 <span class="math inline">\((12.82,37.28)\)</span>。正如预期，置信区间和预测区间都以同一点为中心（lstat 等于 10 时，medv 的预测值为 25.05），但后者要宽得多。</p>
+<p>接下来用 <code>DataFrame.plot.scatter()</code> 绘制 medv 与 lstat 的散点图，并在图上添加回归直线。</p>
+</section>
+<section id="定义函数" class="level4">
+<h4 class="anchored" data-anchor-id="定义函数">定义函数</h4>
+<p>ISLP 包中已有一个在现有图形上添加直线的函数，不过，我们借此机会定义自己的第一个函数来完成这件事。</p>
+<p>In [20]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> abline(ax, b, m):</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Add a line with slope m and intercept b to ax"</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    xlim <span class="op">=</span> ax.get_xlim()</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    ylim <span class="op">=</span> [m <span class="op">*</span> xlim[<span class="dv">0</span>] <span class="op">+</span> b, m <span class="op">*</span> xlim[<span class="dv">1</span>] <span class="op">+</span> b]</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    ax.plot(xlim, ylim)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>上面的代码展示了几点。首先是定义函数的语法：<code>def funcname(...)</code>。函数有 <code>ax</code>、<code>b</code>、<code>m</code> 三个参数，其中 <code>ax</code> 是现有图形的坐标轴对象，<code>b</code> 是所需直线的截距，<code>m</code> 是斜率。还可以加入额外的可选参数，将其他绘图选项传递给 <code>ax.plot</code>，如下所示：</p>
+<p>In [21]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> abline(ax, b, m, <span class="op">*</span>args, <span class="op">**</span>kwargs):</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Add a line with slope m and intercept b to ax"</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    xlim <span class="op">=</span> ax.get_xlim()</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    ylim <span class="op">=</span> [m <span class="op">*</span> xlim[<span class="dv">0</span>] <span class="op">+</span> b, m <span class="op">*</span> xlim[<span class="dv">1</span>] <span class="op">+</span> b]</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    ax.plot(xlim, ylim, <span class="op">*</span>args, <span class="op">**</span>kwargs)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>加入 <code>*args</code> 后，<code>abline</code> 就可以接受任意数量的非命名参数；<code>*kwargs</code> 则允许向 <code>abline</code> 传入任意数量的命名参数（例如 <code>linewidth=3</code>）。在这个函数中，我们将这些参数原样传递给上面的 <code>ax.plot</code>。有兴趣进一步了解函数的读者，可以参阅 <code>docs.python.org/tutorial</code> 中关于定义函数的部分。</p>
+<p>现在用这个新函数，为 medv 对 lstat 的散点图添加回归直线。</p>
+<p>In [22]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> Boston.plot.scatter(<span class="st">'lstat'</span>, <span class="st">'medv'</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>abline(ax,</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>       results.params[<span class="dv">0</span>],</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>       results.params[<span class="dv">1</span>],</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>       <span class="st">'r--'</span>,</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>       linewidth<span class="op">=</span><span class="dv">3</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>因此，最终对 <code>ax.plot()</code> 的调用为 <code>ax.plot(xlim, ylim, 'r--', linewidth=3)</code>。我们用参数 <code>'r--'</code> 画出红色虚线，并加入参数将线宽设为 3。图中有一些证据表明，lstat 与 medv 的关系存在非线性。本实验稍后会探讨这个问题。</p>
+<p>如前所述，已有函数 <code>ax.axline()</code> 可以在图上添加直线；不过，学会编写这样的函数，能让我们创建表达力更强的图形。</p>
+<p>接下来检查一些诊断图，其中几种已在 3.3.3 节讨论过。可以从 <code>results</code> 对象的属性中获取拟合值和残差。描述回归模型的各种影响度量，则通过 <code>get_influence()</code> 方法计算。由于不需要 <code>subplots()</code> 返回的第一个值 <code>fig</code>，下面只将第二个返回值赋给 <code>ax</code>。</p>
+<p>In [23]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))[<span class="dv">1</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>ax.scatter(results.fittedvalues, results.resid)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Fitted value'</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Residual'</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, c<span class="op">=</span><span class="st">'k'</span>, ls<span class="op">=</span><span class="st">'--'</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>使用 <code>ax.axhline()</code> 方法在 0 处添加一条水平参考线，指定其颜色为黑色（<code>c='k'</code>）、线型为虚线（<code>ls='--'</code>）。</p>
+<p>根据残差图（未展示），有一些证据表明关系存在非线性。无论预测变量个数是多少，都可以利用 <code>get_influence()</code> 方法返回对象的 <code>hat_matrix_diag</code> 属性计算杠杆统计量。</p>
+<p>In [24]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>infl <span class="op">=</span> results.get_influence()</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))[<span class="dv">1</span>]</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>ax.scatter(np.arange(X.shape[<span class="dv">0</span>]), infl.hat_matrix_diag)</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Index'</span>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Leverage'</span>)</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>np.argmax(infl.hat_matrix_diag)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[24]:</p>
+<pre class="text"><code>374</code></pre>
+<p>函数 <code>np.argmax()</code> 返回数组中最大元素的索引，也可以指定沿数组的某个轴计算。这里是在整个数组中寻找最大值，以确定哪个观测的杠杆统计量最大。</p>
+</section>
+</section>
+<section id="多元线性回归-1" class="level3">
+<h3 class="anchored" data-anchor-id="多元线性回归-1">3.6.3 多元线性回归</h3>
+<p>为了用最小二乘法拟合多元线性回归模型，再次使用 <code>ModelSpec()</code> 变换来构造所需的模型矩阵和响应。<code>ModelSpec()</code> 可以接受相当一般的参数，但这里提供一个列名列表就足够了。我们先考虑以 lstat 和 age 这两个变量进行拟合。</p>
+<p>In [25]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> MS([<span class="st">'lstat'</span>, <span class="st">'age'</span>]).fit_transform(Boston)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>model1 <span class="op">=</span> sm.OLS(y, X)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>results1 <span class="op">=</span> model1.fit()</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>summarize(results1)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[25]:</p>
+<pre class="text"><code>              coef  std err        t  P&gt;|t|
+intercept  33.2228    0.731   45.458  0.000
+lstat      -1.0321    0.048  -21.416  0.000
+age         0.0345    0.012    2.826  0.005</code></pre>
+<p>注意，第一行用一个简洁的表达式概括了 <code>X</code> 的构造过程。</p>
+<p>Boston 数据集包含 12 个变量，如果为了使用全部预测变量进行回归而逐一输入它们，会很繁琐。可以改用下面的简写：</p>
+<p>In [26]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> Boston.columns.drop(<span class="st">'medv'</span>)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>terms</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[26]:</p>
+<pre class="text"><code>Index(['crim', 'zn', 'indus', 'chas', 'nox', 'rm', 'age', 'dis',
+       'rad', 'tax', 'ptratio', 'lstat'],
+      dtype='object')</code></pre>
+<p>现在可以使用同一个模型矩阵构造工具，以 <code>terms</code> 中的全部变量拟合模型。</p>
+<p>In [27]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> MS(terms).fit_transform(Boston)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> sm.OLS(y, X)</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> model.fit()</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>summarize(results)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[27]:</p>
+<pre class="text"><code>              coef  std err        t  P&gt;|t|
+intercept  41.6173    4.936    8.431  0.000
+crim       -0.1214    0.033   -3.678  0.000
+zn          0.0470    0.014    3.384  0.001
+indus       0.0135    0.062    0.217  0.829
+chas        2.8400    0.870    3.264  0.001
+nox       -18.7580    3.851   -4.870  0.000
+rm          3.6581    0.420    8.705  0.000
+age         0.0036    0.013    0.271  0.787
+dis        -1.4908    0.202   -7.394  0.000
+rad         0.2894    0.067    4.325  0.000
+tax        -0.0127    0.004   -3.337  0.001
+ptratio    -0.9375    0.132   -7.091  0.000
+lstat      -0.5520    0.051  -10.897  0.000</code></pre>
+<p>如果想使用除某一个变量之外的全部变量进行回归，该怎么办？例如，上面的回归输出中，age 的 <span class="math inline">\(p\)</span> 值很高，所以可能希望排除这个预测变量再做回归。以下语法会使用除 age 之外的全部预测变量进行回归（未展示输出）。</p>
+<p>In [28]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>minus_age <span class="op">=</span> Boston.columns.drop([<span class="st">'medv'</span>, <span class="st">'age'</span>])</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>Xma <span class="op">=</span> MS(minus_age).fit_transform(Boston)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>model1 <span class="op">=</span> sm.OLS(y, Xma)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>summarize(model1.fit())</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="多元回归的拟合优度" class="level3">
+<h3 class="anchored" data-anchor-id="多元回归的拟合优度">3.6.4 多元回归的拟合优度</h3>
+<p>可以按名称访问 <code>results</code> 的各个组成部分（<code>dir(results)</code> 会显示可用的内容）。因此，<code>results.rsquared</code> 给出 <span class="math inline">\(R^2\)</span>，<code>np.sqrt(results.scale)</code> 给出 RSE。</p>
+<p>方差膨胀因子（3.3.3 节）有时可用于评估回归模型的模型矩阵中共线性的影响。我们将计算多元回归拟合的 VIF，并借此介绍列表推导式（list comprehension）的概念。</p>
+<section id="列表推导式" class="level4">
+<h4 class="anchored" data-anchor-id="列表推导式">列表推导式</h4>
+<p>我们经常会遇到一串对象，希望对它们作变换，以便完成其他任务。下面计算 <code>X</code> 矩阵中每个特征的 VIF，并生成一个数据框，其索引与 <code>X</code> 的列相对应。列表推导式通常可以简化这类任务。</p>
+<p>列表推导式是构造 Python 对象列表的一种简单而强大的方式。Python 还支持字典推导式和生成器推导式，不过这些超出了这里的讨论范围。来看一个例子：使用函数 <code>variance_inflation_factor()</code>，计算模型矩阵 <code>X</code> 中每个变量的 VIF。</p>
+<p>In [29]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>vals <span class="op">=</span> [VIF(X, i)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, X.shape[<span class="dv">1</span>])]</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>vif <span class="op">=</span> pd.DataFrame({<span class="st">'vif'</span>:vals},</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>                   index<span class="op">=</span>X.columns[<span class="dv">1</span>:])</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>vif</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[29]:</p>
+<pre class="text"><code>           vif
+crim     1.767
+zn       2.298
+indus    3.987
+chas     1.071
+nox      4.369
+rm       1.913
+age      3.088
+dis      3.954
+rad      7.445
+tax      9.002
+ptratio  1.797
+lstat    2.871</code></pre>
+<p>函数 <code>VIF()</code> 接受两个参数：一个数据框或数组，以及变量的列索引。上面的代码逐列即时调用 <code>VIF()</code>。我们排除了第 0 列（截距），因为它不是关注的对象。本例中的 VIF 并没有什么特别引人注意的地方。</p>
+<p>上面的对象 <code>vals</code> 也可以用以下 <code>for</code> 循环构造：</p>
+<p>In [30]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>vals <span class="op">=</span> []</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, X.values.shape[<span class="dv">1</span>]):</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    vals.append(VIF(X.values, i))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>列表推导式让我们能够以更直接的方式完成这种重复操作。</p>
+</section>
+</section>
+<section id="交互项" class="level3">
+<h3 class="anchored" data-anchor-id="交互项">3.6.5 交互项</h3>
+<p>使用 <code>ModelSpec()</code>，很容易在线性模型中加入交互项。加入元组 <code>("lstat","age")</code>，就会告诉模型矩阵构造工具加入 lstat 与 age 之间的交互项。</p>
+<p>In [31]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> MS([<span class="st">'lstat'</span>,</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>        <span class="st">'age'</span>,</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>        (<span class="st">'lstat'</span>, <span class="st">'age'</span>)]).fit_transform(Boston)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>model2 <span class="op">=</span> sm.OLS(y, X)</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>summarize(model2.fit())</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[31]:</p>
+<pre class="text"><code>              coef  std err        t  P&gt;|t|
+intercept  36.0885    1.470   24.553  0.000
+lstat      -1.3921    0.167   -8.313  0.000
+age        -0.0007    0.020   -0.036  0.971
+lstat:age   0.0042    0.002    2.244  0.025</code></pre>
+</section>
+<section id="预测变量的非线性变换" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="预测变量的非线性变换">3.6.6 预测变量的非线性变换</h3>
+<p>模型矩阵构造工具所能包含的项，不限于列名和交互项。例如，ISLP 提供的 <code>poly()</code> 函数可以指定：将表示其第一个参数的多项式函数的各列加入模型矩阵。</p>
+<p>In [32]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> MS([poly(<span class="st">'lstat'</span>, degree<span class="op">=</span><span class="dv">2</span>), <span class="st">'age'</span>]).fit_transform(Boston)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>model3 <span class="op">=</span> sm.OLS(y, X)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>results3 <span class="op">=</span> model3.fit()</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>summarize(results3)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[32]:</p>
+<pre class="text"><code>                              coef  std err        t  P&gt;|t|
+intercept                  17.7151    0.781   22.681  0.000
+poly(lstat, degree=2)[0]  -179.2279    6.733  -26.620  0.000
+poly(lstat, degree=2)[1]    72.9908    5.482   13.315  0.000
+age                         0.0703    0.011    6.471  0.000</code></pre>
+<p>二次项（上面第三行）对应的 <span class="math inline">\(p\)</span> 值实际上接近零，表明它能够改善模型。</p>
+<p>默认情况下，<code>poly()</code> 会创建一个用于加入模型矩阵的基矩阵（basis matrix），其各列为正交多项式（orthogonal polynomials），这种设计有助于使最小二乘计算保持稳定。<sup><a href="#fn13" id="fnref13">13</a></sup> 如果在上面对 <code>poly()</code> 的调用中加入参数 <code>raw=True</code>，基矩阵就只由 lstat 和 <code>lstat**2</code> 组成。由于这两种基都表示二次多项式，因此拟合值不会改变，改变的只是多项式系数。另外，默认情况下，<code>poly()</code> 创建的列不包含截距列，因为 <code>MS()</code> 会自动添加截距。</p>
+<aside class="footnote" id="fn13">
+<a href="#fnref13">13</a> 实际上，<code>poly()</code> 是独立函数 <code>Poly()</code> 的封装；真正负责构造模型矩阵的是 <code>Poly()</code>。
+</aside>
+<p>使用 <code>anova_lm()</code> 函数，可以进一步量化二次拟合优于线性拟合的程度。</p>
+<p>In [33]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>anova_lm(results1, results3)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[33]:</p>
+<pre class="text"><code>   df_resid       ssr  df_diff  ss_diff       F    Pr(&gt;F)
+0     503.0  19168.13      0.0      NaN     NaN       NaN
+1     502.0  14165.61      1.0  5002.52  177.28  7.47e-35</code></pre>
+<p>这里，<code>results1</code> 表示包含预测变量 lstat 和 age 的线性子模型，而 <code>results3</code> 对应上面那个更大的模型，其中包含 lstat 的二次项。<code>anova_lm()</code> 函数通过假设检验比较两个模型。原假设是：较大模型中的二次项并非必需；备择假设是：较大的模型更优。这里，<span class="math inline">\(F\)</span> 统计量为 177.28，对应的 <span class="math inline">\(p\)</span> 值为零。在本例中，<span class="math inline">\(F\)</span> 统计量等于 <code>results3</code> 线性模型汇总中二次项的 <span class="math inline">\(t\)</span> 统计量的平方，这是因为这两个嵌套模型（nested models）只相差一个自由度。</p>
+<p>这为 lstat 的二次多项式能够改善线性模型提供了非常清楚的证据。这并不意外，因为前面已经看到 medv 与 lstat 的关系存在非线性的证据。</p>
+<p>函数 <code>anova_lm()</code> 可以接受两个以上的嵌套模型作为输入，此时会依次比较每一对相邻模型。这也解释了上面第一行为什么出现 NaN：第一个模型前面没有可供比较的模型。</p>
+<p>In [34]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))[<span class="dv">1</span>]</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>ax.scatter(results3.fittedvalues, results3.resid)</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Fitted value'</span>)</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Residual'</span>)</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="dv">0</span>, c<span class="op">=</span><span class="st">'k'</span>, ls<span class="op">=</span><span class="st">'--'</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以看到，模型加入二次项后，残差中几乎没有可辨认的模式。要得到三次或更高次的多项式拟合，只需改变 <code>poly()</code> 的 <code>degree</code> 参数。</p>
+</section>
+<section id="定性预测变量" class="level3">
+<h3 class="anchored" data-anchor-id="定性预测变量">3.6.7 定性预测变量</h3>
+<p>这里使用 ISLP 包中的 Carseats 数据集。我们将根据若干预测变量，尝试预测 400 个地点的 Sales（儿童汽车安全座椅销售量）。</p>
+<p>In [35]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>Carseats <span class="op">=</span> load_data(<span class="st">'Carseats'</span>)</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>Carseats.columns</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[35]:</p>
+<pre class="text"><code>Index(['Sales', 'CompPrice', 'Income', 'Advertising',
+       'Population', 'Price', 'ShelveLoc', 'Age', 'Education',
+       'Urban', 'US'],
+      dtype='object')</code></pre>
+<p>Carseats 数据包含 ShelveLoc 这样的定性预测变量。ShelveLoc 表示货架位置的好坏，也就是商店中用于陈列汽车安全座椅的位置。预测变量 ShelveLoc 有三个可能的取值：Bad、Medium 和 Good。对于 ShelveLoc 这样的定性变量，<code>ModelSpec()</code> 会自动生成虚拟变量。这些变量通常称为该分类特征的独热编码（one-hot encoding）。这些列相加为一，因此，为了避免与截距产生共线性，需要去掉第一列。下面可以看到，<code>ShelveLoc[Bad]</code> 这一列已被删除，因为 Bad 是 ShelveLoc 的第一个水平。接下来拟合一个包含若干交互项的多元回归模型。</p>
+<p>In [36]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>allvars <span class="op">=</span> <span class="bu">list</span>(Carseats.columns.drop(<span class="st">'Sales'</span>))</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> Carseats[<span class="st">'Sales'</span>]</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>final <span class="op">=</span> allvars <span class="op">+</span> [(<span class="st">'Income'</span>, <span class="st">'Advertising'</span>),</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>                  (<span class="st">'Price'</span>, <span class="st">'Age'</span>)]</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> MS(final).fit_transform(Carseats)</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> sm.OLS(y, X)</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>summarize(model.fit())</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[36]:</p>
+<pre class="text"><code>                       coef  std err        t  P&gt;|t|
+intercept            6.5756    1.009    6.519  0.000
+CompPrice            0.0929    0.004   22.567  0.000
+Income               0.0109    0.003    4.183  0.000
+Advertising          0.0702    0.023    3.107  0.002
+Population           0.0002    0.000    0.433  0.665
+Price               -0.1008    0.007  -13.549  0.000
+ShelveLoc[Good]       4.8487    0.153   31.724  0.000
+ShelveLoc[Medium]     1.9533    0.126   15.531  0.000
+Age                 -0.0579    0.016   -3.633  0.000
+Education           -0.0209    0.020   -1.063  0.288
+Urban[Yes]           0.1402    0.112    1.247  0.213
+US[Yes]             -0.1576    0.149   -1.058  0.291
+Income:Advertising   0.0008    0.000    2.698  0.007
+Price:Age            0.0001    0.000    0.801  0.424</code></pre>
+<p>上面第一行将 <code>allvars</code> 转为列表，以便在两行之后加入交互项。模型矩阵构造工具创建了虚拟变量 <code>ShelveLoc[Good]</code>：货架位置好时取值为 1，否则为 0；还创建了虚拟变量 <code>ShelveLoc[Medium]</code>：货架位置中等时为 1，否则为 0。货架位置差时，这两个虚拟变量都为零。回归输出中 <code>ShelveLoc[Good]</code> 的系数为正，说明好的货架位置与较高的销售量相关联（相对于差的位置）。<code>ShelveLoc[Medium]</code> 的正系数较小，表明中等货架位置的销售量高于差的位置，但低于好的位置。</p>
+</section>
+</section>
+<section id="习题" class="level2">
+<h2 class="anchored" data-anchor-id="习题">3.7 习题</h2>
+<section id="概念题" class="level3">
+<h3 class="anchored" data-anchor-id="概念题">概念题</h3>
+<p><strong>1.</strong> 描述表 3.4 中各个 <span class="math inline">\(p\)</span> 值所对应的原假设。解释根据这些 <span class="math inline">\(p\)</span> 值可以得出什么结论。解释时应围绕 <code>sales</code>、<code>TV</code>、<code>radio</code> 和 <code>newspaper</code> 展开，而不是围绕线性模型的系数展开。</p>
+<p><strong>2.</strong> 仔细解释 KNN 分类器与 KNN 回归方法之间的区别。</p>
+<p><strong>3.</strong> 假设我们有一个包含五个预测变量的数据集：<span class="math inline">\(X_1=\mathrm{GPA}\)</span>，<span class="math inline">\(X_2=\mathrm{IQ}\)</span>，<span class="math inline">\(X_3=\mathrm{Level}\)</span>（大学为 1，高中为 0），<span class="math inline">\(X_4\)</span> 为 GPA 与 IQ 的交互，<span class="math inline">\(X_5\)</span> 为 GPA 与 Level 的交互。响应变量是毕业后的起薪（单位：千美元）。假设我们用最小二乘法拟合模型，得到 <span class="math inline">\(\hat\beta_0=50\)</span>、<span class="math inline">\(\hat\beta_1=20\)</span>、<span class="math inline">\(\hat\beta_2=0.07\)</span>、<span class="math inline">\(\hat\beta_3=35\)</span>、<span class="math inline">\(\hat\beta_4=0.01\)</span>、<span class="math inline">\(\hat\beta_5=-10\)</span>。</p>
+<p><strong>(a)</strong> 以下哪项正确？为什么？</p>
+<ul>
+<li><strong>i.</strong> 在 IQ 和 GPA 给定的情况下，高中毕业生的平均收入高于大学毕业生。</li>
+<li><strong>ii.</strong> 在 IQ 和 GPA 给定的情况下，大学毕业生的平均收入高于高中毕业生。</li>
+<li><strong>iii.</strong> 在 IQ 和 GPA 给定的情况下，只要 GPA 足够高，高中毕业生的平均收入就高于大学毕业生。</li>
+<li><strong>iv.</strong> 在 IQ 和 GPA 给定的情况下，只要 GPA 足够高，大学毕业生的平均收入就高于高中毕业生。</li>
+</ul>
+<p><strong>(b)</strong> 预测一名 IQ 为 110、GPA 为 4.0 的大学毕业生的薪资。</p>
+<p><strong>(c)</strong> 判断正误：“由于 GPA/IQ 交互项的系数很小，因此几乎没有证据表明存在交互效应。”说明理由。</p>
+<p><strong>4.</strong> 我收集了一组数据（<span class="math inline">\(n=100\)</span> 个观测），其中包含一个预测变量和一个定量响应。随后，我对这些数据拟合了一个线性回归模型，又单独拟合了一个三次回归（cubic regression）模型，即 <span class="math inline">\(Y=\beta_0+\beta_1X+\beta_2X^2+\beta_3X^3+\epsilon\)</span>。</p>
+<p><strong>(a)</strong> 假设 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间的真实关系是线性的，即 <span class="math inline">\(Y=\beta_0+\beta_1X+\epsilon\)</span>。考虑线性回归的训练残差平方和（RSS），以及三次回归的训练 RSS。我们是否预期其中一个小于另一个，预期二者相同，还是信息不足，无法判断？说明理由。</p>
+<p><strong>(b)</strong> 将训练 RSS 换成测试 RSS，回答 (a)。</p>
+<p><strong>(c)</strong> 假设 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 之间的真实关系不是线性的，但我们不知道它偏离线性关系的程度。考虑线性回归的训练 RSS，以及三次回归的训练 RSS。我们是否预期其中一个小于另一个，预期二者相同，还是信息不足，无法判断？说明理由。</p>
+<p><strong>(d)</strong> 将训练 RSS 换成测试 RSS，回答 (c)。</p>
+<p><strong>5.</strong> 考虑进行不含截距的线性回归所得到的拟合值。在这种情形下，第 <span class="math inline">\(i\)</span> 个拟合值的形式为</p>
+<p><span class="math display">\[
+\hat y_i=x_i\hat\beta,
+\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[
+\hat\beta=\left(\sum_{i=1}^{n}x_i y_i\right)\bigg/\left(\sum_{i'=1}^{n}x_{i'}^2\right).
+\tag{3.38}
+\]</span></p>
+<p>证明我们可以写成</p>
+<p><span class="math display">\[
+\hat y_i=\sum_{i'=1}^{n}a_{i'}y_{i'}.
+\]</span></p>
+<p><span class="math inline">\(a_{i'}\)</span> 是什么？</p>
+<p><em>注：这一结果说明，线性回归得到的拟合值是响应值的线性组合（linear combination）。</em></p>
+<p><strong>6.</strong> 利用式 (3.4)，说明在简单线性回归中，最小二乘直线总是经过点 <span class="math inline">\((\bar x,\bar y)\)</span>。</p>
+<p><strong>7.</strong> <img src="../assets/display-crops/exercise-marker.png" alt="原书习题标记" style="width:36px;display:inline-block;vertical-align:middle"> 正文指出，在进行 <span class="math inline">\(Y\)</span> 对 <span class="math inline">\(X\)</span> 的简单线性回归时，<span class="math inline">\(R^2\)</span> 统计量（式 (3.17)）等于 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 的相关系数（式 (3.18)）的平方。证明这一结论。为简便起见，可以假设 <span class="math inline">\(\bar x=\bar y=0\)</span>。</p>
+</section>
+<section id="应用题" class="level3">
+<h3 class="anchored" data-anchor-id="应用题">应用题</h3>
+<p><strong>8.</strong> 本题使用 <code>Auto</code> 数据集进行简单线性回归。</p>
+<p><strong>(a)</strong> 使用 <code>sm.OLS()</code> 函数，以 <code>mpg</code> 为响应变量、<code>horsepower</code> 为预测变量，进行简单线性回归。使用 <code>summarize()</code> 函数打印结果。讨论输出结果，例如：</p>
+<ul>
+<li><strong>i.</strong> 预测变量与响应变量之间是否存在关系？</li>
+<li><strong>ii.</strong> 预测变量与响应变量之间的关系有多强？</li>
+<li><strong>iii.</strong> 预测变量与响应变量之间是正向关系还是负向关系？</li>
+<li><strong>iv.</strong> 当 <code>horsepower</code> 为 98 时，预测的 <code>mpg</code> 是多少？相应的 95% 置信区间和预测区间是什么？</li>
+</ul>
+<p><strong>(b)</strong> 在新的坐标轴对象 <code>ax</code> 中，绘制响应变量与预测变量的关系图。使用 <code>ax.axline()</code> 方法或本章实验中定义的 <code>abline()</code> 函数，显示最小二乘回归直线。</p>
+<p><strong>(c)</strong> 按本章实验中的说明，为最小二乘回归拟合绘制一些诊断图。讨论从中观察到的拟合问题。</p>
+<p><strong>9.</strong> 本题使用 <code>Auto</code> 数据集进行多元线性回归。</p>
+<p><strong>(a)</strong> 绘制一个包含数据集中所有变量的散点图矩阵。</p>
+<p><strong>(b)</strong> 使用 <code>DataFrame.corr()</code> 方法，计算变量之间的相关系数矩阵。</p>
+<p><strong>(c)</strong> 使用 <code>sm.OLS()</code> 函数，以 <code>mpg</code> 为响应变量，以除 <code>name</code> 之外的所有其他变量为预测变量，进行多元线性回归。使用 <code>summarize()</code> 函数打印结果。讨论输出结果，例如：</p>
+<ul>
+<li><strong>i.</strong> 预测变量与响应变量之间是否存在关系？使用 <code>statsmodels</code> 中的 <code>anova_lm()</code> 函数回答这个问题。</li>
+<li><strong>ii.</strong> 哪些预测变量似乎与响应变量具有统计显著的关系？</li>
+<li><strong>iii.</strong> <code>year</code> 变量的系数说明了什么？</li>
+</ul>
+<p><strong>(d)</strong> 按本章实验中的说明，为线性回归拟合绘制一些诊断图。讨论从中观察到的拟合问题。残差图是否显示出异常大的离群点？杠杆值图是否识别出了杠杆值异常高的观测？</p>
+<p><strong>(e)</strong> 按本章实验中的说明，拟合一些包含交互的模型。是否有交互看起来具有统计显著性？</p>
+<p><strong>(f)</strong> 尝试对变量进行几种不同的变换，例如 <span class="math inline">\(\log(X)\)</span>、<span class="math inline">\(\sqrt{X}\)</span>、<span class="math inline">\(X^2\)</span>。讨论你的发现。</p>
+<p><strong>10.</strong> 请使用 <code>Carseats</code> 数据集回答本题。</p>
+<p><strong>(a)</strong> 拟合一个多元回归模型，使用 <code>Price</code>、<code>Urban</code> 和 <code>US</code> 预测 <code>Sales</code>。</p>
+<p><strong>(b)</strong> 解释模型中每一个系数的含义。注意，模型中的某些变量是定性变量！</p>
+<p><strong>(c)</strong> 将模型写成方程形式，注意正确处理定性变量。</p>
+<p><strong>(d)</strong> 对哪些预测变量，你可以拒绝原假设 <span class="math inline">\(H_0:\beta_j=0\)</span>？</p>
+<p><strong>(e)</strong> 根据上一问的回答，拟合一个规模更小的模型，只保留有证据表明与结果相关联的预测变量。</p>
+<p><strong>(f)</strong> (a) 和 (e) 中的模型对数据的拟合效果如何？</p>
+<p><strong>(g)</strong> 使用 (e) 中的模型，求系数的 95% 置信区间。</p>
+<p><strong>(h)</strong> (e) 中的模型是否有证据表明存在离群点或高杠杆值观测？</p>
+<p><strong>11.</strong> 本题考察不含截距的简单线性回归中，原假设 <span class="math inline">\(H_0:\beta=0\)</span> 所对应的 <span class="math inline">\(t\)</span> 统计量。首先，按如下方式生成预测变量 <code>x</code> 和响应变量 <code>y</code>。</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">1</span>)</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> rng.normal(size<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> x <span class="op">+</span> rng.normal(size<span class="op">=</span><span class="dv">100</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>(a)</strong> 进行 <code>y</code> 对 <code>x</code> 的简单线性回归，<em>不含截距</em>。报告系数估计值 <span class="math inline">\(\hat\beta\)</span>、该系数估计值的标准误，以及原假设 <span class="math inline">\(H_0:\beta=0\)</span> 所对应的 <span class="math inline">\(t\)</span> 统计量和 <span class="math inline">\(p\)</span> 值。讨论这些结果。（向 <code>ModelSpec()</code> 传入关键字参数 <code>intercept=False</code>，即可进行不含截距的回归。）</p>
+<p><strong>(b)</strong> 现在进行 <code>x</code> 对 <code>y</code> 的简单线性回归，不含截距，并报告系数估计值、其标准误，以及原假设 <span class="math inline">\(H_0:\beta=0\)</span> 所对应的 <span class="math inline">\(t\)</span> 统计量和 <span class="math inline">\(p\)</span> 值。讨论这些结果。</p>
+<p><strong>(c)</strong> (a) 和 (b) 中得到的结果之间有什么关系？</p>
+<p><strong>(d)</strong> <img src="../assets/display-crops/exercise-marker.png" alt="原书习题标记" style="width:36px;display:inline-block;vertical-align:middle"> 对于不含截距的 <span class="math inline">\(Y\)</span> 对 <span class="math inline">\(X\)</span> 的回归，<span class="math inline">\(H_0:\beta=0\)</span> 对应的 <span class="math inline">\(t\)</span> 统计量的形式为 <span class="math inline">\(\hat\beta/\operatorname{SE}(\hat\beta)\)</span>，其中 <span class="math inline">\(\hat\beta\)</span> 由式 (3.38) 给出，并且</p>
+<p><span class="math display">\[
+\operatorname{SE}(\hat\beta)=\sqrt{\frac{\sum_{i=1}^{n}(y_i-x_i\hat\beta)^2}{(n-1)\sum_{i'=1}^{n}x_{i'}^2}}.
+\]</span></p>
+<p>（这些公式与 3.1.1 节和 3.1.2 节给出的公式略有不同，因为这里进行的是不含截距的回归。）通过代数推导证明，并在 R 中进行数值验证，说明 <span class="math inline">\(t\)</span> 统计量可以写成</p>
+<p><span class="math display">\[
+\frac{(\sqrt{n-1})\sum_{i=1}^{n}x_i y_i}{\sqrt{\left(\sum_{i=1}^{n}x_i^2\right)\left(\sum_{i'=1}^{n}y_{i'}^2\right)-\left(\sum_{i'=1}^{n}x_{i'}y_{i'}\right)^2}}.
+\]</span></p>
+<p><strong>(e)</strong> 利用 (d) 的结果，说明 <code>y</code> 对 <code>x</code> 回归的 <span class="math inline">\(t\)</span> 统计量，与 <code>x</code> 对 <code>y</code> 回归的 <span class="math inline">\(t\)</span> 统计量相同。</p>
+<p><strong>(f)</strong> 在 R 中说明：当回归<em>包含截距</em>时，<code>y</code> 对 <code>x</code> 回归中 <span class="math inline">\(H_0:\beta_1=0\)</span> 对应的 <span class="math inline">\(t\)</span> 统计量，与 <code>x</code> 对 <code>y</code> 回归中相应的 <span class="math inline">\(t\)</span> 统计量相同。</p>
+<p><strong>12.</strong> 本题涉及不含截距的简单线性回归。</p>
+<p><strong>(a)</strong> 回顾式 (3.38)：它给出了不含截距的 <span class="math inline">\(Y\)</span> 对 <span class="math inline">\(X\)</span> 线性回归的系数估计值 <span class="math inline">\(\hat\beta\)</span>。在什么情况下，<span class="math inline">\(X\)</span> 对 <span class="math inline">\(Y\)</span> 回归的系数估计值，与 <span class="math inline">\(Y\)</span> 对 <span class="math inline">\(X\)</span> 回归的系数估计值相同？</p>
+<p><strong>(b)</strong> 在 Python 中生成一个包含 <span class="math inline">\(n=100\)</span> 个观测的例子，使 <span class="math inline">\(X\)</span> 对 <span class="math inline">\(Y\)</span> 回归的系数估计值<em>不同于</em> <span class="math inline">\(Y\)</span> 对 <span class="math inline">\(X\)</span> 回归的系数估计值。</p>
+<p><strong>(c)</strong> 在 Python 中生成一个包含 <span class="math inline">\(n=100\)</span> 个观测的例子，使 <span class="math inline">\(X\)</span> 对 <span class="math inline">\(Y\)</span> 回归的系数估计值<em>等于</em> <span class="math inline">\(Y\)</span> 对 <span class="math inline">\(X\)</span> 回归的系数估计值。</p>
+<p><strong>13.</strong> 本题将创建一些模拟数据，并对这些数据拟合简单线性回归模型。开始 (a) 之前，务必使用默认随机数生成器（default random number generator），并将种子设为 1，以保证结果一致。</p>
+<p><strong>(a)</strong> 使用随机数生成器的 <code>normal()</code> 方法，创建一个向量 <code>x</code>，其中包含从 <span class="math inline">\(N(0,1)\)</span> 分布抽取的 100 个观测。它代表一个特征 <span class="math inline">\(X\)</span>。</p>
+<p><strong>(b)</strong> 使用 <code>normal()</code> 方法，创建一个向量 <code>eps</code>，其中包含从 <span class="math inline">\(N(0,0.25)\)</span> 分布抽取的 100 个观测；这是一个均值为零、方差为 0.25 的正态分布。</p>
+<p><strong>(c)</strong> 使用 <code>x</code> 和 <code>eps</code>，根据以下模型生成向量 <code>y</code>：</p>
+<p><span class="math display">\[
+Y=-1+0.5X+\epsilon.
+\tag{3.39}
+\]</span></p>
+<p>向量 <code>y</code> 的长度是多少？这个线性模型中的 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 分别是多少？</p>
+<p><strong>(d)</strong> 绘制散点图，显示 <code>x</code> 与 <code>y</code> 之间的关系。讨论你观察到的现象。</p>
+<p><strong>(e)</strong> 拟合一个最小二乘线性模型，使用 <code>x</code> 预测 <code>y</code>。讨论得到的模型。<span class="math inline">\(\hat\beta_0\)</span> 和 <span class="math inline">\(\hat\beta_1\)</span> 与 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 相比如何？</p>
+<p><strong>(f)</strong> 在 (d) 得到的散点图上显示最小二乘直线。用另一种颜色在图上画出总体回归直线。使用坐标轴对象的 <code>legend()</code> 方法创建适当的图例。</p>
+<p><strong>(g)</strong> 现在拟合一个多项式回归模型，使用 <code>x</code> 和 <span class="math inline">\(\mathtt{x}^2\)</span> 预测 <code>y</code>。是否有证据表明二次项改善了模型拟合？解释你的回答。</p>
+<p><strong>(h)</strong> 修改数据生成过程，使数据中的噪声<em>更少</em>，然后重复 (a)–(f)。模型 (3.39) 应保持不变。可以通过减小 (b) 中用于生成误差项 <span class="math inline">\(\epsilon\)</span> 的正态分布方差来实现。描述你的结果。</p>
+<p><strong>(i)</strong> 修改数据生成过程，使数据中的噪声<em>更多</em>，然后重复 (a)–(f)。模型 (3.39) 应保持不变。可以通过增大 (b) 中用于生成误差项 <span class="math inline">\(\epsilon\)</span> 的正态分布方差来实现。描述你的结果。</p>
+<p><strong>(j)</strong> 基于原始数据集、噪声更多的数据集和噪声更少的数据集，<span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 的置信区间分别是什么？讨论你的结果。</p>
+<p><strong>14.</strong> 本题关注共线性问题。</p>
+<p><strong>(a)</strong> 在 Python 中执行以下命令：</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">10</span>)</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>x1 <span class="op">=</span> rng.uniform(<span class="dv">0</span>, <span class="dv">1</span>, size<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>x2 <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> x1 <span class="op">+</span> rng.normal(size<span class="op">=</span><span class="dv">100</span>) <span class="op">/</span> <span class="dv">10</span></span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> x1 <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> x2 <span class="op">+</span> rng.normal(size<span class="op">=</span><span class="dv">100</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>最后一行相当于创建一个线性模型，其中 <code>y</code> 是 <code>x1</code> 和 <code>x2</code> 的函数。写出这个线性模型的形式。回归系数分别是多少？</p>
+<p><strong>(b)</strong> <code>x1</code> 与 <code>x2</code> 之间的相关系数是多少？绘制散点图，显示这两个变量之间的关系。</p>
+<p><strong>(c)</strong> 使用这些数据拟合最小二乘回归，以 <code>x1</code> 和 <code>x2</code> 预测 <code>y</code>。描述得到的结果。<span class="math inline">\(\hat\beta_0\)</span>、<span class="math inline">\(\hat\beta_1\)</span> 和 <span class="math inline">\(\hat\beta_2\)</span> 分别是多少？它们与真实的 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span> 和 <span class="math inline">\(\beta_2\)</span> 有什么关系？你能否拒绝原假设 <span class="math inline">\(H_0:\beta_1=0\)</span>？对于原假设 <span class="math inline">\(H_0:\beta_2=0\)</span> 呢？</p>
+<p><strong>(d)</strong> 现在拟合最小二乘回归，只使用 <code>x1</code> 预测 <code>y</code>。讨论你的结果。你能否拒绝原假设 <span class="math inline">\(H_0:\beta_1=0\)</span>？</p>
+<p><strong>(e)</strong> 现在拟合最小二乘回归，只使用 <code>x2</code> 预测 <code>y</code>。讨论你的结果。你能否拒绝原假设 <span class="math inline">\(H_0:\beta_1=0\)</span>？</p>
+<p><strong>(f)</strong> (c)–(e) 得到的结果是否相互矛盾？解释你的回答。</p>
+<p><strong>(g)</strong> 假设我们又获得了一个观测，但不幸的是，这个观测的测量有误。使用 <code>np.concatenate()</code> 函数，将这一额外观测分别添加到 <code>x1</code>、<code>x2</code> 和 <code>y</code> 中。</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>x1 <span class="op">=</span> np.concatenate([x1, [<span class="fl">0.1</span>]])</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>x2 <span class="op">=</span> np.concatenate([x2, [<span class="fl">0.8</span>]])</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.concatenate([y, [<span class="dv">6</span>]])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>使用这些新数据，重新拟合 (c)–(e) 中的线性模型。这个新观测对每个模型有什么影响？在各个模型中，该观测是离群点、高杠杆值点，还是两者都是？解释你的回答。</p>
+<p><strong>15.</strong> 本题使用本章实验中见过的 <code>Boston</code> 数据集。现在，我们尝试使用数据集中的其他变量来预测人均犯罪率。换句话说，人均犯罪率是响应变量，其他变量是预测变量。</p>
+<p><strong>(a)</strong> 对每一个预测变量，分别拟合一个简单线性回归模型来预测响应变量。描述你的结果。在其中哪些模型中，预测变量与响应变量之间存在统计显著的关联？绘制一些图来支持你的判断。</p>
+<p><strong>(b)</strong> 拟合一个多元回归模型，使用所有预测变量来预测响应变量。描述你的结果。对哪些预测变量，我们可以拒绝原假设 <span class="math inline">\(H_0:\beta_j=0\)</span>？</p>
+<p><strong>(c)</strong> (a) 与 (b) 中的结果相比如何？绘制一幅图，横轴显示 (a) 中的单变量回归系数，纵轴显示 (b) 中的多元回归系数。也就是说，每个预测变量在图中对应一个点，其简单线性回归模型中的系数显示在横轴上，多元线性回归模型中的系数估计值显示在纵轴上。</p>
+<p><strong>(d)</strong> 是否有证据表明，某些预测变量与响应变量之间存在非线性关联？为回答这一问题，对每个预测变量 <span class="math inline">\(X\)</span>，拟合以下形式的模型：</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1X+\beta_2X^2+\beta_3X^3+\epsilon.
+\]</span></p>
+
+
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>线性假设（assumption of linearity）常常是一个有用的工作模型（working model）。不过，尽管许多教材可能会这样告诉我们，我们很少真的相信真实关系是线性的。<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>该公式成立的条件是这 <span class="math inline">\(n\)</span> 个观测值互不相关。<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>这里使用“近似”有几个原因。式（3.10）依赖误差服从高斯分布（Gaussian distribution）的假设。此外，<span class="math inline">\(\mathrm{SE}(\hat{\beta}_1)\)</span> 前面的系数 2 会随线性回归中的观测数 <span class="math inline">\(n\)</span> 略有变化。准确地说，式（3.10）中的 2 应替换为自由度（degrees of freedom）为 <span class="math inline">\(n-2\)</span> 的 <span class="math inline">\(t\)</span> 分布（<span class="math inline">\(t\)</span>-distribution）的 97.5% 分位数（quantile）。本章后面将介绍如何在 R 中精确计算 95% 置信区间。<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>表 3.1 中，截距的较小 <span class="math inline">\(p\)</span> 值说明可以拒绝原假设 <span class="math inline">\(\beta_0=0\)</span>；<code>TV</code> 的较小 <span class="math inline">\(p\)</span> 值说明可以拒绝原假设 <span class="math inline">\(\beta_1=0\)</span>。拒绝后一个原假设，可以得出 <code>TV</code> 与 <code>sales</code> 存在关系；拒绝前一个原假设，可以得出没有电视广告支出时，销售量仍非零。<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>实际上，式（3.18）右侧是样本相关，因此更严谨的写法应为 <span class="math inline">\(\widehat{\mathrm{Cor}}(X,Y)\)</span>；不过，为简化记号，我们省略帽子符号。<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>即使误差不服从正态分布，只要样本量 <span class="math inline">\(n\)</span> 足够大，<span class="math inline">\(F\)</span> 统计量也近似服从 <span class="math inline">\(F\)</span> 分布。<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>每个 <span class="math inline">\(t\)</span> 统计量的平方，就是对应的 <span class="math inline">\(F\)</span> 统计量。<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>这与多重检验（multiple testing）这一重要概念有关；它是第 13 章的重点。<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>换句话说，如果收集大量与 <code>Advertising</code> 类似的数据集，并根据每个数据集构造平均销售量的置信区间（给定 100,000 美元电视广告和 20,000 美元广播广告），那么其中 95% 的置信区间会包含平均销售量的真值。<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "已复制");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "已复制");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"可滚动的代码","output":"可滚动的输出"};
+  </script>
+<nav class="page-navigation" aria-label="页面">
+  <div class="nav-page nav-page-previous">
+      <a href="../index.html" class="pagination-link" aria-label="译者序">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">译者序</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
