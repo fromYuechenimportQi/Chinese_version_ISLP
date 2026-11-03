@@ -1,0 +1,26 @@
+project:
+  type: book
+  output-dir: _book
+
+lang: zh-CN
+
+book:
+  title: "统计学习导论：Python 应用 · 中文译本"
+  repo-url: https://github.com/fromYuechenimportQi/Chinese_version_ISLP
+  chapters:
+    - index.qmd
+    - dist/chapter3.qmd
+
+number-sections: false
+
+page-footer:
+    right: |
+      This book was built with <a href="https://quarto.org/">Quarto</a>.
+  
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    html-math-method: mathjax
+    code-copy: true
