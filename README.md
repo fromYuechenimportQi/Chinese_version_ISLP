@@ -1,4 +1,10 @@
 
+
+_An Introduction to Statistical Learning_, with applications in Python
+
+Author: [**Gareth James**](https://www.garethmjames.com/) et al.
+
+Translator: Yuechen Qi, a maintainer of this repository
 ## 目录
 
 [译者序](dist/translator_perface.md)
