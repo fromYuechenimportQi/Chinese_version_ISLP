@@ -1,0 +1,3 @@
+# 第五章　重抽样方法
+
+{{< include chapter5_resampling_methods.md >}}
