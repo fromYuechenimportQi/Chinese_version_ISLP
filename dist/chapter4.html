@@ -71,6 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../dist/chapter5.html" rel="next">
 <link href="../dist/chapter3.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -196,6 +197,11 @@ window.Quarto = {
   <a href="../dist/chapter4.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第四章　分类</span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter5.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第五章　重抽样方法</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -253,7 +259,7 @@ window.Quarto = {
 </nav>
     </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content" tabindex="-1">
+<main class="content" id="quarto-document-content" tabindex="-1">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
@@ -290,11 +296,6 @@ window.Quarto = {
 <p>与回归情境一样，在分类问题中，也有一组训练观测 <span class="math inline">\((x_1,y_1),\ldots,(x_n,y_n)\)</span>，可用于构建分类器。我们希望分类器不仅在训练数据上表现良好，也能在未参与训练的测试观测上表现良好。</p>
 <p>本章用模拟的 <code>Default</code> 数据集说明分类的概念。我们希望根据一个人的年收入和信用卡月度欠款，预测其信用卡还款是否会违约（default）。数据见图 4.1。左图展示了 10,000 人中一部分人的年收入和信用卡月度欠款：在某个月发生违约的人用橙色表示，未违约的人用蓝色表示。（总体违约率约为 3%，因此图中只画出了一部分未违约者。）可以看到，违约者的信用卡欠款往往高于未违约者。图 4.1 的中图和右图各展示一组箱线图（boxplot）：前者按照二元（binary）变量 <code>default</code> 分组，展示 <code>balance</code> 的分布；后者对 <code>income</code> 作同样的展示。本章将学习构建模型，根据任意给定的 <code>balance</code>（<span class="math inline">\(X_1\)</span>）和 <code>income</code>（<span class="math inline">\(X_2\)</span>）预测 <code>default</code>（<span class="math inline">\(Y\)</span>）。由于 <span class="math inline">\(Y\)</span> 并非定量变量，第 3 章的简单线性回归模型并不适合；第 4.2 节将进一步说明。</p>
 <p>图 4.1 中，预测变量 <code>balance</code> 与响应 <code>default</code> 之间的关系十分明显。在多数实际应用中，预测变量与响应的关系远没有这么强。不过，为说明本章的分类方法，我们选用了一个两者关系略有夸大的例子。</p>
-</section>
-<section id="为什么不用线性回归" class="level2">
-<h2 class="anchored" data-anchor-id="为什么不用线性回归">4.2　为什么不用线性回归？</h2>
-<p>前面说过，线性回归不适用于定性响应 (qualitative response)。为什么呢？</p>
-<p>假设我们希望根据急诊患者的症状预测她的病情。在这个简化例子中，有三种可能诊断：卒中（<code>stroke</code>）、药物过量（<code>drug overdose</code>）和癫痫发作（<code>epileptic seizure</code>）。我们可以考虑把这些取值编码（coding）成定量响应变量 <span class="math inline">\(Y\)</span>：</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/display-crops/figure-4-1.png" class="img-fluid figure-img"></p>
@@ -305,6 +306,11 @@ window.Quarto = {
 <blockquote class="blockquote">
 <p>图内标签对照：<code>Balance</code> 为信用卡欠款，<code>Income</code> 为收入，<code>Default</code> 为违约状态；<code>No</code> 表示未违约，<code>Yes</code> 表示违约。原图标签、颜色与数值刻度保留。</p>
 </blockquote>
+</section>
+<section id="为什么不用线性回归" class="level2">
+<h2 class="anchored" data-anchor-id="为什么不用线性回归">4.2　为什么不用线性回归？</h2>
+<p>前面说过，线性回归不适用于定性响应 (qualitative response)。为什么呢？</p>
+<p>假设我们希望根据急诊患者的症状预测她的病情。在这个简化例子中，有三种可能诊断：卒中（<code>stroke</code>）、药物过量（<code>drug overdose</code>）和癫痫发作（<code>epileptic seizure</code>）。我们可以考虑把这些取值编码（coding）成定量响应变量 <span class="math inline">\(Y\)</span>：</p>
 <p><span class="math display">\[
 Y=\begin{cases}
 1 &amp; \text{若为 stroke};\\
@@ -331,6 +337,13 @@ Y=\begin{cases}
 \]</span></p>
 <p>随后对这个二元响应拟合线性回归：若 <span class="math inline">\(\hat{Y}&gt;0.5\)</span>，则预测为药物过量，否则预测为卒中。在二元情形中，不难证明，即使将上述编码反过来，线性回归给出的最终预测仍然相同。</p>
 <p>对于上述采用 0/1 编码的二元响应，使用最小二乘回归并非完全没有道理：可以证明，在这一特殊情形中，线性回归得到的 <span class="math inline">\(X\hat{\beta}\)</span> 实际上是对 <span class="math inline">\(\Pr(\mathtt{drug\ overdose}\mid X)\)</span> 的估计。然而，线性回归给出的某些估计值可能超出 <span class="math inline">\([0,1]\)</span> 区间（见图 4.2），因此难以解释为概率！尽管如此，这些预测值仍能提供一种排序，也可以视为粗略的概率估计。有意思的是，用线性回归预测二元响应时，所得分类结果与第 4.4 节将介绍的线性判别分析（LDA）方法相同。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-4-2.png" class="img-fluid figure-img"></p>
+<figcaption>图4.2：线性回归与逻辑回归估计的违约概率</figcaption>
+</figure>
+</div>
+<p><strong>图4.2</strong> 使用 <code>Default</code> 数据进行分类。<strong>左图：</strong> 线性回归估计的违约概率，其中一些估计概率竟为负值！橙色短线表示 <code>default</code>（<code>No</code> 或 <code>Yes</code>）对应的0/1编码值。<strong>右图：</strong> 逻辑回归预测的违约概率，所有概率都介于0与1之间。图内文字：Balance＝欠款；Probability of Default＝违约概率。</p>
 <p>综上，至少有两个理由说明，不宜直接用回归方法做分类：（a）回归方法无法处理有两个以上类别的定性响应；（b）即使只有两个类别，回归方法也无法给出有意义的 <span class="math inline">\(\Pr(Y\mid X)\)</span> 估计。因此，最好使用真正适合定性响应的分类方法。下一节介绍的逻辑回归适用于二元定性响应；后续各节则会介绍适用于两个或更多类别的分类方法。</p>
 </section>
 <section id="逻辑回归" class="level2">
@@ -341,13 +354,6 @@ Y=\begin{cases}
 \Pr(\texttt{default}=\texttt{Yes}\mid\texttt{balance}).
 \]</span></p>
 <p><span class="math inline">\(\Pr(\texttt{default}=\texttt{Yes}\mid\texttt{balance})\)</span> 的值介于0与1之间，我们将其简记为 <span class="math inline">\(p(\texttt{balance})\)</span>。这样，对于任意给定的 <code>balance</code> 值，就可以预测 <code>default</code>。例如，对于所有满足 <span class="math inline">\(p(\texttt{balance})&gt;0.5\)</span> 的个体，可以预测其 <code>default = Yes</code>。</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../assets/display-crops/figure-4-2.png" class="img-fluid figure-img"></p>
-<figcaption>图4.2：线性回归与逻辑回归估计的违约概率</figcaption>
-</figure>
-</div>
-<p><strong>图4.2</strong> 使用 <code>Default</code> 数据进行分类。<strong>左图：</strong> 线性回归估计的违约概率，其中一些估计概率竟为负值！橙色短线表示 <code>default</code>（<code>No</code> 或 <code>Yes</code>）对应的0/1编码值。<strong>右图：</strong> 逻辑回归预测的违约概率，所有概率都介于0与1之间。图内文字：Balance＝欠款；Probability of Default＝违约概率。</p>
 <p>如果一家公司希望在识别存在违约风险的个体时更为谨慎，也可以选用较低的阈值，例如 <span class="math inline">\(p(\texttt{balance})&gt;0.1\)</span>。</p>
 <section id="逻辑模型the-logistic-model" class="level3">
 <h3 class="anchored" data-anchor-id="逻辑模型the-logistic-model">4.3.1 逻辑模型（The Logistic Model）</h3>
@@ -360,7 +366,7 @@ p(X)=\beta_0+\beta_1X. \tag{4.1}
 <p><span class="math display">\[
 p(X)=\frac{e^{\beta_0+\beta_1X}}{1+e^{\beta_0+\beta_1X}}. \tag{4.2}
 \]</span></p>
-<p>拟合模型(4.2)时，我们使用一种称为<strong>极大似然（maximum likelihood）</strong>的方法，下一小节将介绍这种方法。图4.2右图展示了对 <code>Default</code> 数据拟合逻辑回归模型的结果。</p>
+<p>拟合模型(4.2)时，我们使用一种称为<strong>极大似然（maximum likelihood）</strong> 的方法，下一小节将介绍这种方法。图4.2右图展示了对 <code>Default</code> 数据拟合逻辑回归模型的结果。</p>
 <p>可以看到，欠款较低时，预测的违约概率接近零，却绝不会低于零；欠款较高时，预测概率接近1，却绝不会超过1。逻辑函数总会产生这种S形曲线，因此，无论 <span class="math inline">\(X\)</span> 取何值，都能得到合理的预测。还可以看到，相比左图中的线性回归模型，逻辑模型更能刻画概率的变化范围。两种模型的平均拟合概率均为0.0333（对训练数据取平均），与数据集中违约者的总体比例相同。</p>
 <p>对式(4.2)作简单变形，可得</p>
 <p><span class="math display">\[
@@ -384,7 +390,7 @@ p(X)=\frac{e^{\beta_0+\beta_1X}}{1+e^{\beta_0+\beta_1X}}. \tag{4.2}
 <p>估计值 <span class="math inline">\(\hat\beta_0\)</span> 和 <span class="math inline">\(\hat\beta_1\)</span> 被选为使该似然函数达到最大值的取值。</p>
 <p>极大似然是一种非常通用的方法，本书将要研究的许多非线性模型都用它来拟合。在线性回归情形下，最小二乘法实际上是极大似然的一个特例。极大似然的数学细节超出了本书范围。不过，一般而言，逻辑回归和其他模型都可以使用R等统计软件轻松拟合，因此我们不必关注极大似然拟合过程的细节。</p>
 <p>表4.1给出了对 <code>Default</code> 数据拟合逻辑回归模型、用 <code>balance</code> 预测 <code>default=Yes</code> 概率所得的系数估计值及相关信息。可以看到，<span class="math inline">\(\hat\beta_1=0.0055\)</span>；这表明 <code>balance</code> 增大与违约概率上升有关。更准确地说，<code>balance</code> 每增加一个单位，违约的对数几率就增加0.0055个单位。</p>
-<p>表4.1中的逻辑回归输出，在许多方面都与第3章的线性回归输出类似。例如，可以计算系数估计的标准误，以衡量估计的准确程度。表4.1中的 <strong><span class="math inline">\(z\)</span> 统计量（z-statistic）</strong>，所起的作用与线性回归输出中的 <span class="math inline">\(t\)</span> 统计量相同，例如第77页表3.1中的 <span class="math inline">\(t\)</span> 统计量。具体而言，与 <span class="math inline">\(\beta_1\)</span> 对应的 <span class="math inline">\(z\)</span> 统计量等于 <span class="math inline">\(\hat\beta_1/\operatorname{SE}(\hat\beta_1)\)</span>，因此，<span class="math inline">\(z\)</span> 统计量的绝对值较大，意味着有证据反对原假设 <span class="math inline">\(H_0:\beta_1=0\)</span>。这一原假设意味着 <span class="math inline">\(p(X)=\frac{e^{\beta_0}}{1+e^{\beta_0}}\)</span>；换言之，违约概率不依赖于 <code>balance</code>。由于表4.1中 <code>balance</code> 对应的 <span class="math inline">\(p\)</span> 值极小，我们可以拒绝 <span class="math inline">\(H_0\)</span>。也就是说，可以得出结论：<code>balance</code> 与违约概率之间确实存在关联。表4.1中的截距估计通常不是我们关注的重点；它的主要作用，是调整平均拟合概率，使其等于数据中1的比例（这里就是总体违约率）。</p>
+<p>表4.1中的逻辑回归输出，在许多方面都与第3章的线性回归输出类似。例如，可以计算系数估计的标准误，以衡量估计的准确程度。表4.1中的 <strong><span class="math inline">\(z\)</span> 统计量（z-statistic）</strong>，所起的作用与线性回归输出中的 <span class="math inline">\(t\)</span> 统计量相同，例如第三章中表3.1中的 <span class="math inline">\(t\)</span> 统计量。具体而言，与 <span class="math inline">\(\beta_1\)</span> 对应的 <span class="math inline">\(z\)</span> 统计量等于 <span class="math inline">\(\hat\beta_1/\operatorname{SE}(\hat\beta_1)\)</span>，因此，<span class="math inline">\(z\)</span> 统计量的绝对值较大，意味着有证据反对原假设 <span class="math inline">\(H_0:\beta_1=0\)</span>。这一原假设意味着 <span class="math inline">\(p(X)=\frac{e^{\beta_0}}{1+e^{\beta_0}}\)</span>；换言之，违约概率不依赖于 <code>balance</code>。由于表4.1中 <code>balance</code> 对应的 <span class="math inline">\(p\)</span> 值极小，我们可以拒绝 <span class="math inline">\(H_0\)</span>。也就是说，可以得出结论：<code>balance</code> 与违约概率之间确实存在关联。表4.1中的截距估计通常不是我们关注的重点；它的主要作用，是调整平均拟合概率，使其等于数据中1的比例（这里就是总体违约率）。</p>
 </section>
 <section id="作出预测" class="level3">
 <h3 class="anchored" data-anchor-id="作出预测">4.3.3 作出预测</h3>
@@ -568,7 +574,7 @@ p(X)=\frac{e^{\beta_0+\beta_1X_1+\cdots+\beta_pX_p}}{1+e^{\beta_0+\beta_1X_1+\cd
 \]</span></p>
 </section>
 </section>
-<section id="用于分类的生成模型generative-models-for-classification" class="level2 page-columns page-full">
+<section id="用于分类的生成模型generative-models-for-classification" class="level2">
 <h2 class="anchored" data-anchor-id="用于分类的生成模型generative-models-for-classification">4.4 用于分类的生成模型（Generative Models for Classification）</h2>
 <p>逻辑回归利用逻辑函数直接对 <span class="math inline">\(\Pr(Y=k\mid X=x)\)</span> 建模；当响应有两个类别时，逻辑函数由式（4.7）给出。用统计学术语来说，我们对给定预测变量 <span class="math inline">\(X\)</span> 时响应 <span class="math inline">\(Y\)</span> 的条件分布（conditional distribution）建模。现在考虑另一种估计这些概率的方法，它采取的途径更为间接。在这种新方法中，我们分别对每个响应类别内（即 <span class="math inline">\(Y\)</span> 的每个取值下）预测变量 <span class="math inline">\(X\)</span> 的分布建模，再利用贝叶斯定理（Bayes’ theorem）将其转换成 <span class="math inline">\(\Pr(Y=k\mid X=x)\)</span> 的估计值。如果假设每一类中的 <span class="math inline">\(X\)</span> 都服从正态分布，得到的模型在形式上与逻辑回归十分相似。</p>
 <p>既然已有逻辑回归，为什么还需要其他方法？原因有几个：</p>
@@ -588,7 +594,7 @@ p(X)=\frac{e^{\beta_0+\beta_1X_1+\cdots+\beta_pX_p}}{1+e^{\beta_0+\beta_1X_1+\cd
 <p>式（4.15）表明，我们不必像4.3.1节那样直接计算后验概率 <span class="math inline">\(p_k(x)\)</span>，而可以把 <span class="math inline">\(\pi_k\)</span> 和 <span class="math inline">\(f_k(x)\)</span> 的估计值代入式（4.15）。一般而言，如果手中有来自总体的随机样本，估计 <span class="math inline">\(\pi_k\)</span> 很容易：只需计算训练观测中属于第 <span class="math inline">\(k\)</span> 类的比例。然而，估计密度函数 <span class="math inline">\(f_k(x)\)</span> 则困难得多。我们将看到，为了估计 <span class="math inline">\(f_k(x)\)</span>，通常需要作一些简化假设。</p>
 <p>第2章已介绍，贝叶斯分类器（Bayes classifier）把观测 <span class="math inline">\(x\)</span> 分到 <span class="math inline">\(p_k(x)\)</span> 最大的类别，它在所有分类器中具有最低的可能错误率。（当然，这只有在式（4.15）的各项都正确指定时才成立。）因此，只要能找到估计 <span class="math inline">\(f_k(x)\)</span> 的办法，就可以把估计值代入式（4.15），从而近似贝叶斯分类器。</p>
 <p>以下几节讨论三种分类器，它们在式（4.15）中使用不同的 <span class="math inline">\(f_k(x)\)</span> 估计值来近似贝叶斯分类器：线性判别分析、二次判别分析和朴素贝叶斯。</p>
-<section id="p1-时的线性判别分析" class="level3 page-columns page-full">
+<section id="p1-时的线性判别分析" class="level3">
 <h3 class="anchored" data-anchor-id="p1-时的线性判别分析">4.4.1 <span class="math inline">\(p=1\)</span> 时的线性判别分析</h3>
 <p>暂时假设 <span class="math inline">\(p=1\)</span>，即只有一个预测变量。我们希望得到 <span class="math inline">\(f_k(x)\)</span> 的估计值，将其代入式（4.15）来估计 <span class="math inline">\(p_k(x)\)</span>，然后把观测分到 <span class="math inline">\(p_k(x)\)</span> 最大的类别。为了估计 <span class="math inline">\(f_k(x)\)</span>，先对它的形式作一些假设。</p>
 <p>具体来说，假设 <span class="math inline">\(f_k(x)\)</span> 为正态密度，也称高斯密度。在一维情形中，正态密度的形式为</p>
@@ -620,10 +626,8 @@ x=\frac{\mu_1^2-\mu_2^2}{2(\mu_1-\mu_2)}=\frac{\mu_1+\mu_2}{2}. \tag{4.19}
 \]</span></p>
 <p>图4.4左图给出一个例子。图中的两个正态密度函数 <span class="math inline">\(f_1(x)\)</span> 和 <span class="math inline">\(f_2(x)\)</span> 分别代表两个不同的类别。它们的均值和方差参数为 <span class="math inline">\(\mu_1=-1.25\)</span>、<span class="math inline">\(\mu_2=1.25\)</span>，以及 <span class="math inline">\(\sigma_1^2=\sigma_2^2=1\)</span>。两个密度相互重叠，因此，即使给定 <span class="math inline">\(X=x\)</span>，观测所属的类别仍有一定的不确定性。如果假设一个观测来自两个类别的可能性相同，即 <span class="math inline">\(\pi_1=\pi_2=0.5\)</span>，那么由式（4.19）可知，贝叶斯分类器在 <span class="math inline">\(x&lt;0\)</span> 时将观测分到第1类，否则分到第2类。注意，此处能计算出贝叶斯分类器，是因为我们知道每个类别内的 <span class="math inline">\(X\)</span> 都来自高斯分布，并且知道所有相关参数。在现实情形中，我们无法计算出贝叶斯分类器。</p>
 <p>实际应用中，即便十分确信每个类别内的 <span class="math inline">\(X\)</span> 都来自高斯分布，要使用贝叶斯分类器，仍须估计参数 <span class="math inline">\(\mu_1,\ldots,\mu_K\)</span>、<span class="math inline">\(\pi_1,\ldots,\pi_K\)</span> 以及 <span class="math inline">\(\sigma^2\)</span>。线性判别分析（LDA）把 <span class="math inline">\(\pi_k\)</span>、<span class="math inline">\(\mu_k\)</span> 和 <span class="math inline">\(\sigma^2\)</span> 的估计值代入式（4.18），以此近似贝叶斯分类器。</p>
-<blockquote class="blockquote page-columns page-full">
-<aside class="footnote" id="ch04-fn3">
-<a href="#ch04-fnref3">3</a> 见本章末的习题2。
-</aside>
+<blockquote class="blockquote">
+<p><a href="#ch04-fnref3">3</a> 见本章末的习题2。</p>
 </blockquote>
 <p>具体使用以下估计值：</p>
 <p><span class="math display">\[
@@ -2603,6 +2607,9 @@ Name: coef, dtype: float64</code></pre>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../dist/chapter5.html" class="pagination-link" aria-label="第五章　重抽样方法">
+        <span class="nav-page-text"><span class="chapter-title">第五章　重抽样方法</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->

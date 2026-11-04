@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>第五章　重抽样方法 – 统计学习导论：Python 应用 · 中文译本</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../dist/chapter4.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-fc3b36746e1955fb88c77d3f07db1d35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "没有结果",
+    "search-matching-documents-text": "匹配的文档",
+    "search-copy-link-title": "复制搜索链接",
+    "search-hide-matches-text": "隐藏其它匹配结果",
+    "search-more-match-text": "更多匹配结果",
+    "search-more-matches-text": "更多匹配结果",
+    "search-clear-button-title": "清除",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "取消",
+    "search-submit-button-title": "提交",
+    "search-label": "搜索"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">跳至主要内容</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="工具栏">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="展开或折叠侧边栏导航" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter5.html"><span class="chapter-title">第五章　重抽样方法</span></a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="搜索" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto" aria-label="网站">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">统计学习导论：Python 应用 · 中文译本</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/fromYuechenimportQi/Chinese_version_ISLP" title="源代码" class="quarto-navigation-tool px-1" aria-label="源代码"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="搜索"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">译者序</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter3.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第三章　线性回归</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter4.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第四章　分类</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter5.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第五章　重抽样方法</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">目录</h2>
+   
+  <ul>
+  <li><a href="#交叉验证" id="toc-交叉验证" class="nav-link active" data-scroll-target="#交叉验证">5.1 交叉验证</a>
+  <ul class="collapse">
+  <li><a href="#验证集法the-validation-set-approach" id="toc-验证集法the-validation-set-approach" class="nav-link" data-scroll-target="#验证集法the-validation-set-approach">5.1.1 验证集法（The Validation Set Approach）</a></li>
+  <li><a href="#留一交叉验证leave-one-out-cross-validation" id="toc-留一交叉验证leave-one-out-cross-validation" class="nav-link" data-scroll-target="#留一交叉验证leave-one-out-cross-validation">5.1.2 留一交叉验证（Leave-One-Out Cross-Validation）</a></li>
+  <li><a href="#k折交叉验证k-fold-cross-validation" id="toc-k折交叉验证k-fold-cross-validation" class="nav-link" data-scroll-target="#k折交叉验证k-fold-cross-validation">5.1.3 k折交叉验证（k-Fold Cross-Validation）</a></li>
+  <li><a href="#k折交叉验证的偏差方差权衡" id="toc-k折交叉验证的偏差方差权衡" class="nav-link" data-scroll-target="#k折交叉验证的偏差方差权衡">5.1.4 k折交叉验证的偏差—方差权衡</a></li>
+  <li><a href="#分类问题中的交叉验证" id="toc-分类问题中的交叉验证" class="nav-link" data-scroll-target="#分类问题中的交叉验证">5.1.5 分类问题中的交叉验证</a></li>
+  </ul></li>
+  <li><a href="#自助法the-bootstrap" id="toc-自助法the-bootstrap" class="nav-link" data-scroll-target="#自助法the-bootstrap">5.2 自助法（The Bootstrap）</a></li>
+  <li><a href="#实验交叉验证与自助法" id="toc-实验交叉验证与自助法" class="nav-link" data-scroll-target="#实验交叉验证与自助法">5.3 实验：交叉验证与自助法</a>
+  <ul class="collapse">
+  <li><a href="#验证集法" id="toc-验证集法" class="nav-link" data-scroll-target="#验证集法">5.3.1 验证集法</a></li>
+  <li><a href="#交叉验证-1" id="toc-交叉验证-1" class="nav-link" data-scroll-target="#交叉验证-1">5.3.2 交叉验证</a></li>
+  <li><a href="#自助法" id="toc-自助法" class="nav-link" data-scroll-target="#自助法">5.3.3 自助法</a></li>
+  </ul></li>
+  <li><a href="#习题" id="toc-习题" class="nav-link" data-scroll-target="#习题">5.4 习题</a>
+  <ul class="collapse">
+  <li><a href="#概念题" id="toc-概念题" class="nav-link" data-scroll-target="#概念题">概念题</a></li>
+  <li><a href="#应用题" id="toc-应用题" class="nav-link" data-scroll-target="#应用题">应用题</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">第五章　重抽样方法</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>重抽样方法是现代统计学中不可或缺的工具。这类方法从训练集中反复抽取样本，并在每个样本上重新拟合所关注的模型，以获取有关拟合模型的更多信息。例如，要估计线性回归拟合结果的变异程度，可以从训练数据中反复抽取不同的样本，对每个新样本分别拟合线性回归，再考察所得拟合结果之间的差异有多大。通过这种方法，可以获得一些仅用原始训练样本拟合一次模型所无法得到的信息。</p>
+<p>重抽样方法的计算成本可能很高，因为它需要使用训练数据的不同子集，多次拟合同一种统计方法。不过，随着近年来计算能力的进步，重抽样方法的计算需求通常已不至于难以承受。本章讨论两种最常用的重抽样方法：交叉验证和<strong>自助法（bootstrap）</strong>。这两种方法都是许多统计学习过程在实际应用中的重要工具。例如，可以使用交叉验证估计某种统计学习方法的测试误差，以评估它的表现，或选择适当的灵活程度。评估模型表现的过程称为<strong>模型评估（model assessment）</strong>，而为模型选择适当灵活程度的过程称为<strong>模型选择（model selection）</strong>。自助法用途多样，最常用于衡量某个参数估计值或某种统计学习方法的准确程度。</p>
+<section id="交叉验证" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="交叉验证">5.1 交叉验证</h2>
+<p>第2章讨论了测试误差率与训练误差率之间的区别。测试误差是指，使用某种统计学习方法预测一个新观测的响应时所产生的平均误差；这里的新观测，是指没有用于训练该方法的测量结果。对于一个给定的数据集，如果某种统计学习方法能得到较低的测试误差，那么使用它就有依据。如果有一个专门的测试集，就很容易计算测试误差。遗憾的是，通常并没有这样的测试集。相比之下，只需将统计学习方法应用于训练时使用的观测，就能轻松计算训练误差。不过，正如第2章所见，训练误差率往往与测试误差率相差很大，尤其是前者可能严重低估后者。</p>
+<p>当没有一个足够大的专门测试集，无法直接估计测试误差率时，可以使用多种技术，利用现有训练数据来估计这一数值。一些方法对训练误差率作数学调整，以估计测试误差率；第6章将讨论这类方法。本节则考察另一类方法：在拟合过程中留出一部分训练观测，再将统计学习方法应用于这些留出的观测，据此估计测试误差率。</p>
+<p>为简便起见，第5.1.1–5.1.4节假设我们关注的是定量响应的回归问题。第5.1.5节再考虑定性响应的分类问题。我们将看到，无论响应是定量还是定性，关键概念都相同。</p>
+<section id="验证集法the-validation-set-approach" class="level3">
+<h3 class="anchored" data-anchor-id="验证集法the-validation-set-approach">5.1.1 验证集法（The Validation Set Approach）</h3>
+<p>假设我们希望估计：在一组观测上拟合某种统计学习方法后，它的测试误差是多少。图5.1所示的<strong>验证集法</strong>是完成这一任务的一种简单策略。它将现有观测随机分成两部分：训练集，以及<strong>验证集（validation set）</strong>，后者也称为<strong>留出集（hold-out set）</strong>。在训练集上拟合模型，再用拟合好的模型预测验证集各观测的响应。由此得到的验证集误差率，就能提供测试误差率的估计；对于定量响应，通常用均方误差(Mean Squared Error, MSE)来衡量这一误差。</p>
+<p>下面用 <code>Auto</code> 数据集说明验证集法。回顾第3章，<code>mpg</code> 与 <code>horsepower</code> 之间似乎存在非线性关系，而且，用 <code>horsepower</code> 和 <span class="math inline">\(\texttt{horsepower}^2\)</span> 预测 <code>mpg</code>，比仅使用线性项的模型效果更好。自然会问，三次或更高次的拟合是否能得到更好的结果？第3章通过查看线性回归中三次项及更高次多项式项对应的 <span class="math inline">\(p\)</span> 值，回答了这个问题。不过，也可以使用验证集法来回答。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-1.png" class="img-fluid figure-img"></p>
+<figcaption>图5.1：验证集法示意图</figcaption>
+</figure>
+</div>
+<p><strong>图5.1</strong> 验证集法示意图。将 <span class="math inline">\(n\)</span> 个观测随机分为训练集（蓝色，其中包括第7、22、13个观测等）和验证集（米色，其中包括第91个观测等）。在训练集上拟合统计学习方法，并在验证集上评估其表现。</p>
+<p>我们将392个观测随机分成两组：训练集包含196个数据点，验证集包含剩余196个观测。在训练样本上拟合不同的回归模型，再在验证样本上评估表现，并用MSE衡量验证集误差；所得的验证集误差率见图5.2左图。二次拟合的验证集MSE明显小于线性拟合；但三次拟合的验证集MSE，实际上略大于二次拟合。这说明，相比仅使用二次项，在回归中加入三次项并不能改善预测。</p>
+<p>回顾一下，为绘制图5.2左图，我们将数据集随机分成了训练集和验证集两部分。如果重新随机划分样本，会得到稍有不同的测试MSE估计。作为说明，图5.2右图展示了 <code>Auto</code> 数据的十条验证集MSE曲线，分别来自将观测随机分为训练集和验证集的十种不同划分。十条曲线都表明，包含二次项的模型，其验证集MSE明显小于仅含线性项的模型。此外，十条曲线也都表明，在模型中加入三次或更高次多项式项，收益不大。不过，对于所考察的十个回归模型中的每一个，这十条曲线都会给出不同的测试MSE估计，而且它们对哪个模型的验证集MSE最小，并没有一致的结论。考虑到这些曲线之间的变异，我们能较有把握得出的结论，只是线性拟合不适合这些数据。</p>
+<p>验证集法概念简单，也容易实现，但有两个潜在缺点：</p>
+<ol type="1">
+<li>如图5.2右图所示，验证集给出的测试误差率估计可能有很大变异，取决于哪些观测被分入训练集，哪些被分入验证集。</li>
+<li>在验证集法中，只有一部分观测，即被分入训练集而非验证集的观测，用于拟合模型。由于统计方法在观测较少的训练数据上往往表现较差，因此，验证集误差率可能倾向于高估用整个数据集拟合模型时的测试误差率。</li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-2.png" class="img-fluid figure-img"></p>
+<figcaption>图5.2：验证集划分对测试MSE估计的影响</figcaption>
+</figure>
+</div>
+<p><strong>图5.2</strong> 对 <code>Auto</code> 数据集使用验证集法，估计用 <code>horsepower</code> 的多项式函数预测 <code>mpg</code> 所产生的测试误差。<strong>左图：</strong> 对一次训练集与验证集划分得到的验证误差估计。<strong>右图：</strong> 将验证过程重复十次，每次使用不同的随机划分，将观测分成训练集和验证集。这说明了该方法所得测试MSE估计的变异程度。图内文字：Degree of Polynomial＝多项式次数；Mean Squared Error＝均方误差。</p>
+<p>以下几个小节将介绍交叉验证，它是对验证集法的改进，能够处理这两个问题。</p>
+</section>
+<section id="留一交叉验证leave-one-out-cross-validation" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="留一交叉验证leave-one-out-cross-validation">5.1.2 留一交叉验证（Leave-One-Out Cross-Validation）</h3>
+<p><strong>留一交叉验证（LOOCV)</strong> 与第5.1.1节的验证集法密切相关，但它试图克服后者的缺点。</p>
+<p>与验证集法一样，LOOCV也将观测分成两部分。不过，它不再构造大小相近的两个子集，而是仅用一个观测 <span class="math inline">\((x_1,y_1)\)</span> 作为验证集，其余观测 <span class="math inline">\(\{(x_2,y_2),\ldots,(x_n,y_n)\}\)</span> 构成训练集。在这 <span class="math inline">\(n-1\)</span> 个训练观测上拟合统计学习方法，再利用被排除观测的 <span class="math inline">\(x_1\)</span> 值，对其作出预测 <span class="math inline">\(\hat y_1\)</span>。由于 <span class="math inline">\((x_1,y_1)\)</span> 没有参与拟合，<span class="math inline">\(\operatorname{MSE}_1=(y_1-\hat y_1)^2\)</span> 就提供了测试误差的一个近似无偏估计。不过，尽管 <span class="math inline">\(\operatorname{MSE}_1\)</span> 对测试误差是无偏的，它并不是一个好的估计，因为它仅基于单个观测 <span class="math inline">\((x_1,y_1)\)</span>，变异很大。</p>
+<p>可以重复这一过程：选用 <span class="math inline">\((x_2,y_2)\)</span> 作为验证数据，在其余 <span class="math inline">\(n-1\)</span> 个观测 <span class="math inline">\(\{(x_1,y_1),(x_3,y_3),\ldots,(x_n,y_n)\}\)</span> 上训练统计学习方法，并计算 <span class="math inline">\(\operatorname{MSE}_2=(y_2-\hat y_2)^2\)</span>。将这一方法重复 <span class="math inline">\(n\)</span> 次，得到 <span class="math inline">\(n\)</span> 个平方误差 <span class="math inline">\(\operatorname{MSE}_1,\ldots,\operatorname{MSE}_n\)</span>。测试MSE的LOOCV估计，就是这 <span class="math inline">\(n\)</span> 个测试误差估计值的平均值：</p>
+<p><span class="math display">\[
+\operatorname{CV}_{(n)}=\frac{1}{n}\sum_{i=1}^{n}\operatorname{MSE}_i. \tag{5.1}
+\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-3.png" class="img-fluid figure-img"></p>
+<figcaption>图5.3：留一交叉验证示意图</figcaption>
+</figure>
+</div>
+<p><strong>图5.3</strong> LOOCV示意图。将 <span class="math inline">\(n\)</span> 个数据点反复分为两部分：训练集（蓝色）包含除一个观测之外的全部观测，验证集（米色）仅包含被排除的那个观测。将所得的 <span class="math inline">\(n\)</span> 个MSE取平均，便可估计测试误差。第一个训练集包含除第1个观测以外的所有观测，第二个训练集包含除第2个观测以外的所有观测，依此类推。</p>
+<p>图5.3示意了LOOCV的过程。</p>
+<p>相比验证集法，LOOCV有两个主要优点。首先，它的偏差小得多。在LOOCV中，我们反复使用含 <span class="math inline">\(n-1\)</span> 个观测的训练集拟合统计学习方法，其观测数几乎与整个数据集相同。而在验证集法中，训练集大小通常只有原始数据集的一半。因此，LOOCV对测试误差率的高估，通常没有验证集法那么严重。其次，验证集法由于训练集与验证集的随机划分，每次重复应用都会产生不同结果；而多次进行LOOCV，总会得到相同的结果，因为其训练集与验证集的划分没有随机性。</p>
+<p>我们对 <code>Auto</code> 数据使用LOOCV，估计用 <code>horsepower</code> 的多项式函数预测 <code>mpg</code> 的线性回归模型的测试集MSE。结果见图5.4左图。</p>
+<p>LOOCV的计算成本可能很高，因为必须拟合模型 <span class="math inline">\(n\)</span> 次。当 <span class="math inline">\(n\)</span> 很大，而且每个模型的拟合速度又较慢时，这会非常耗时。不过，对于最小二乘线性回归或多项式回归，有一个巧妙的捷径，可以使LOOCV的计算成本与只拟合一次模型相同！下面的公式成立：</p>
+<p><span class="math display">\[
+\operatorname{CV}_{(n)}=\frac{1}{n}\sum_{i=1}^{n}\left(\frac{y_i-\hat y_i}{1-h_i}\right)^2, \tag{5.2}
+\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-4.png" class="img-fluid figure-img"></p>
+<figcaption>图5.4：留一和10折交叉验证的误差曲线</figcaption>
+</figure>
+</div>
+<p><strong>图5.4</strong> 对 <code>Auto</code> 数据使用交叉验证，估计用 <code>horsepower</code> 的多项式函数预测 <code>mpg</code> 所产生的测试误差。<strong>左图：</strong> LOOCV误差曲线。<strong>右图：</strong> 独立运行九次10折CV，每次将数据随机分为十部分，使用不同的随机划分。图中显示了这九条略有差异的CV误差曲线。图内文字：LOOCV＝留一交叉验证；10-fold CV＝10折交叉验证；Degree of Polynomial＝多项式次数；Mean Squared Error＝均方误差。</p>
+<p>式(5.2)中，<span class="math inline">\(\hat y_i\)</span> 是原始最小二乘拟合中的第 <span class="math inline">\(i\)</span> 个拟合值，<span class="math inline">\(h_i\)</span> 是第105页式(3.37)定义的杠杆统计量。<sup><a href="#ch05-fn1" id="ch05-fnref1">1</a></sup> 该式与通常的MSE类似，只是第 <span class="math inline">\(i\)</span> 个残差除以了 <span class="math inline">\(1-h_i\)</span>。杠杆值介于 <span class="math inline">\(1/n\)</span> 与1之间，反映一个观测对自身拟合值的影响程度。因此，在这一公式中，高杠杆点的残差被恰当地放大，使等式成立。</p>
+<aside class="footnote" id="ch05-fn1">
+<a href="#ch05-fnref1">1</a> 对于多元线性回归，杠杆统计量的形式比式(3.37)略复杂，但式(5.2)仍然成立。
+</aside>
+<p>LOOCV是一种非常通用的方法，能够用于任何预测建模。例如，可以将它用于逻辑回归、线性判别分析，或后续章节讨论的任何方法。不过，巧妙的公式(5.2)一般并不成立；在这种情况下，仍需重新拟合模型 <span class="math inline">\(n\)</span> 次。</p>
+</section>
+<section id="k折交叉验证k-fold-cross-validation" class="level3">
+<h3 class="anchored" data-anchor-id="k折交叉验证k-fold-cross-validation">5.1.3 k折交叉验证（k-Fold Cross-Validation）</h3>
+<p>LOOCV的另一种选择是 <strong><span class="math inline">\(k\)</span> 折交叉验证（<span class="math inline">\(k\)</span>-fold CV）</strong>。这种方法将观测随机分成大小近似相等的 <span class="math inline">\(k\)</span> 组，也称为 <strong><span class="math inline">\(k\)</span> 折（folds）</strong>。把第一折作为验证集，在其余 <span class="math inline">\(k-1\)</span> 折上拟合模型，再在被留出的那一折观测上计算均方误差 <span class="math inline">\(\operatorname{MSE}_1\)</span>。将这一过程重复 <span class="math inline">\(k\)</span> 次，每次用不同的一组观测作为验证集。这样便得到 <span class="math inline">\(k\)</span> 个测试误差估计值 <span class="math inline">\(\operatorname{MSE}_1,\operatorname{MSE}_2,\ldots,\operatorname{MSE}_k\)</span>。将这些值取平均，即可得到 <span class="math inline">\(k\)</span> 折CV估计：</p>
+<p><span class="math display">\[
+\operatorname{CV}_{(k)}=\frac{1}{k}\sum_{i=1}^{k}\operatorname{MSE}_i. \tag{5.3}
+\]</span></p>
+<p>图5.5展示了 <span class="math inline">\(k\)</span> 折CV方法。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-5.png" class="img-fluid figure-img"></p>
+<figcaption>图5.5：5折交叉验证示意图</figcaption>
+</figure>
+</div>
+<p><strong>图5.5</strong> 5折CV示意图。将 <span class="math inline">\(n\)</span> 个观测随机分成五个互不重叠的组。每个五分之一的子集依次作为验证集（米色），其余观测作为训练集（蓝色）。对所得五个MSE估计值取平均，即可估计测试误差。</p>
+<p>不难看出，LOOCV就是 <span class="math inline">\(k=n\)</span> 时的 <span class="math inline">\(k\)</span> 折CV特例。在实践中，通常采用 <span class="math inline">\(k=5\)</span> 或 <span class="math inline">\(k=10\)</span> 进行 <span class="math inline">\(k\)</span> 折CV。与 <span class="math inline">\(k=n\)</span> 相比，采用 <span class="math inline">\(k=5\)</span> 或 <span class="math inline">\(k=10\)</span> 有什么好处？最明显的优势是计算量。LOOCV需要将统计学习方法拟合 <span class="math inline">\(n\)</span> 次，计算成本可能很高；只有用最小二乘法拟合的线性模型是个例外，此时可以使用式(5.2)。不过，交叉验证是一种非常通用的方法，几乎适用于任何统计学习方法。有些统计学习方法的拟合计算量很大，因此，LOOCV可能带来计算上的困难，尤其是在 <span class="math inline">\(n\)</span> 极大时。相比之下，10折CV只需将学习方法拟合十次，可能就可行得多。如第5.1.4节将介绍的，5折或10折CV还可能具有计算量以外的优势，这涉及偏差—方差权衡。</p>
+<p>图5.4右图给出了 <code>Auto</code> 数据的九组不同的10折CV估计，每组都来自将观测随机分成十折的一种不同划分。可以看到，观测划分为十折的方式有所不同，CV估计也因此存在一定变异。但这种变异，通常远小于验证集法所得测试误差估计的变异，后者见图5.2右图。</p>
+<p>分析真实数据时，我们并不知道真实的测试MSE，因此难以判断交叉验证估计的准确程度。不过，研究模拟数据时，可以计算真实测试MSE，从而评估交叉验证结果的准确性。图5.6展示了对第2章图2.9–2.11的模拟数据集应用平滑样条后，所得的交叉验证估计与真实测试误差率。蓝色表示真实测试MSE，黑色虚线与橙色实线分别表示LOOCV和10折CV的估计。在三幅图中，两种交叉验证估计都非常接近。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-6.png" class="img-fluid figure-img"></p>
+<figcaption>图5.6：模拟数据的真实测试MSE与交叉验证估计</figcaption>
+</figure>
+</div>
+<p><strong>图5.6</strong> 图2.9（左）、图2.10（中）和图2.11（右）中模拟数据集的真实测试MSE及其估计。蓝色表示真实测试MSE，黑色虚线表示LOOCV估计，橙色表示10折CV估计。叉号标示各条MSE曲线的最小值。图内文字：Flexibility＝灵活程度；Mean Squared Error＝均方误差。</p>
+<p>图5.6右图中，真实测试MSE与交叉验证曲线几乎完全重合。中图中，灵活程度较低时，两组曲线相近；灵活程度较高时，CV曲线则高估了测试集MSE。左图中，CV曲线总体形状正确，却低估了真实测试MSE。</p>
+<p>进行交叉验证时，我们的目标可能是判断某种统计学习方法在独立数据上的预期表现；此时，测试MSE的具体估计值就是所关注的对象。但有时，我们只关心估计的测试MSE曲线中最小值所在的位置。这是因为，我们可能正在对多种统计学习方法，或某一种方法的不同灵活程度进行交叉验证，以找出测试误差最低的方法。对于这一目的，估计的测试MSE曲线中最小点的位置很重要，而测试MSE估计值本身的具体数值并不重要。从图5.6可见，尽管CV曲线有时会低估真实测试MSE，但所有CV曲线都能近似找出正确的灵活程度，也就是测试MSE最小时对应的灵活程度。</p>
+</section>
+<section id="k折交叉验证的偏差方差权衡" class="level3">
+<h3 class="anchored" data-anchor-id="k折交叉验证的偏差方差权衡">5.1.4 k折交叉验证的偏差—方差权衡</h3>
+<p>第5.1.3节提到，在 <span class="math inline">\(k&lt;n\)</span> 时，<span class="math inline">\(k\)</span> 折CV相比LOOCV具有计算量上的优势。不过，撇开计算问题，<span class="math inline">\(k\)</span> 折CV还有一个不太明显、却可能更重要的优点：它往往能比LOOCV更准确地估计测试误差率。这与偏差—方差权衡有关。</p>
+<p>第5.1.1节提到，验证集法可能高估测试误差率，因为该方法用于拟合统计学习模型的训练集，只包含整个数据集一半的观测。沿着这一思路，不难看出LOOCV能给出测试误差的近似无偏估计。</p>
+<p>这是因为，每个训练集都包含 <span class="math inline">\(n-1\)</span> 个观测，几乎与完整数据集中的观测数相同。而采用例如 <span class="math inline">\(k=5\)</span> 或 <span class="math inline">\(k=10\)</span> 的 <span class="math inline">\(k\)</span> 折CV，会产生介于两者之间的偏差，因为每个训练集大约包含 <span class="math inline">\((k-1)n/k\)</span> 个观测：少于LOOCV，却明显多于验证集法。因此，从减小偏差的角度看，LOOCV显然优于 <span class="math inline">\(k\)</span> 折CV。</p>
+<p>然而，在一个估计过程中，偏差并不是唯一需要关注的因素，还必须考虑方差。实际上，LOOCV的方差高于 <span class="math inline">\(k&lt;n\)</span> 时的 <span class="math inline">\(k\)</span> 折CV。为什么会这样？进行LOOCV时，实际上是在对 <span class="math inline">\(n\)</span> 个拟合模型的输出取平均，而每个模型都是在几乎相同的一组观测上训练的，因此这些输出之间具有很强的正相关。相比之下，进行 <span class="math inline">\(k&lt;n\)</span> 的 <span class="math inline">\(k\)</span> 折CV时，我们对 <span class="math inline">\(k\)</span> 个拟合模型的输出取平均；各模型的训练集重叠较少，因此其输出之间的相关性也较低。多个高度相关量的均值，其方差高于相关程度较低的多个量的均值。因此，LOOCV得到的测试误差估计，其方差往往高于 <span class="math inline">\(k\)</span> 折CV得到的测试误差估计。</p>
+<p>由此可见，<span class="math inline">\(k\)</span> 折交叉验证中 <span class="math inline">\(k\)</span> 的选择涉及偏差—方差权衡。综合这些考虑，通常采用 <span class="math inline">\(k=5\)</span> 或 <span class="math inline">\(k=10\)</span> 进行 <span class="math inline">\(k\)</span> 折交叉验证，因为经验表明，这两个取值所得到的测试误差率估计，既没有过高的偏差，也没有很大的方差。</p>
+</section>
+<section id="分类问题中的交叉验证" class="level3">
+<h3 class="anchored" data-anchor-id="分类问题中的交叉验证">5.1.5 分类问题中的交叉验证</h3>
+<p>本章此前一直用定量结果 <span class="math inline">\(Y\)</span> 的回归问题说明交叉验证，并使用MSE衡量测试误差。不过，当 <span class="math inline">\(Y\)</span> 是定性的、需要进行分类时，交叉验证同样非常有用。其过程与本章前面的描述相同，只是不再用MSE衡量测试误差，而是使用被误分类的观测数量。例如，在分类问题中，LOOCV错误率为</p>
+<p><span class="math display">\[
+\operatorname{CV}_{(n)}=\frac{1}{n}\sum_{i=1}^{n}\operatorname{Err}_i, \tag{5.4}
+\]</span></p>
+<p>其中 <span class="math inline">\(\operatorname{Err}_i=I(y_i\ne\hat y_i)\)</span>。<span class="math inline">\(k\)</span> 折CV错误率和验证集错误率也以类似方式定义。</p>
+<p>作为例子，我们对图2.13所示的二维分类数据拟合不同的逻辑回归模型。图5.7左上图中，黑色实线表示对该数据集拟合标准逻辑回归模型所估计的决策边界。由于这些数据来自模拟，可以计算真实测试错误率，其值为0.201，明显高于0.133的贝叶斯错误率。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-7.png" class="img-fluid figure-img"></p>
+<figcaption>图5.7：不同多项式次数的逻辑回归决策边界</figcaption>
+</figure>
+</div>
+<p><strong>图5.7</strong> 对图2.13中的二维分类数据进行逻辑回归拟合。紫色虚线表示贝叶斯决策边界。线性、二次、三次和四次（次数1–4）逻辑回归所估计的决策边界用黑色表示。四种逻辑回归拟合的测试错误率依次为0.201、0.197、0.160和0.162，贝叶斯错误率则为0.133。图内文字：Degree＝多项式次数。</p>
+<p>显然，在这种情形下，逻辑回归没有足够的灵活性来刻画贝叶斯决策边界。可以像第3.3.2节在回归问题中所做的那样，使用预测变量的多项式函数，轻松地扩展逻辑回归，从而得到非线性决策边界。例如，可以拟合如下二次逻辑回归模型：</p>
+<p><span class="math display">\[
+\log\left(\frac{p}{1-p}\right)=\beta_0+\beta_1X_1+\beta_2X_1^2+\beta_3X_2+\beta_4X_2^2. \tag{5.5}
+\]</span></p>
+<p>图5.7右上图展示了相应的决策边界，此时边界已变为曲线。不过，测试错误率只略有改善，降至0.197。图5.7左下图则有明显更大的改进：这里拟合的逻辑回归模型使用了预测变量的三次多项式，测试错误率降至0.160。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-8.png" class="img-fluid figure-img"></p>
+<figcaption>图5.8：逻辑回归与KNN的训练、测试和交叉验证错误率</figcaption>
+</figure>
+</div>
+<p><strong>图5.8</strong> 图5.7所示二维分类数据的测试错误（棕色）、训练错误（蓝色）和10折CV错误（黑色）。<strong>左图：</strong> 使用预测变量多项式函数的逻辑回归，<span class="math inline">\(x\)</span> 轴表示所用多项式的次数。<strong>右图：</strong> 采用不同 <span class="math inline">\(K\)</span> 值的KNN分类器，<span class="math inline">\(K\)</span> 为所用近邻的数量。图内文字：Order of Polynomials Used＝所用多项式次数；Error Rate＝错误率；<span class="math inline">\(1/K\)</span> 保持原样。</p>
+<p>进一步使用四次多项式（图5.7右下图），测试误差又略有增加。</p>
+<p>在实践中，对于真实数据，贝叶斯决策边界和测试错误率都是未知的。那么，应当如何在图5.7展示的四种逻辑回归模型之间作选择？我们可以使用交叉验证。图5.8左图的黑线表示对数据拟合十个逻辑回归模型所得到的10折CV错误率；这些模型使用预测变量的多项式函数，最高到十次。真实测试错误用棕色表示，训练错误用蓝色表示。如前所见，随着拟合的灵活程度增加，训练错误往往会减少。（图中表明，训练错误率并没有严格单调下降，但总体上有随模型复杂程度增加而下降的趋势。）相比之下，测试错误呈典型的U形。10折CV错误率能较好地近似测试错误率。虽然它略微低估了错误率，但在使用四次多项式时达到最小值，与测试曲线在三次多项式时达到的最小值十分接近。事实上，四次多项式很可能也有良好的测试集表现，因为三次、四次、五次和六次多项式的真实测试错误率近似相同。</p>
+<p>图5.8右图对KNN分类方法绘制了相同的三条曲线，表示它们随 <span class="math inline">\(K\)</span> 值的变化。这里，<span class="math inline">\(K\)</span> 表示KNN分类器所用的近邻数量，而非CV所用的折数。同样，随着方法的灵活程度提高，训练错误率不断降低，因此不能用它来选择最优的 <span class="math inline">\(K\)</span>。尽管交叉验证错误曲线略微低估了测试错误率，它的最小值仍出现在非常接近最佳 <span class="math inline">\(K\)</span> 值的位置。</p>
+</section>
+</section>
+<section id="自助法the-bootstrap" class="level2">
+<h2 class="anchored" data-anchor-id="自助法the-bootstrap">5.2 自助法（The Bootstrap）</h2>
+<p>自助法是一种适用范围广、功能强大的统计工具，可以量化给定估计量或统计学习方法的不确定性。举一个简单的例子，自助法可以用来估计线性回归拟合中系数的标准误。在线性回归这一具体情形中，这种做法并没有特别大的用处，因为正如第3章所见，R等常用统计软件会自动输出这些标准误。不过，自助法的强大之处在于，它可以方便地应用于多种统计学习方法；对于其中一些方法，变异程度的度量很难通过其他途径获得，统计软件也不会自动输出。</p>
+<p>本节用一个简单的示例来说明自助法：在一个简单模型下，确定最佳的投资资金分配方案。在第5.3节中，我们将探讨如何用自助法评估线性模型拟合中回归系数的变异程度。</p>
+<p>假设我们要将一笔固定金额的资金投资于两种金融资产，它们的收益分别为 <span class="math inline">\(X\)</span> 和 <span class="math inline">\(Y\)</span>，其中 <span class="math inline">\(X\)</span> 和 <span class="math inline">\(Y\)</span> 都是随机量。我们把比例为 <span class="math inline">\(\alpha\)</span> 的资金投入 <span class="math inline">\(X\)</span>，其余 <span class="math inline">\(1-\alpha\)</span> 投入 <span class="math inline">\(Y\)</span>。由于这两种资产的收益都存在变异，我们希望选择 <span class="math inline">\(\alpha\)</span>，使投资的总风险（即方差）最小。换句话说，我们要使 <span class="math inline">\(\operatorname{Var}(\alpha X+(1-\alpha)Y)\)</span> 最小。可以证明，使风险最小的取值为</p>
+<p><span class="math display">\[
+\alpha=\frac{\sigma_Y^2-\sigma_{XY}}{\sigma_X^2+\sigma_Y^2-2\sigma_{XY}}, \tag{5.6}
+\]</span></p>
+<p>其中，<span class="math inline">\(\sigma_X^2=\operatorname{Var}(X)\)</span>，<span class="math inline">\(\sigma_Y^2=\operatorname{Var}(Y)\)</span>，<span class="math inline">\(\sigma_{XY}=\operatorname{Cov}(X,Y)\)</span>。</p>
+<p>在现实中，<span class="math inline">\(\sigma_X^2\)</span>、<span class="math inline">\(\sigma_Y^2\)</span> 和 <span class="math inline">\(\sigma_{XY}\)</span> 都是未知的。利用包含 <span class="math inline">\(X\)</span> 和 <span class="math inline">\(Y\)</span> 过去测量值的数据集，可以计算这些量的估计值 <span class="math inline">\(\hat{\sigma}_X^2\)</span>、<span class="math inline">\(\hat{\sigma}_Y^2\)</span> 和 <span class="math inline">\(\hat{\sigma}_{XY}\)</span>。然后，就可以用下式估计使投资方差最小的 <span class="math inline">\(\alpha\)</span> 值：</p>
+<p><span class="math display">\[
+\hat{\alpha}=\frac{\hat{\sigma}_Y^2-\hat{\sigma}_{XY}}{\hat{\sigma}_X^2+\hat{\sigma}_Y^2-2\hat{\sigma}_{XY}}. \tag{5.7}
+\]</span></p>
+<p>图5.9用模拟数据集展示了这种估计 <span class="math inline">\(\alpha\)</span> 的方法。在每个面板中，我们都模拟了投资 <span class="math inline">\(X\)</span> 和 <span class="math inline">\(Y\)</span> 的100组成对收益值。利用这些收益值估计 <span class="math inline">\(\sigma_X^2\)</span>、<span class="math inline">\(\sigma_Y^2\)</span> 和 <span class="math inline">\(\sigma_{XY}\)</span>，再将估计值代入式(5.7)，得到 <span class="math inline">\(\alpha\)</span> 的估计值。各个模拟数据集所得的 <span class="math inline">\(\hat{\alpha}\)</span> 值介于0.532与0.657之间。</p>
+<p>我们自然会希望量化 <span class="math inline">\(\alpha\)</span> 估计值的准确性。为了估计 <span class="math inline">\(\hat{\alpha}\)</span> 的标准差，我们将以下过程重复了1,000次：模拟 <span class="math inline">\(X\)</span> 和 <span class="math inline">\(Y\)</span> 的100组成对观测，再利用式(5.7)估计 <span class="math inline">\(\alpha\)</span>。这样便得到 <span class="math inline">\(\alpha\)</span> 的1,000个估计值，记为 <span class="math inline">\(\hat{\alpha}_1,\hat{\alpha}_2,\ldots,\hat{\alpha}_{1,000}\)</span>。图5.10左图给出了这些估计值的直方图。在模拟中，参数设为 <span class="math inline">\(\sigma_X^2=1\)</span>、<span class="math inline">\(\sigma_Y^2=1.25\)</span>、<span class="math inline">\(\sigma_{XY}=0.5\)</span>，因此我们知道 <span class="math inline">\(\alpha\)</span> 的真实值为0.6。直方图中的竖直实线标出了这一数值。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-9.png" class="img-fluid figure-img"></p>
+<figcaption>图5.9：四个模拟数据集中投资X和Y的成对收益值</figcaption>
+</figure>
+</div>
+<p><strong>图5.9</strong> 每个面板都展示了投资 <span class="math inline">\(X\)</span> 和 <span class="math inline">\(Y\)</span> 的100组模拟收益值。按从左到右、从上到下的顺序，所得的 <span class="math inline">\(\alpha\)</span> 估计值分别为0.576、0.532、0.657和0.651。</p>
+<p><span class="math inline">\(\alpha\)</span> 的全部1,000个估计值的均值为</p>
+<p><span class="math display">\[
+\bar{\alpha}=\frac{1}{1000}\sum_{r=1}^{1000}\hat{\alpha}_r=0.5996,
+\]</span></p>
+<p>与 <span class="math inline">\(\alpha=0.6\)</span> 非常接近，而这些估计值的标准差为</p>
+<p><span class="math display">\[
+\sqrt{\frac{1}{1000-1}\sum_{r=1}^{1000}(\hat{\alpha}_r-\bar{\alpha})^2}=0.083.
+\]</span></p>
+<p>这使我们能够很好地了解 <span class="math inline">\(\hat{\alpha}\)</span> 的准确性：<span class="math inline">\(\operatorname{SE}(\hat{\alpha})\approx0.083\)</span>。因此，粗略地说，对于从总体中抽取的一个随机样本，我们预期 <span class="math inline">\(\hat{\alpha}\)</span> 与 <span class="math inline">\(\alpha\)</span> 的差距平均约为0.08。</p>
+<p>然而在实际中，不能用上述过程估计 <span class="math inline">\(\operatorname{SE}(\hat{\alpha})\)</span>，因为对于真实数据，我们无法从原总体中生成新的样本。不过，自助法让我们能够用计算机模拟获取新样本集的过程，从而在不获取额外样本的情况下，估计 <span class="math inline">\(\hat{\alpha}\)</span> 的变异程度。具体而言，我们反复<strong>从原始数据集中</strong>抽取观测，得到不同的数据集，而不再反复从总体中获取相互独立的数据集。</p>
+<p>图5.11用一个仅包含 <span class="math inline">\(n=3\)</span> 条观测的简单数据集来说明这种方法。我们将这个数据集记为 <span class="math inline">\(Z\)</span>，从中随机抽取 <span class="math inline">\(n\)</span> 条观测，生成一个自助数据集（bootstrap data set）。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-10.png" class="img-fluid figure-img"></p>
+<figcaption>图5.10：从真实总体抽样与自助法所得的α估计值分布</figcaption>
+</figure>
+</div>
+<p><strong>图5.10</strong> <strong>左图：</strong> 从真实总体中生成1,000个模拟数据集，所得 <span class="math inline">\(\alpha\)</span> 估计值的直方图。<strong>中图：</strong> 从单个数据集中抽取1,000个自助样本，所得 <span class="math inline">\(\alpha\)</span> 估计值的直方图。<strong>右图：</strong> 用箱线图展示左图和中图中的 <span class="math inline">\(\alpha\)</span> 估计值。每个面板中的粉色线都表示 <span class="math inline">\(\alpha\)</span> 的真实值。图内文字：True＝真实总体；Bootstrap＝自助法。</p>
+<p>将这个自助数据集记为 <span class="math inline">\(Z^{*1}\)</span>。抽样采用<strong>有放回（with replacement）</strong> 的方式，也就是说，同一条观测可以在自助数据集中出现不止一次。在这个例子中，<span class="math inline">\(Z^{*1}\)</span> 包含两次第3条观测、一次第1条观测，而第2条观测一次也没有出现。注意，如果一条观测被纳入 <span class="math inline">\(Z^{*1}\)</span>，那么它的 <span class="math inline">\(X\)</span> 值和 <span class="math inline">\(Y\)</span> 值都会一同纳入。利用 <span class="math inline">\(Z^{*1}\)</span>，可以得到 <span class="math inline">\(\alpha\)</span> 的一个新的自助估计值（bootstrap estimate），记为 <span class="math inline">\(\hat{\alpha}^{*1}\)</span>。取一个较大的 <span class="math inline">\(B\)</span>，将这一过程重复 <span class="math inline">\(B\)</span> 次，便得到 <span class="math inline">\(B\)</span> 个不同的自助数据集 <span class="math inline">\(Z^{*1},Z^{*2},\ldots,Z^{*B}\)</span>，以及对应的 <span class="math inline">\(B\)</span> 个 <span class="math inline">\(\alpha\)</span> 估计值 <span class="math inline">\(\hat{\alpha}^{*1},\hat{\alpha}^{*2},\ldots,\hat{\alpha}^{*B}\)</span>。这些自助估计值的标准误可用下式计算：</p>
+<p><span class="math display">\[
+\operatorname{SE}_B(\hat{\alpha})=\sqrt{\frac{1}{B-1}\sum_{r=1}^{B}\left(\hat{\alpha}^{*r}-\frac{1}{B}\sum_{r'=1}^{B}\hat{\alpha}^{*r'}\right)^2}. \tag{5.8}
+\]</span></p>
+<p>它可作为根据原始数据集得到的 <span class="math inline">\(\hat{\alpha}\)</span> 的标准误估计值。</p>
+<p>图5.10中图展示了自助法的结果：图中是 <span class="math inline">\(\alpha\)</span> 的1,000个自助估计值的直方图，每个估计值都是用一个不同的自助数据集计算得到的。中图仅基于单个数据集构建，因此也可以用真实数据绘制。注意，这一直方图与左图非常相似。左图是一个理想情形下的直方图，其中的 <span class="math inline">\(\alpha\)</span> 估计值来自真实总体生成的1,000个模拟数据集。特别是，式(5.8)给出的标准误自助估计值 <span class="math inline">\(\operatorname{SE}(\hat{\alpha})\)</span> 为0.087，与利用1,000个模拟数据集得到的估计值0.083非常接近。右图则以另一种方式展示了中图和左图的信息：用箱线图展示从真实总体中生成1,000个模拟数据集所得的 <span class="math inline">\(\alpha\)</span> 估计值，以及自助法所得的 <span class="math inline">\(\alpha\)</span> 估计值。两幅箱线图同样具有相近的离散程度，说明自助法能够有效地估计 <span class="math inline">\(\hat{\alpha}\)</span> 的变异程度。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-5-11.png" class="img-fluid figure-img"></p>
+<figcaption>图5.11：对含3条观测的样本实施自助法的示意图</figcaption>
+</figure>
+</div>
+<p><strong>图5.11</strong> 在一个包含 <span class="math inline">\(n=3\)</span> 条观测的小样本上，用图示说明自助法。每个自助数据集都包含从原始数据集中有放回抽取的 <span class="math inline">\(n\)</span> 条观测。每个自助数据集都用于计算 <span class="math inline">\(\alpha\)</span> 的一个估计值。图内文字：Original Data (<span class="math inline">\(Z\)</span>)＝原始数据（<span class="math inline">\(Z\)</span>）；Obs＝观测编号。</p>
+</section>
+<section id="实验交叉验证与自助法" class="level2">
+<h2 class="anchored" data-anchor-id="实验交叉验证与自助法">5.3 实验：交叉验证与自助法</h2>
+<p>本实验将探讨本章介绍的重抽样技术。其中一些命令在你的计算机上可能需要运行一段时间。</p>
+<p>我们仍然先在顶层集中导入大部分所需的库。</p>
+<p>In [1]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP <span class="im">import</span> load_data</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.models <span class="im">import</span> (ModelSpec <span class="im">as</span> MS,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                         summarize,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                         poly)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>本实验还需要几项新的导入。</p>
+<p>In [2]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> functools <span class="im">import</span> partial</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> <span class="op">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>     (cross_validate,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>      KFold,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      ShuffleSplit)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.base <span class="im">import</span> clone</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.models <span class="im">import</span> sklearn_sm</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="验证集法" class="level3">
+<h3 class="anchored" data-anchor-id="验证集法">5.3.1 验证集法</h3>
+<p>我们将用验证集法，估计对 <code>Auto</code> 数据集拟合各种线性模型所得到的测试错误率。</p>
+<p>使用 <code>train_test_split()</code> 函数将数据划分为训练集和验证集。数据共有392个观测，因此通过参数 <code>test_size=196</code>，将其划分为两个大小均为196的集合。进行这类包含随机成分的操作时，通常最好设置随机种子，以便日后能够精确复现所得结果。这里使用参数 <code>random_state=0</code> 设置划分器的随机种子。</p>
+<p>In [3]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Auto <span class="op">=</span> load_data(<span class="st">'Auto'</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>Auto_train, Auto_valid <span class="op">=</span> train_test_split(Auto,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                                         test_size<span class="op">=</span><span class="dv">196</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                                         random_state<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在可以仅用训练集 <code>Auto_train</code> 中的观测拟合线性回归。</p>
+<p>In [4]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>hp_mm <span class="op">=</span> MS([<span class="st">'horsepower'</span>])</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>X_train <span class="op">=</span> hp_mm.fit_transform(Auto_train)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>y_train <span class="op">=</span> Auto_train[<span class="st">'mpg'</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> sm.OLS(y_train, X_train)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> model.fit()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>接下来，使用验证数据集为这个模型构造模型矩阵，并将其传入 <code>results</code> 的 <code>predict()</code> 方法。我们还计算模型的验证MSE。</p>
+<p>In [5]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X_valid <span class="op">=</span> hp_mm.transform(Auto_valid)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>y_valid <span class="op">=</span> Auto_valid[<span class="st">'mpg'</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>valid_pred <span class="op">=</span> results.predict(X_valid)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>np.mean((y_valid <span class="op">-</span> valid_pred)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[5]:</p>
+<pre class="text"><code>23.6166</code></pre>
+<p>因此，线性回归拟合的验证MSE估计值为23.62。</p>
+<p>我们也可以估计更高次多项式回归的验证误差。首先给出函数 <code>evalMSE()</code>，它接收模型字符串、训练集和测试集，并返回测试集上的MSE。</p>
+<p>In [6]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evalMSE(terms,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>            response,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>            train,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>            test):</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    mm <span class="op">=</span> MS(terms)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    X_train <span class="op">=</span> mm.fit_transform(train)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    y_train <span class="op">=</span> train[response]</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    X_test <span class="op">=</span> mm.transform(test)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    y_test <span class="op">=</span> test[response]</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> sm.OLS(y_train, X_train).fit()</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    test_pred <span class="op">=</span> results.predict(X_test)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.mean((y_test <span class="op">-</span> test_pred)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>下面使用这个函数，估计线性、二次和三次拟合的验证MSE。这里使用 <code>enumerate()</code> 函数：在 <code>for</code> 循环迭代时，它会同时给出对象的值及其索引。</p>
+<p>In [7]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>MSE <span class="op">=</span> np.zeros(<span class="dv">3</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, degree <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">4</span>)):</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    MSE[idx] <span class="op">=</span> evalMSE([poly(<span class="st">'horsepower'</span>, degree)],</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                       <span class="st">'mpg'</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                       Auto_train,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                       Auto_valid)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>MSE</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[7]:</p>
+<pre class="text"><code>array([23.62, 18.76, 18.80])</code></pre>
+<p>这三个错误率分别为23.62、18.76和18.80。如果改用另一种训练集／验证集划分，那么验证集上的误差预期也会有所不同。</p>
+<p>In [8]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>Auto_train, Auto_valid <span class="op">=</span> train_test_split(Auto,</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                                         test_size<span class="op">=</span><span class="dv">196</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                                         random_state<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>MSE <span class="op">=</span> np.zeros(<span class="dv">3</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, degree <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">4</span>)):</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    MSE[idx] <span class="op">=</span> evalMSE([poly(<span class="st">'horsepower'</span>, degree)],</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                       <span class="st">'mpg'</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                       Auto_train,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>                       Auto_valid)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>MSE</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[8]:</p>
+<pre class="text"><code>array([20.76, 16.95, 16.97])</code></pre>
+<p>采用这次训练集和验证集的划分后，含线性项、二次项和三次项的模型，其验证集错误率分别为20.76、16.95和16.97。</p>
+<p>这些结果与我们先前的发现一致：用 <code>horsepower</code> 的二次函数预测 <code>mpg</code>，表现优于仅使用 <code>horsepower</code> 线性函数的模型；没有证据表明，使用 <code>horsepower</code> 的三次函数能够带来改善。</p>
+</section>
+<section id="交叉验证-1" class="level3">
+<h3 class="anchored" data-anchor-id="交叉验证-1">5.3.2 交叉验证</h3>
+<p>理论上，任何广义线性模型都可以计算交叉验证估计值。不过，在实践中，用Python进行交叉验证最简单的办法是使用 <code>sklearn</code>，而它的接口或API与我们一直用来拟合GLM的 <code>statsmodels</code> 不同。</p>
+<p>这是数据科学家经常遇到的问题：“我有一个完成任务 <span class="math inline">\(A\)</span> 的函数，需要把它传入一个完成任务 <span class="math inline">\(B\)</span> 的工具，以便计算 <span class="math inline">\(B(A(D))\)</span>，其中 <span class="math inline">\(D\)</span> 是我的数据。”当 <span class="math inline">\(A\)</span> 和 <span class="math inline">\(B\)</span> 无法直接衔接时，就需要使用<strong>包装器（wrapper）</strong>。</p>
+<p>在 <code>ISLP</code> 包中，我们提供了包装器 <code>sklearn_sm()</code>，使我们能够方便地将 <code>sklearn</code> 的交叉验证工具用于由 <code>statsmodels</code> 拟合的模型。</p>
+<p><code>sklearn_sm()</code> 类的第一个参数是一个来自 <code>statsmodels</code> 的模型。它还可以接收两个可选参数：<code>model_str</code> 用于指定公式，<code>model_args</code> 则应是一个字典，包含拟合模型时使用的其他参数。例如，拟合逻辑回归模型时，必须指定 <code>family</code> 参数；可以通过 <code>model_args={'family':sm.families.Binomial()}</code> 传入。</p>
+<p>下面演示包装器的用法。</p>
+<p>In [9]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>hp_model <span class="op">=</span> sklearn_sm(sm.OLS,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                      MS([<span class="st">'horsepower'</span>]))</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>X, Y <span class="op">=</span> Auto.drop(columns<span class="op">=</span>[<span class="st">'mpg'</span>]), Auto[<span class="st">'mpg'</span>]</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>cv_results <span class="op">=</span> cross_validate(hp_model,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                            X,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                            Y,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                            cv<span class="op">=</span>Auto.shape[<span class="dv">0</span>])</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>cv_err <span class="op">=</span> np.mean(cv_results[<span class="st">'test_score'</span>])</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>cv_err</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[9]:</p>
+<pre class="text"><code>24.2315</code></pre>
+<p><code>cross_validate()</code> 的参数包括：一个具有适当 <code>fit()</code>、<code>predict()</code> 和 <code>score()</code> 方法的对象、特征数组 <code>X</code>，以及响应 <code>Y</code>。我们还向 <code>cross_validate()</code> 传入了额外参数 <code>cv</code>；将它指定为整数 <span class="math inline">\(K\)</span>，就会进行 <span class="math inline">\(K\)</span> 折交叉验证。这里给出的值等于观测总数，因此进行的是留一交叉验证（LOOCV）。<code>cross_validate()</code> 函数返回一个包含若干组成部分的字典；这里我们只需要交叉验证的测试评分（MSE），估计值为24.23。</p>
+<p>对于复杂程度逐渐增加的多项式拟合，可以重复上述过程。为使这一过程自动完成，我们再次使用 <code>for</code> 循环，依次拟合1次到5次多项式回归，计算相应的交叉验证误差，并将其存入向量 <code>cv_error</code> 的第 <span class="math inline">\(i\)</span> 个元素。<code>for</code> 循环中的变量 <code>d</code> 对应多项式的次数。首先初始化这个向量。这条命令可能需要几秒钟才能运行完毕。</p>
+<p>In [10]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>cv_error <span class="op">=</span> np.zeros(<span class="dv">5</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> np.array(Auto[<span class="st">'horsepower'</span>])</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> sklearn_sm(sm.OLS)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, d <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">range</span>(<span class="dv">1</span>,<span class="dv">6</span>)):</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> np.power.outer(H, np.arange(d<span class="op">+</span><span class="dv">1</span>))</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    M_CV <span class="op">=</span> cross_validate(M,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>                          X,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>                          Y,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>                          cv<span class="op">=</span>Auto.shape[<span class="dv">0</span>])</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    cv_error[i] <span class="op">=</span> np.mean(M_CV[<span class="st">'test_score'</span>])</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>cv_error</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[10]:</p>
+<pre class="text"><code>array([24.2315, 19.2482, 19.3350, 19.4244, 19.0332])</code></pre>
+<p>与图5.4一样，测试MSE的估计值从线性拟合到二次拟合明显下降，但使用更高次多项式没有带来明显改善。</p>
+<p>上面介绍了 <code>np.power()</code> 函数的 <code>outer()</code> 方法。<code>outer()</code> 方法适用于接收两个参数的运算，例如 <code>add()</code>、<code>min()</code> 或 <code>power()</code>。它以两个数组为参数，对分别来自两个数组的每一对元素进行该运算，从而构造一个更大的数组。</p>
+<p>In [11]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> np.array([<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">9</span>])</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> np.array([<span class="dv">2</span>, <span class="dv">4</span>])</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>np.add.outer(A, B)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[11]:</p>
+<pre class="text"><code>array([[ 5,  7],
+       [ 7,  9],
+       [11, 13]])</code></pre>
+<p>上面的CV例子使用了 <span class="math inline">\(K=n\)</span>，当然也可以使用 <span class="math inline">\(K&lt;n\)</span>。代码与上面非常相似，而且运行速度快得多。这里用 <code>KFold()</code> 将数据随机划分为 <span class="math inline">\(K=10\)</span> 组。我们使用 <code>random_state</code> 设置随机种子，并初始化向量 <code>cv_error</code>，用来存储1次到5次多项式拟合所对应的CV误差。</p>
+<p>In [12]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cv_error <span class="op">=</span> np.zeros(<span class="dv">5</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> KFold(n_splits<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>           shuffle<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>           random_state<span class="op">=</span><span class="dv">0</span>) <span class="co"># use same splits for each degree</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, d <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">range</span>(<span class="dv">1</span>,<span class="dv">6</span>)):</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> np.power.outer(H, np.arange(d<span class="op">+</span><span class="dv">1</span>))</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    M_CV <span class="op">=</span> cross_validate(M,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                          X,</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>                          Y,</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>                          cv<span class="op">=</span>cv)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    cv_error[i] <span class="op">=</span> np.mean(M_CV[<span class="st">'test_score'</span>])</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>cv_error</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[12]:</p>
+<pre class="text"><code>array([24.2077, 19.1853, 19.2763, 19.4785, 19.1372])</code></pre>
+<p>可以看到，计算时间比LOOCV短得多。（原则上，对于最小二乘线性模型，由于有LOOCV公式(5.2)可用，LOOCV的计算应当比 <span class="math inline">\(K\)</span> 折CV更快；但是，通用的 <code>cross_validate()</code> 函数没有使用这个公式。）我们仍然几乎看不到证据表明，使用三次或更高次多项式项，能比简单的二次拟合获得更低的测试误差。</p>
+<p><code>cross_validate()</code> 函数很灵活，可以将不同的划分机制作为参数传入。例如，使用 <code>ShuffleSplit()</code> 函数实现验证集法，与实现 <span class="math inline">\(K\)</span> 折交叉验证一样方便。</p>
+<p>In [13]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>validation <span class="op">=</span> ShuffleSplit(n_splits<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                          test_size<span class="op">=</span><span class="dv">196</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                          random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> cross_validate(hp_model,</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>                         Auto.drop([<span class="st">'mpg'</span>], axis<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>                         Auto[<span class="st">'mpg'</span>],</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                         cv<span class="op">=</span>validation)<span class="op">;</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>results[<span class="st">'test_score'</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[13]:</p>
+<pre class="text"><code>array([23.6166])</code></pre>
+<p>运行以下代码，可以估计测试误差的变异程度。</p>
+<p>In [14]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>validation <span class="op">=</span> ShuffleSplit(n_splits<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                          test_size<span class="op">=</span><span class="dv">196</span>,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                          random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> cross_validate(hp_model,</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                         Auto.drop([<span class="st">'mpg'</span>], axis<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>                         Auto[<span class="st">'mpg'</span>],</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                         cv<span class="op">=</span>validation)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>results[<span class="st">'test_score'</span>].mean(), results[<span class="st">'test_score'</span>].std()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[14]:</p>
+<pre class="text"><code>(23.8022, 1.4218)</code></pre>
+<p>需要注意，这个标准差不能有效估计平均测试评分或各次评分的抽样变异，因为随机选取的训练样本彼此重叠，由此产生了相关性。但它确实能让我们了解，选取不同随机折所引入的蒙特卡洛变异（Monte Carlo variation）有多大。</p>
+</section>
+<section id="自助法" class="level3">
+<h3 class="anchored" data-anchor-id="自助法">5.3.3 自助法</h3>
+<p>我们将用5.2节的简单例子，以及一个估计 <code>Auto</code> 数据集上线性回归模型准确性的例子，说明自助法的使用。</p>
+<section id="估计所关心统计量的准确性" class="level4">
+<h4 class="anchored" data-anchor-id="估计所关心统计量的准确性">估计所关心统计量的准确性</h4>
+<p>自助法的一大优点是几乎适用于所有情形，而且不需要复杂的数学计算。虽然Python中已有多种自助法实现，但用它估计标准误十分简单，因此下面将针对数据存储在数据框中的情形，编写我们自己的函数。</p>
+<p>首先用一个简单的例子说明自助法。5.2节介绍了 <code>ISLP</code> 包中的 <code>Portfolio</code> 数据集。这里的目标是估计公式(5.7)中参数 <span class="math inline">\(\alpha\)</span> 的抽样方差。我们将创建函数 <code>alpha_func()</code>，它接收一个假定具有 <code>X</code>、<code>Y</code> 两列的数据框 <code>D</code>，以及一个向量 <code>idx</code>，后者指定用哪些观测估计 <span class="math inline">\(\alpha\)</span>。函数随后输出基于所选观测得到的 <span class="math inline">\(\alpha\)</span> 估计值。</p>
+<p>In [15]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>Portfolio <span class="op">=</span> load_data(<span class="st">'Portfolio'</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> alpha_func(D, idx):</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    cov_ <span class="op">=</span> np.cov(D[[<span class="st">'X'</span>,<span class="st">'Y'</span>]].loc[idx], rowvar<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((cov_[<span class="dv">1</span>,<span class="dv">1</span>] <span class="op">-</span> cov_[<span class="dv">0</span>,<span class="dv">1</span>]) <span class="op">/</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>            (cov_[<span class="dv">0</span>,<span class="dv">0</span>]<span class="op">+</span>cov_[<span class="dv">1</span>,<span class="dv">1</span>]<span class="op">-</span><span class="dv">2</span><span class="op">*</span>cov_[<span class="dv">0</span>,<span class="dv">1</span>]))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>这个函数将最小方差公式(5.7)应用于参数 <code>idx</code> 所索引的观测，返回 <span class="math inline">\(\alpha\)</span> 的估计值。例如，下面这条命令使用全部100个观测估计 <span class="math inline">\(\alpha\)</span>。</p>
+<p>In [16]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>alpha_func(Portfolio, <span class="bu">range</span>(<span class="dv">100</span>))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[16]:</p>
+<pre class="text"><code>0.5758</code></pre>
+<p>接下来，从 <code>range(100)</code> 中有放回地随机选取100个观测。这相当于构造一个新的自助数据集，并基于这个新数据集重新计算 <span class="math inline">\(\hat{\alpha}\)</span>。</p>
+<p>In [17]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">0</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>alpha_func(Portfolio,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>           rng.choice(<span class="dv">100</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                      <span class="dv">100</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                      replace<span class="op">=</span><span class="va">True</span>))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[17]:</p>
+<pre class="text"><code>0.6074</code></pre>
+<p>将这一过程推广，就能构造简单函数 <code>boot_SE()</code>，为仅以数据框为参数的任意函数计算自助标准误。</p>
+<p>In [18]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> boot_SE(func,</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>             D,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>             n<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>             B<span class="op">=</span><span class="dv">1000</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>             seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    rng <span class="op">=</span> np.random.default_rng(seed)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    first_, second_ <span class="op">=</span> <span class="dv">0</span>, <span class="dv">0</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> n <span class="kw">or</span> D.shape[<span class="dv">0</span>]</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(B):</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> rng.choice(D.index,</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>                         n,</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>                         replace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>        value <span class="op">=</span> func(D, idx)</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>        first_ <span class="op">+=</span> value</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>        second_ <span class="op">+=</span> value<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.sqrt(second_ <span class="op">/</span> B <span class="op">-</span> (first_ <span class="op">/</span> B)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>注意，<code>for _ in range(B)</code> 使用 <code>_</code> 作为循环变量。当计数器的值不重要，只需要保证循环执行 <code>B</code> 次时，经常采用这种写法。</p>
+<p>下面使用这个函数，通过 <span class="math inline">\(B=1{,}000\)</span> 次自助重复抽样，评估 <span class="math inline">\(\alpha\)</span> 估计值的准确性。</p>
+<p>In [19]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>alpha_SE <span class="op">=</span> boot_SE(alpha_func,</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                    Portfolio,</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                    B<span class="op">=</span><span class="dv">1000</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                    seed<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>alpha_SE</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[19]:</p>
+<pre class="text"><code>0.0912</code></pre>
+<p>最后的输出表明，<span class="math inline">\(\operatorname{SE}(\hat{\alpha})\)</span> 的自助法估计值为0.0912。</p>
+</section>
+<section id="估计线性回归模型的准确性" class="level4">
+<h4 class="anchored" data-anchor-id="估计线性回归模型的准确性">估计线性回归模型的准确性</h4>
+<p>自助法可用于评估统计学习方法所得系数估计值和预测值的变异程度。</p>
+<p>这里，我们将用自助法评估 <span class="math inline">\(\beta_0\)</span> 和 <span class="math inline">\(\beta_1\)</span> 估计值的变异程度；它们分别是用 <code>Auto</code> 数据集中的 <code>horsepower</code> 预测 <code>mpg</code> 的线性回归模型的截距项和斜率项。我们将把自助法所得估计值，与使用3.1.2节介绍的 <span class="math inline">\(\operatorname{SE}(\hat{\beta}_0)\)</span> 和 <span class="math inline">\(\operatorname{SE}(\hat{\beta}_1)\)</span> 公式得到的估计值作比较。</p>
+<p>要使用 <code>boot_SE()</code>，必须编写一个仅接收数据框 <code>D</code> 和索引 <code>idx</code> 的函数，作为它的第一个参数。但这里希望对一个由模型公式和数据所指定的回归模型进行自助抽样。下面通过几个简单步骤展示如何实现。</p>
+<p>首先编写一个对回归模型进行自助抽样的通用函数 <code>boot_OLS()</code>，它接收一个公式，用来定义相应的回归。我们用 <code>clone()</code> 函数复制这个公式，以便在新的数据框上重新拟合。这意味着，所有派生特征，例如 <code>poly()</code> 定义的特征（很快就会见到），都会在重抽样得到的数据框上重新拟合。</p>
+<p>In [20]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> boot_OLS(model_matrix, response, D, idx):</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    D_ <span class="op">=</span> D.loc[idx]</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    Y_ <span class="op">=</span> D_[response]</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    X_ <span class="op">=</span> clone(model_matrix).fit_transform(D_)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> sm.OLS(Y_, X_).fit().params</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>这个函数还不完全符合 <code>boot_SE()</code> 对第一个参数的要求。指定模型的前两个参数在自助抽样过程中不会改变，我们希望将它们<em>固定</em>下来。<code>functools</code> 模块中的 <code>partial()</code> 函数恰好能做到这一点：它接收一个函数作为参数，并从左侧开始固定该函数的部分参数。这里用它固定 <code>boot_OLS()</code> 中指定模型公式的前两个参数。</p>
+<p>In [21]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>hp_func <span class="op">=</span> partial(boot_OLS, MS([<span class="st">'horsepower'</span>]), <span class="st">'mpg'</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>输入 <code>hp_func?</code>，可以看到它有两个参数 <code>D</code> 和 <code>idx</code>；它是前两个参数已固定的 <code>boot_OLS()</code> 版本，因此非常适合作为 <code>boot_SE()</code> 的第一个参数。</p>
+<p>现在，可以使用 <code>hp_func()</code>，从观测中有放回地随机抽样，得到截距项和斜率项的自助法估计值。首先用10个自助样本演示它的用途。</p>
+<p>In [22]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">0</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>np.array([hp_func(Auto,</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>                  rng.choice(<span class="dv">392</span>,</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                             <span class="dv">392</span>,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                             replace<span class="op">=</span><span class="va">True</span>)) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10</span>)])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[22]:</p>
+<pre class="text"><code>array([[39.8806, -0.1568],
+       [38.733 , -0.147 ],
+       [38.3173, -0.1444],
+       [39.9145, -0.1578],
+       [39.4335, -0.1507],
+       [40.3663, -0.1591],
+       [39.6233, -0.1545],
+       [39.0581, -0.1495],
+       [38.6669, -0.1452],
+       [39.6428, -0.1556]])</code></pre>
+<p>接下来，使用 <code>boot_SE()</code> 函数，根据截距项和斜率项的1,000个自助法估计值计算标准误。</p>
+<p>In [23]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>hp_se <span class="op">=</span> boot_SE(hp_func,</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>                Auto,</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>                B<span class="op">=</span><span class="dv">1000</span>,</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>                seed<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>hp_se</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[23]:</p>
+<pre class="text"><code>intercept     0.8488
+horsepower    0.0074
+dtype: float64</code></pre>
+<p>这表明，<span class="math inline">\(\operatorname{SE}(\hat{\beta}_0)\)</span> 的自助法估计值为0.85，<span class="math inline">\(\operatorname{SE}(\hat{\beta}_1)\)</span> 的自助法估计值为0.0074。如3.1.2节所述，可以使用标准公式计算线性模型中回归系数的标准误。使用 <code>ISLP.sm</code> 中的 <code>summarize()</code> 函数即可得到这些结果。</p>
+<p>In [24]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>hp_model.fit(Auto, Auto[<span class="st">'mpg'</span>])</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>model_se <span class="op">=</span> summarize(hp_model.results_)[<span class="st">'std err'</span>]</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>model_se</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[24]:</p>
+<pre class="text"><code>intercept     0.717
+horsepower    0.006
+Name: std err, dtype: float64</code></pre>
+<p>使用3.1.2节的公式，得到 <span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span> 的标准误估计值：截距为0.717，斜率为0.006。有意思的是，它们与自助法得到的估计值有些不同。这是否说明自助法有问题？事实上，这恰好说明相反的情况。回想一下，第75页式(3.8)给出的标准公式依赖某些假设。例如，公式依赖未知参数 <span class="math inline">\(\sigma^2\)</span>，即噪声方差。我们随后用RSS估计 <span class="math inline">\(\sigma^2\)</span>。虽然标准误公式本身不要求线性模型正确，但 <span class="math inline">\(\sigma^2\)</span> 的估计却依赖这一点。从第99页图3.8可以看到，数据中存在非线性关系，因此线性拟合的残差会被放大，<span class="math inline">\(\hat{\sigma}^2\)</span> 也会随之增大。其次，标准公式假设 <span class="math inline">\(x_i\)</span> 固定，所有变异都来自误差 <span class="math inline">\(\epsilon_i\)</span> 的变化；这一假设多少有些不切实际。自助法不依赖上述任何假设，因此，它对 <span class="math inline">\(\hat{\beta}_0\)</span> 和 <span class="math inline">\(\hat{\beta}_1\)</span> 标准误的估计，可能比 <code>sm.OLS</code> 的结果更准确。</p>
+<p>下面对数据拟合二次模型，分别计算自助标准误估计值和标准线性回归估计值。由于这个模型能很好地拟合数据（图3.8），此时 <span class="math inline">\(\operatorname{SE}(\hat{\beta}_0)\)</span>、<span class="math inline">\(\operatorname{SE}(\hat{\beta}_1)\)</span> 和 <span class="math inline">\(\operatorname{SE}(\hat{\beta}_2)\)</span> 的自助法估计值与标准估计值更加接近。</p>
+<p>In [25]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>quad_model <span class="op">=</span> MS([poly(<span class="st">'horsepower'</span>, <span class="dv">2</span>, raw<span class="op">=</span><span class="va">True</span>)])</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>quad_func <span class="op">=</span> partial(boot_OLS,</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>                     quad_model,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>                     <span class="st">'mpg'</span>)</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>boot_SE(quad_func, Auto, B<span class="op">=</span><span class="dv">1000</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[25]:</p>
+<pre class="text"><code>intercept                             2.067840
+poly(horsepower, 2, raw=True)[0]        0.033019
+poly(horsepower, 2, raw=True)[1]        0.000120
+dtype: float64</code></pre>
+<p>我们将这些结果与使用 <code>sm.OLS()</code> 计算的标准误作比较。</p>
+<p>In [26]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> sm.OLS(Auto[<span class="st">'mpg'</span>],</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>            quad_model.fit_transform(Auto))</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>summarize(M.fit())[<span class="st">'std err'</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[26]:</p>
+<pre class="text"><code>intercept                             1.800
+poly(horsepower, 2, raw=True)[0]        0.031
+poly(horsepower, 2, raw=True)[1]        0.000
+Name: std err, dtype: float64</code></pre>
+</section>
+</section>
+</section>
+<section id="习题" class="level2">
+<h2 class="anchored" data-anchor-id="习题">5.4 习题</h2>
+<section id="概念题" class="level3">
+<h3 class="anchored" data-anchor-id="概念题">概念题</h3>
+<p><strong>1.</strong> 运用方差的基本统计性质以及一元微积分，推导式 (5.6)。换言之，证明式 (5.6) 给出的 <span class="math inline">\(\alpha\)</span> 确实使 <span class="math inline">\(\operatorname{Var}(\alpha X+(1-\alpha)Y)\)</span> 取得最小值。</p>
+<p><strong>2.</strong> 下面推导某个给定观测出现在自助样本中的概率。假设我们从一组含有 <span class="math inline">\(n\)</span> 个观测的数据中抽取一个自助样本。</p>
+<p><strong>(a)</strong> 自助样本中的第一个观测不是原样本中第 <span class="math inline">\(j\)</span> 个观测的概率是多少？说明理由。</p>
+<p><strong>(b)</strong> 自助样本中的第二个观测不是原样本中第 <span class="math inline">\(j\)</span> 个观测的概率是多少？</p>
+<p><strong>(c)</strong> 说明第 <span class="math inline">\(j\)</span> 个观测不在自助样本中的概率为 <span class="math inline">\((1-1/n)^n\)</span>。</p>
+<p><strong>(d)</strong> 当 <span class="math inline">\(n=5\)</span> 时，第 <span class="math inline">\(j\)</span> 个观测出现在自助样本中的概率是多少？</p>
+<p><strong>(e)</strong> 当 <span class="math inline">\(n=100\)</span> 时，第 <span class="math inline">\(j\)</span> 个观测出现在自助样本中的概率是多少？</p>
+<p><strong>(f)</strong> 当 <span class="math inline">\(n=10{,}000\)</span> 时，第 <span class="math inline">\(j\)</span> 个观测出现在自助样本中的概率是多少？</p>
+<p><strong>(g)</strong> 绘制一幅图，展示当 <span class="math inline">\(n\)</span> 取 1 到 100,000 之间的每个整数时，第 <span class="math inline">\(j\)</span> 个观测出现在自助样本中的概率。讨论你观察到的现象。</p>
+<p><strong>(h)</strong> 下面用数值方法考察一个大小为 <span class="math inline">\(n=100\)</span> 的自助样本包含第 <span class="math inline">\(j\)</span> 个观测的概率。这里 <span class="math inline">\(j=4\)</span>。首先使用 <code>np.empty()</code> 函数创建一个数组 <code>store</code>，其中的值随后将被覆盖。接着，</p>
+<p>反复创建自助样本，每次记录第五个观测是否包含在该自助样本中。</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">10</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>store <span class="op">=</span> np.empty(<span class="dv">10000</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10000</span>):</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    store[i] <span class="op">=</span> np.<span class="bu">sum</span>(rng.choice(<span class="dv">100</span>, replace<span class="op">=</span><span class="va">True</span>) <span class="op">==</span> <span class="dv">4</span>)</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>         <span class="op">&gt;</span> <span class="dv">0</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>np.mean(store)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>讨论得到的结果。</p>
+<p><strong>3.</strong> 下面回顾 <span class="math inline">\(k\)</span> 折交叉验证。</p>
+<p><strong>(a)</strong> 解释如何实施 <span class="math inline">\(k\)</span> 折交叉验证。</p>
+<p><strong>(b)</strong> 与下列方法相比，<span class="math inline">\(k\)</span> 折交叉验证各有哪些优点和缺点？</p>
+<p><strong>i.</strong> 验证集法。</p>
+<p><strong>ii.</strong> LOOCV。</p>
+<p><strong>4.</strong> 假设我们使用某种统计学习方法，在预测变量 <span class="math inline">\(X\)</span> 的一个特定取值处，对响应 <span class="math inline">\(Y\)</span> 作出预测。详细描述如何估计这一预测值的标准差。</p>
+</section>
+<section id="应用题" class="level3">
+<h3 class="anchored" data-anchor-id="应用题">应用题</h3>
+<p><strong>5.</strong> 在第4章中，我们在 <code>Default</code> 数据集上，使用逻辑回归根据 <code>income</code> 和 <code>balance</code> 预测违约概率。下面使用验证集法估计这一逻辑回归模型的测试误差。开始分析前，不要忘记设置随机种子。</p>
+<p><strong>(a)</strong> 拟合一个逻辑回归模型，使用 <code>income</code> 和 <code>balance</code> 预测 <code>default</code>。</p>
+<p><strong>(b)</strong> 使用验证集法估计该模型的测试误差。为此，必须完成下列步骤：</p>
+<p><strong>i.</strong> 将样本集划分为训练集与验证集。</p>
+<p><strong>ii.</strong> 仅使用训练观测拟合一个多元逻辑回归模型。</p>
+<p><strong>iii.</strong> 计算验证集中每个人违约的后验概率，从而预测其违约状态。如果后验概率大于 0.5，则将此人分到 <code>default</code> 类别。</p>
+<p><strong>iv.</strong> 计算验证集误差，即验证集中被错误分类的观测所占的比例。</p>
+<p><strong>(c)</strong> 重复 (b) 中的过程三次，每次以不同的方式将观测划分为训练集与验证集。讨论得到的结果。</p>
+<p><strong>(d)</strong> 现在考虑一个使用 <code>income</code>、<code>balance</code> 以及表示 <code>student</code> 的虚拟变量来预测违约概率的逻辑回归模型。使用验证集法估计该模型的测试误差。讨论加入表示 <code>student</code> 的虚拟变量是否降低了测试错误率。</p>
+<p><strong>6.</strong> 我们继续在 <code>Default</code> 数据集上，使用逻辑回归模型根据 <code>income</code> 和 <code>balance</code> 预测违约概率。具体而言，下面将用两种不同的方法，估计 <code>income</code> 和 <code>balance</code> 的逻辑回归系数的标准误：(1) 使用自助法；(2) 使用 <code>sm.GLM()</code> 函数中计算标准误的标准公式。开始分析前，不要忘记设置随机种子。</p>
+<p><strong>(a)</strong> 使用 <code>summarize()</code> 和 <code>sm.GLM()</code> 函数，确定同时包含 <code>income</code> 和 <code>balance</code> 这两个预测变量的多元逻辑回归模型中，这两个变量所对应系数的标准误估计值。</p>
+<p><strong>(b)</strong> 编写一个函数 <code>boot_fn()</code>，输入为 <code>Default</code> 数据集以及观测的索引，输出为多元逻辑回归模型中 <code>income</code> 和 <code>balance</code> 的系数估计值。</p>
+<p><strong>(c)</strong> 参照实验中的自助法示例，使用你的 <code>boot_fn()</code> 函数估计 <code>income</code> 和 <code>balance</code> 的逻辑回归系数的标准误。</p>
+<p><strong>(d)</strong> 讨论使用 <code>sm.GLM()</code> 函数与使用自助法得到的标准误估计值。</p>
+<p><strong>7.</strong> 在 5.1.2 节与 5.1.3 节中，我们看到可以使用 <code>cross_validate()</code> 函数计算 LOOCV 测试误差估计值。另一种做法是，在 <code>for</code> 循环中，仅使用 <code>sm.GLM()</code> 以及拟合后模型的 <code>predict()</code> 方法来计算这些量。下面采用这种做法，在 <code>Weekly</code> 数据集上计算一个简单逻辑回归模型的 LOOCV 误差。回顾一下，在分类问题中，LOOCV 误差由式 (5.4) 给出。</p>
+<p><strong>(a)</strong> 拟合一个逻辑回归模型，使用 <code>Lag1</code> 和 <code>Lag2</code> 预测 <code>Direction</code>。</p>
+<p><strong>(b)</strong> 使用除第一个观测以外的所有观测，拟合一个逻辑回归模型，使用 <code>Lag1</code> 和 <code>Lag2</code> 预测 <code>Direction</code>。</p>
+<p><strong>(c)</strong> 使用 (b) 中的模型预测第一个观测的涨跌方向。具体做法是，如果 <span class="math inline">\(P(\texttt{Direction}=\texttt{"Up"}\mid\texttt{Lag1},\texttt{Lag2})&gt;0.5\)</span>，就预测第一个观测为上涨。这个观测是否被正确分类？</p>
+<p><strong>(d)</strong> 编写一个从 <span class="math inline">\(i=1\)</span> 到 <span class="math inline">\(i=n\)</span> 的 <code>for</code> 循环，其中 <span class="math inline">\(n\)</span> 是数据集中的观测数。该循环应执行下列各步：</p>
+<p><strong>i.</strong> 使用除第 <span class="math inline">\(i\)</span> 个观测以外的所有观测，拟合一个逻辑回归模型，使用 <code>Lag1</code> 和 <code>Lag2</code> 预测 <code>Direction</code>。</p>
+<p><strong>ii.</strong> 计算第 <span class="math inline">\(i\)</span> 个观测对应的市场上涨的后验概率。</p>
+<p><strong>iii.</strong> 使用第 <span class="math inline">\(i\)</span> 个观测的后验概率，预测市场是否上涨。</p>
+<p><strong>iv.</strong> 判断对第 <span class="math inline">\(i\)</span> 个观测的涨跌方向是否预测错误。如果预测错误，则记为 1；否则记为 0。</p>
+<p><strong>(e)</strong> 对 (d)iv 中得到的 <span class="math inline">\(n\)</span> 个数取平均值，得到测试误差的 LOOCV 估计值。讨论结果。</p>
+<p><strong>8.</strong> 下面对一个模拟数据集进行交叉验证。</p>
+<p><strong>(a)</strong> 按照下列方式生成一个模拟数据集：</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">1</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> rng.normal(size<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> x <span class="op">-</span> <span class="dv">2</span> <span class="op">*</span> x<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> rng.normal(size<span class="op">=</span><span class="dv">100</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>在这个数据集中，<span class="math inline">\(n\)</span> 是多少，<span class="math inline">\(p\)</span> 又是多少？用方程写出生成这些数据所用的模型。</p>
+<p><strong>(b)</strong> 绘制 <span class="math inline">\(X\)</span> 与 <span class="math inline">\(Y\)</span> 的散点图。讨论你的发现。</p>
+<p><strong>(c)</strong> 设置一个随机种子，然后计算用最小二乘法拟合下列四个模型所得到的 LOOCV 误差：</p>
+<p><strong>i.</strong> <span class="math inline">\(Y=\beta_0+\beta_1X+\epsilon\)</span></p>
+<p><strong>ii.</strong> <span class="math inline">\(Y=\beta_0+\beta_1X+\beta_2X^2+\epsilon\)</span></p>
+<p><strong>iii.</strong> <span class="math inline">\(Y=\beta_0+\beta_1X+\beta_2X^2+\beta_3X^3+\epsilon\)</span></p>
+<p><strong>iv.</strong> <span class="math inline">\(Y=\beta_0+\beta_1X+\beta_2X^2+\beta_3X^3+\beta_4X^4+\epsilon\)</span>。</p>
+<p>注意，使用 <code>data.frame()</code> 函数创建一个同时包含 <span class="math inline">\(X\)</span> 和 <span class="math inline">\(Y\)</span> 的数据集，可能会有所帮助。</p>
+<p><strong>(d)</strong> 使用另一个随机种子重复 (c)，并报告结果。你的结果与 (c) 中得到的结果相同吗？为什么？</p>
+<p><strong>(e)</strong> (c) 中哪个模型的 LOOCV 误差最小？这是否符合你的预期？解释你的答案。</p>
+<p><strong>(f)</strong> 讨论用最小二乘法拟合 (c) 中各个模型时，所得系数估计值的统计显著性。这些结果是否与根据交叉验证结果得出的结论一致？</p>
+<p><strong>9.</strong> 下面考察 <code>ISLP</code> 库中的 <code>Boston</code> 房价数据集。</p>
+<p><strong>(a)</strong> 根据该数据集，给出 <code>medv</code> 的总体均值的一个估计值，记为 <span class="math inline">\(\hat\mu\)</span>。</p>
+<p><strong>(b)</strong> 给出 <span class="math inline">\(\hat\mu\)</span> 的标准误的一个估计值。解释这一结果。</p>
+<p><em>提示：用样本标准差除以观测数的平方根，就可以计算样本均值的标准误。</em></p>
+<p><strong>(c)</strong> 现在使用自助法估计 <span class="math inline">\(\hat\mu\)</span> 的标准误。与 (b) 中的答案相比如何？</p>
+<p><strong>(d)</strong> 根据 (c) 中的自助法估计值，给出 <code>medv</code> 均值的一个 <span class="math inline">\(95\%\)</span> 置信区间。将它与使用 <code>Boston['medv'].std()</code> 以及两倍标准误准则 (3.9) 得到的结果进行比较。</p>
+<p><em>提示：可以使用公式 <span class="math inline">\([\hat\mu-2\operatorname{SE}(\hat\mu),\hat\mu+2\operatorname{SE}(\hat\mu)]\)</span> 近似计算一个 <span class="math inline">\(95\%\)</span> 置信区间。</em></p>
+<p><strong>(e)</strong> 根据该数据集，给出总体中 <code>medv</code> 中位数的一个估计值 <span class="math inline">\(\hat\mu_{med}\)</span>。</p>
+<p><strong>(f)</strong> 现在我们想估计 <span class="math inline">\(\hat\mu_{med}\)</span> 的标准误。遗憾的是，没有计算中位数标准误的简单公式。请改用自助法估计中位数的标准误。讨论你的发现。</p>
+<p><strong>(g)</strong> 根据该数据集，给出波士顿各人口普查区的 <code>medv</code> 的第10百分位数（tenth percentile）的一个估计值，记为 <span class="math inline">\(\hat\mu_{0.1}\)</span>。（可以使用 <code>np.percentile()</code> 函数。）</p>
+<p><strong>(h)</strong> 使用自助法估计 <span class="math inline">\(\hat\mu_{0.1}\)</span> 的标准误。讨论你的发现。</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "已复制");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "已复制");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"可滚动的代码","output":"可滚动的输出"};
+  </script>
+<nav class="page-navigation" aria-label="页面">
+  <div class="nav-page nav-page-previous">
+      <a href="../dist/chapter4.html" class="pagination-link" aria-label="第四章　分类">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">第四章　分类</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>An Introduction to Statistical Learning: with Applications in Python<br> Authors: Gareth James et al.<br> Translator: Yuechen Qi</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
