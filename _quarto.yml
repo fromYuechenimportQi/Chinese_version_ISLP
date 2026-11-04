@@ -12,16 +12,16 @@ book:
     - dist/chapter3.qmd
     - dist/chapter4.qmd
 
-number-sections: false
-
-page-footer:
+  page-footer:
     left: |
-      An Introduction to Statistical Learning; with Applications in Python
-      Author: Gareth James et al.
+      An Introduction to Statistical Learning: with Applications in Python<br>
+      Authors: Gareth James et al.<br>
       Translator: Yuechen Qi
     right: |
       This book was built with <a href="https://quarto.org/">Quarto</a>.
-  
+
+number-sections: false
+
 format:
   html:
     theme: cosmo
