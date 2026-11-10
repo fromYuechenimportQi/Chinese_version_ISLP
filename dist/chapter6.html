@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>第六章　线性模型选择与正则化 – 统计学习导论：Python 应用 · 中文译本</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../dist/chapter5.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-fc3b36746e1955fb88c77d3f07db1d35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "没有结果",
+    "search-matching-documents-text": "匹配的文档",
+    "search-copy-link-title": "复制搜索链接",
+    "search-hide-matches-text": "隐藏其它匹配结果",
+    "search-more-match-text": "更多匹配结果",
+    "search-more-matches-text": "更多匹配结果",
+    "search-clear-button-title": "清除",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "取消",
+    "search-submit-button-title": "提交",
+    "search-label": "搜索"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">跳至主要内容</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="工具栏">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="展开或折叠侧边栏导航" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter6.html"><span class="chapter-title">第六章　线性模型选择与正则化</span></a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="搜索" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto" aria-label="网站">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">统计学习导论：Python 应用 · 中文译本</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/fromYuechenimportQi/Chinese_version_ISLP" title="源代码" class="quarto-navigation-tool px-1" aria-label="源代码"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="搜索"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">译者序</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter3.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第三章　线性回归</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter4.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第四章　分类</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter5.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第五章　重抽样方法</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter6.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第六章　线性模型选择与正则化</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">目录</h2>
+   
+  <ul>
+  <li><a href="#子集选择" id="toc-子集选择" class="nav-link active" data-scroll-target="#子集选择">6.1 子集选择</a>
+  <ul class="collapse">
+  <li><a href="#最佳子集选择best-subset-selection" id="toc-最佳子集选择best-subset-selection" class="nav-link" data-scroll-target="#最佳子集选择best-subset-selection">6.1.1 最佳子集选择（Best Subset Selection）</a></li>
+  <li><a href="#逐步选择stepwise-selection" id="toc-逐步选择stepwise-selection" class="nav-link" data-scroll-target="#逐步选择stepwise-selection">6.1.2 逐步选择（Stepwise Selection）</a></li>
+  <li><a href="#选择最优模型" id="toc-选择最优模型" class="nav-link" data-scroll-target="#选择最优模型">6.1.3 选择最优模型</a></li>
+  </ul></li>
+  <li><a href="#收缩方法shrinkage-methods" id="toc-收缩方法shrinkage-methods" class="nav-link" data-scroll-target="#收缩方法shrinkage-methods">6.2 收缩方法（Shrinkage Methods）</a>
+  <ul class="collapse">
+  <li><a href="#岭回归ridge-regression" id="toc-岭回归ridge-regression" class="nav-link" data-scroll-target="#岭回归ridge-regression">6.2.1 岭回归（Ridge Regression）</a></li>
+  <li><a href="#套索法" id="toc-套索法" class="nav-link" data-scroll-target="#套索法">6.2.2 套索法</a></li>
+  <li><a href="#选择调节参数" id="toc-选择调节参数" class="nav-link" data-scroll-target="#选择调节参数">6.2.3 选择调节参数</a></li>
+  </ul></li>
+  <li><a href="#降维方法dimension-reduction-methods" id="toc-降维方法dimension-reduction-methods" class="nav-link" data-scroll-target="#降维方法dimension-reduction-methods">6.3 降维方法（Dimension Reduction Methods）</a>
+  <ul class="collapse">
+  <li><a href="#主成分回归principal-components-regression" id="toc-主成分回归principal-components-regression" class="nav-link" data-scroll-target="#主成分回归principal-components-regression">6.3.1 主成分回归（Principal Components Regression）</a></li>
+  <li><a href="#偏最小二乘partial-least-squares" id="toc-偏最小二乘partial-least-squares" class="nav-link" data-scroll-target="#偏最小二乘partial-least-squares">6.3.2 偏最小二乘（Partial Least Squares）</a></li>
+  </ul></li>
+  <li><a href="#高维情形下的考量" id="toc-高维情形下的考量" class="nav-link" data-scroll-target="#高维情形下的考量">6.4 高维情形下的考量</a>
+  <ul class="collapse">
+  <li><a href="#高维数据" id="toc-高维数据" class="nav-link" data-scroll-target="#高维数据">6.4.1 高维数据</a></li>
+  <li><a href="#高维情形下会出现什么问题" id="toc-高维情形下会出现什么问题" class="nav-link" data-scroll-target="#高维情形下会出现什么问题">6.4.2 高维情形下会出现什么问题？</a></li>
+  <li><a href="#高维情形下的回归" id="toc-高维情形下的回归" class="nav-link" data-scroll-target="#高维情形下的回归">6.4.3 高维情形下的回归</a></li>
+  <li><a href="#解释高维情形下的结果" id="toc-解释高维情形下的结果" class="nav-link" data-scroll-target="#解释高维情形下的结果">6.4.4 解释高维情形下的结果</a></li>
+  </ul></li>
+  <li><a href="#实验线性模型与正则化方法" id="toc-实验线性模型与正则化方法" class="nav-link" data-scroll-target="#实验线性模型与正则化方法">6.5 实验：线性模型与正则化方法</a>
+  <ul class="collapse">
+  <li><a href="#子集选择方法" id="toc-子集选择方法" class="nav-link" data-scroll-target="#子集选择方法">6.5.1 子集选择方法</a></li>
+  <li><a href="#岭回归与套索法" id="toc-岭回归与套索法" class="nav-link" data-scroll-target="#岭回归与套索法">6.5.2 岭回归与套索法</a></li>
+  <li><a href="#pcr与pls回归" id="toc-pcr与pls回归" class="nav-link" data-scroll-target="#pcr与pls回归">6.5.3 PCR与PLS回归</a></li>
+  </ul></li>
+  <li><a href="#习题" id="toc-习题" class="nav-link" data-scroll-target="#习题">6.6 习题</a>
+  <ul class="collapse">
+  <li><a href="#概念题" id="toc-概念题" class="nav-link" data-scroll-target="#概念题">概念题</a></li>
+  <li><a href="#应用题" id="toc-应用题" class="nav-link" data-scroll-target="#应用题">应用题</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">第六章　线性模型选择与正则化</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>在回归问题中，通常使用标准线性模型</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1X_1+\cdots+\beta_pX_p+\epsilon \tag{6.1}
+\]</span></p>
+<p>描述响应 <span class="math inline">\(Y\)</span> 与一组变量 <span class="math inline">\(X_1,X_2,\ldots,X_p\)</span> 之间的关系。第3章已经介绍，通常使用最小二乘法拟合这一模型。</p>
+<p>在后续章节中，我们将考虑扩展线性模型框架的一些方法。第7章推广式(6.1)，使其能够描述非线性但仍具有可加性的关系；第8章和第10章则考虑更一般的非线性模型。不过，线性模型在推断方面有明显优势，而且在实际问题中，与非线性方法相比，它往往也具有出人意料的竞争力。因此，在进入非线性领域之前，本章先讨论如何用其他拟合过程代替普通的最小二乘拟合，从而改进简单的线性模型。</p>
+<p>为什么要使用其他拟合过程来代替最小二乘法？我们将看到，这些替代方法能够提高<strong>预测准确性（prediction accuracy）</strong> 和<strong>模型可解释性（model interpretability）</strong>。</p>
+<ul>
+<li><strong>预测准确性：</strong> 只要响应与预测变量之间的真实关系近似线性，最小二乘估计的偏差就会较小。如果 <span class="math inline">\(n\gg p\)</span>，即观测数 <span class="math inline">\(n\)</span> 远大于变量数 <span class="math inline">\(p\)</span>，最小二乘估计的方差通常也会较小，因此在测试观测上表现良好。但如果 <span class="math inline">\(n\)</span> 并不比 <span class="math inline">\(p\)</span> 大很多，最小二乘拟合可能有很大变异，导致过拟合，从而无法很好地预测未用于模型训练的未来观测。若 <span class="math inline">\(p&gt;n\)</span>，最小二乘系数估计更不再唯一，而是存在无穷多个解。这些最小二乘解在训练数据上的误差都为零，但由于方差极高，在测试集上通常表现很差。<sup><a href="#ch06-fn1" id="ch06-fnref1">1</a></sup> 通过约束系数估计值，或将其向零收缩，往往可以在偏差仅略微增加的代价下，大幅减小方差。这可以显著提高对未参与模型训练的观测的响应预测准确性。</li>
+</ul>
+<aside class="footnote" id="ch06-fn1">
+<a href="#ch06-fnref1">1</a> 当 <span class="math inline">\(p\gg n\)</span> 时，系数平方和最小的那个最小二乘解，有时能够表现得相当好。更详细的讨论见第10.8节。
+</aside>
+<ul>
+<li><strong>模型可解释性：</strong> 多元回归模型中的一些变量，甚至许多变量，实际上常常与响应无关。纳入这些无关变量会给模型带来不必要的复杂性。移除它们，也就是把对应的系数估计值设为零，可以得到更容易解释的模型。然而，最小二乘法几乎不可能得到恰好等于零的系数估计。本章将介绍一些自动进行<strong>特征选择（feature selection）</strong> 或变量选择的方法，也就是从多元回归模型中排除无关变量。</li>
+</ul>
+<p>除了用最小二乘法拟合式(6.1)，还有许多经典或现代的替代方法。本章讨论三类重要方法。</p>
+<ul>
+<li><strong>子集选择（subset selection）：</strong> 从 <span class="math inline">\(p\)</span> 个预测变量中，找出一个我们认为与响应有关的子集，再对这一较小的变量集合使用最小二乘法拟合模型。</li>
+<li><strong>收缩（shrinkage）：</strong> 拟合包含全部 <span class="math inline">\(p\)</span> 个预测变量的模型，但与最小二乘估计相比，将系数估计值向零收缩。这种收缩也称为正则化（regularization），具有减小方差的作用。根据所采用的收缩方式，一些系数可能被估计为恰好等于零。因此，收缩方法也能进行变量选择。</li>
+<li><strong>降维（dimension reduction）：</strong> 将 <span class="math inline">\(p\)</span> 个预测变量投影到一个 <span class="math inline">\(M\)</span> 维子空间，其中 <span class="math inline">\(M&lt;p\)</span>。具体做法是计算这些变量的 <span class="math inline">\(M\)</span> 个不同线性组合，即投影，再把这 <span class="math inline">\(M\)</span> 个投影作为预测变量，用最小二乘法拟合线性回归模型。</li>
+</ul>
+<p>以下各节将更详细地介绍这些方法及其优缺点。虽然本章讨论的是对第3章回归线性模型的扩展和修改，但相同的概念也适用于其他方法，例如第4章介绍的分类模型。</p>
+<section id="子集选择" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="子集选择">6.1 子集选择</h2>
+<p>本节考虑从预测变量中选择子集的一些方法，包括最佳子集选择和逐步模型选择过程。</p>
+<section id="最佳子集选择best-subset-selection" class="level3">
+<h3 class="anchored" data-anchor-id="最佳子集选择best-subset-selection">6.1.1 最佳子集选择（Best Subset Selection）</h3>
+<p>进行<strong>最佳子集选择</strong>时，对 <span class="math inline">\(p\)</span> 个预测变量的每一种可能组合，分别拟合一个最小二乘回归。也就是说，拟合全部 <span class="math inline">\(p\)</span> 个恰好包含一个预测变量的模型、全部 <span class="math inline">\(\binom{p}{2}=p(p-1)/2\)</span> 个恰好包含两个预测变量的模型，依此类推。随后考察所有这些模型，找出其中最好的一个。</p>
+<p>从最佳子集选择所考察的 <span class="math inline">\(2^p\)</span> 种可能模型中选出最优模型，并非简单的任务。通常将其分为两个阶段，如算法6.1所述。</p>
+<div id="algorithm-6-1" class="algorithm">
+<p><strong>算法6.1　最佳子集选择</strong></p>
+<ol type="1">
+<li><p>令 <span class="math inline">\(\mathcal{M}_0\)</span> 表示不含任何预测变量的空模型。这个模型对每个观测都预测为样本均值。</p></li>
+<li><p>对于 <span class="math inline">\(k=1,2,\ldots,p\)</span>：</p>
+<p><strong>(a)</strong> 拟合全部 <span class="math inline">\(\binom{p}{k}\)</span> 个恰好包含 <span class="math inline">\(k\)</span> 个预测变量的模型。</p>
+<p><strong>(b)</strong> 从这 <span class="math inline">\(\binom{p}{k}\)</span> 个模型中选出最好的一个，记为 <span class="math inline">\(\mathcal{M}_k\)</span>。这里“最好”定义为RSS最小，等价地，也就是 <span class="math inline">\(R^2\)</span> 最大。</p></li>
+<li><p>根据验证集上的预测误差、<span class="math inline">\(C_p\)</span>（AIC）、BIC或调整后的 <span class="math inline">\(R^2\)</span>，从 <span class="math inline">\(\mathcal{M}_0,\ldots,\mathcal{M}_p\)</span> 中选出一个最优模型；也可以使用交叉验证法。</p></li>
+</ol>
+</div>
+<p>算法6.1的第2步针对每一种子集大小，找出在训练数据上最好的模型，从而将问题从 <span class="math inline">\(2^p\)</span> 个候选模型缩减为 <span class="math inline">\(p+1\)</span> 个候选模型。在图6.1中，这些模型构成红色标示的下边界。</p>
+<p>接下来，只需从这 <span class="math inline">\(p+1\)</span> 个候选项中选出一个最优模型。但这一步必须谨慎，因为随着模型中纳入的特征数增加，这 <span class="math inline">\(p+1\)</span> 个模型的RSS会单调减小，<span class="math inline">\(R^2\)</span> 则会单调增大。因此，如果根据这些统计量选择最优模型，最终总会得到包含全部变量的模型。问题在于，较小的RSS或较大的 <span class="math inline">\(R^2\)</span> 只说明模型的训练误差较低，而我们希望选择的是测试误差较低的模型。（正如第2章图2.9–2.11所示，训练误差通常比测试误差小得多；训练误差低，绝不保证测试误差低。）因此，第3步根据验证集误差、<span class="math inline">\(C_p\)</span>、BIC或调整后的 <span class="math inline">\(R^2\)</span>，在 <span class="math inline">\(\mathcal{M}_0,\mathcal{M}_1,\ldots,\mathcal{M}_p\)</span> 中作出选择。如果用交叉验证来选择最优模型，就在每个训练折上重复第2步，再对验证误差取平均，选出最佳的 <span class="math inline">\(k\)</span> 值。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-1.png" class="img-fluid figure-img"></p>
+<figcaption>图6.1：Credit数据集各预测变量子集模型的RSS与R²</figcaption>
+</figure>
+</div>
+<p><strong>图6.1</strong> 对 <code>Credit</code> 数据集中十个预测变量的各个可能子集模型，分别绘出RSS和 <span class="math inline">\(R^2\)</span>。红色边界表示在给定预测变量个数时，按RSS和 <span class="math inline">\(R^2\)</span> 选出的最佳模型。虽然数据集只有十个预测变量，<span class="math inline">\(x\)</span> 轴 (Number of Predictors, 预测变量个数) 却从1到11，因为其中一个变量是有三个取值的类别型变量，需要建立两个虚拟变量。</p>
+<p>对于选定的 <span class="math inline">\(k\)</span>，最终交付的是在完整训练集上拟合的模型 <span class="math inline">\(\mathcal{M}_k\)</span>。第6.1.3节将讨论这些方法。</p>
+<p>图6.1给出了最佳子集选择的一个应用。每个点都对应一个最小二乘回归模型，使用的是第3章介绍的 <code>Credit</code> 数据集中10个预测变量的某个不同子集。这里，变量 <code>region</code> 是有三个水平的定性变量，因此用两个虚拟变量表示；在本例中，这两个虚拟变量分别参与选择。因此，总共有11个可能纳入模型的变量。图中按变量个数绘出了每个模型的RSS和 <span class="math inline">\(R^2\)</span> 统计量。红色曲线连接了每种模型大小下，按RSS或 <span class="math inline">\(R^2\)</span> 选出的最佳模型。正如预期，变量数增加时，这些指标不断改善；不过，从包含三个变量的模型开始，再加入更多预测变量，对RSS和 <span class="math inline">\(R^2\)</span> 的改善已经很小。</p>
+<p>虽然这里用最小二乘回归介绍最佳子集选择，但相同思想也适用于其他模型，例如逻辑回归。对于逻辑回归，算法6.1第2步不再用RSS为模型排序，而是使用<strong>偏差统计量（deviance）</strong>。对于更广泛的一类模型，它起着类似RSS的作用。偏差统计量等于最大化后的对数似然乘以−2；数值越小，拟合越好。</p>
+<p>最佳子集选择简单直观，但受到计算能力的限制。随着 <span class="math inline">\(p\)</span> 增大，需要考虑的模型数会迅速增加。一般而言，由 <span class="math inline">\(p\)</span> 个预测变量的各个子集构成的模型共有 <span class="math inline">\(2^p\)</span> 个。因此，<span class="math inline">\(p=10\)</span> 时，约有1,000个候选模型；<span class="math inline">\(p=20\)</span> 时，则超过一百万个！</p>
+<p>因此，即使使用速度极快的现代计算机，当 <span class="math inline">\(p\)</span> 大于大约40时，最佳子集选择在计算上也变得不可行。有一些称为<strong>分支定界（branch-and-bound）</strong> 的计算捷径，可以排除部分候选项，但随着 <span class="math inline">\(p\)</span> 增大，它们也有局限，而且只适用于最小二乘线性回归。接下来介绍计算效率更高的替代方法。</p>
+</section>
+<section id="逐步选择stepwise-selection" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="逐步选择stepwise-selection">6.1.2 逐步选择（Stepwise Selection）</h3>
+<p>由于计算量的限制，最佳子集选择无法用于 <span class="math inline">\(p\)</span> 很大的情形。当 <span class="math inline">\(p\)</span> 较大时，它还可能遇到统计方面的问题。搜索空间越大，就越容易找到在训练数据上看起来很好、却可能对未来数据毫无预测能力的模型。因此，庞大的搜索空间可能导致过拟合，使系数估计的方差很大。</p>
+<p>出于这两方面的原因，只考察范围小得多的一组模型的逐步方法，是最佳子集选择的一种有吸引力的替代方案。</p>
+<section id="前向逐步选择forward-stepwise-selection" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="前向逐步选择forward-stepwise-selection">前向逐步选择（Forward Stepwise Selection）</h4>
+<p>前向逐步选择是最佳子集选择的一种计算效率较高的替代方法。最佳子集选择要考虑 <span class="math inline">\(p\)</span> 个预测变量的全部子集所构成的 <span class="math inline">\(2^p\)</span> 个可能模型，而前向逐步选择考察的模型少得多。它从不含任何预测变量的模型开始，每次加入一个预测变量，直到全部预测变量都进入模型。具体而言，每一步都加入那个能使拟合得到最大额外改善的变量。算法6.2给出了更正式的过程。</p>
+<div id="algorithm-6-2" class="algorithm">
+<p><strong>算法6.2　前向逐步选择</strong></p>
+<ol type="1">
+<li><p>令 <span class="math inline">\(\mathcal{M}_0\)</span> 表示不含任何预测变量的空模型。</p></li>
+<li><p>对于 <span class="math inline">\(k=0,\ldots,p-1\)</span>：</p>
+<p><strong>(a)</strong> 考虑全部 <span class="math inline">\(p-k\)</span> 个模型；每个模型都在 <span class="math inline">\(\mathcal{M}_k\)</span> 的预测变量基础上，再增加一个预测变量。</p>
+<p><strong>(b)</strong> 从这 <span class="math inline">\(p-k\)</span> 个模型中选出最好的一个，记为 <span class="math inline">\(\mathcal{M}_{k+1}\)</span>。这里“最好”定义为RSS最小或 <span class="math inline">\(R^2\)</span> 最大。</p></li>
+<li><p>根据验证集上的预测误差、<span class="math inline">\(C_p\)</span>（AIC）、BIC或调整后的 <span class="math inline">\(R^2\)</span>，从 <span class="math inline">\(\mathcal{M}_0,\ldots,\mathcal{M}_p\)</span> 中选出一个最优模型；也可以使用交叉验证法。</p></li>
+</ol>
+</div>
+<p>最佳子集选择需要拟合 <span class="math inline">\(2^p\)</span> 个模型。前向逐步选择则拟合一个空模型，并在第 <span class="math inline">\(k\)</span> 次迭代时拟合 <span class="math inline">\(p-k\)</span> 个模型，其中 <span class="math inline">\(k=0,\ldots,p-1\)</span>，总共为 <span class="math inline">\(1+\sum_{k=0}^{p-1}(p-k)=1+p(p+1)/2\)</span> 个模型。这一差别很大。</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>变量个数</th>
+<th>最佳子集选择</th>
+<th>前向逐步选择</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><code>rating</code></td>
+<td><code>rating</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><code>rating, income</code></td>
+<td><code>rating, income</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><code>rating, income, student</code></td>
+<td><code>rating, income, student</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><code>cards, income, student, limit</code></td>
+<td><code>rating, income, student, limit</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>表6.1</strong> 对 <code>Credit</code> 数据集进行最佳子集选择和前向逐步选择时，最先选出的四个模型。前三个模型相同，第四个模型不同。</p>
+<p>当 <span class="math inline">\(p=20\)</span> 时，最佳子集选择需要拟合1,048,576个模型，而前向逐步选择只需拟合211个模型。<sup><a href="#ch06-fn2" id="ch06-fnref2">2</a></sup></p>
+<aside class="footnote" id="ch06-fn2">
+<a href="#ch06-fnref2">2</a> 虽然前向逐步选择考察 <span class="math inline">\(p(p+1)/2+1\)</span> 个模型，但它在模型空间中进行的是有引导的搜索，因此实际考虑的有效模型空间所包含的模型数，远多于 <span class="math inline">\(p(p+1)/2+1\)</span>。
+</aside>
+<p>算法6.2的第2(b)步，需要在向 <span class="math inline">\(\mathcal{M}_k\)</span> 额外加入一个预测变量的 <span class="math inline">\(p-k\)</span> 个模型中，找出最好的模型。只需选择RSS最小或 <span class="math inline">\(R^2\)</span> 最大的模型即可。但第3步需要在变量数不同的一组模型中找出最好的一个，这更有挑战性，将在第6.1.3节讨论。</p>
+<p>前向逐步选择相对于最佳子集选择的计算优势显而易见。虽然它在实践中往往表现良好，却不能保证从 <span class="math inline">\(p\)</span> 个预测变量的全部子集模型，即 <span class="math inline">\(2^p\)</span> 个模型中，找到最好的那个。例如，假设某个数据集有 <span class="math inline">\(p=3\)</span> 个预测变量，最好的单变量模型包含 <span class="math inline">\(X_1\)</span>，最好的双变量模型却包含 <span class="math inline">\(X_2\)</span> 和 <span class="math inline">\(X_3\)</span>。此时，前向逐步选择就无法选出最好的双变量模型，因为 <span class="math inline">\(\mathcal{M}_1\)</span> 包含 <span class="math inline">\(X_1\)</span>，所以 <span class="math inline">\(\mathcal{M}_2\)</span> 也必须包含 <span class="math inline">\(X_1\)</span>，再加上一个其他变量。</p>
+<p>表6.1列出了对 <code>Credit</code> 数据集进行最佳子集选择和前向逐步选择时，最先选出的四个模型，说明了这一现象。两种方法都选择 <code>rating</code> 作为最佳单变量模型，再分别加入 <code>income</code> 和 <code>student</code>，得到双变量和三变量模型。但最佳子集选择在四变量模型中用 <code>cards</code> 替换了 <code>rating</code>，而前向逐步选择必须在四变量模型中保留 <code>rating</code>。在这个例子中，图6.1表明三变量模型与四变量模型的RSS差别不大，因此这两个四变量模型很可能都足以适用。</p>
+<p>前向逐步选择甚至可以用于 <span class="math inline">\(n&lt;p\)</span> 的高维情形。不过，此时只能构造子模型 <span class="math inline">\(\mathcal{M}_0,\ldots,\mathcal{M}_{n-1}\)</span>，因为每个子模型都用最小二乘法拟合，而当 <span class="math inline">\(p\ge n\)</span> 时，最小二乘法无法给出唯一解。 #### 后向逐步选择（Backward Stepwise Selection）</p>
+<p>与前向逐步选择一样，后向逐步选择也是最佳子集选择的一种高效替代方法。不过，它从包含全部 <span class="math inline">\(p\)</span> 个预测变量的完整最小二乘模型开始，再反复删除最没有用的预测变量，每次删除一个。算法6.3给出了详细过程。</p>
+<div id="algorithm-6-3" class="algorithm">
+<p><strong>算法6.3　后向逐步选择</strong></p>
+<ol type="1">
+<li><p>令 <span class="math inline">\(\mathcal{M}_p\)</span> 表示包含全部 <span class="math inline">\(p\)</span> 个预测变量的完整模型。</p></li>
+<li><p>对于 <span class="math inline">\(k=p,p-1,\ldots,1\)</span>：</p>
+<p><strong>(a)</strong> 考虑全部 <span class="math inline">\(k\)</span> 个模型；每个模型都在 <span class="math inline">\(\mathcal{M}_k\)</span> 的预测变量中去掉一个，共保留 <span class="math inline">\(k-1\)</span> 个预测变量。</p>
+<p><strong>(b)</strong> 从这 <span class="math inline">\(k\)</span> 个模型中选出最好的一个，记为 <span class="math inline">\(\mathcal{M}_{k-1}\)</span>。这里“最好”定义为RSS最小或 <span class="math inline">\(R^2\)</span> 最大。</p></li>
+<li><p>根据验证集上的预测误差、<span class="math inline">\(C_p\)</span>（AIC）、BIC或调整后的 <span class="math inline">\(R^2\)</span>，从 <span class="math inline">\(\mathcal{M}_0,\ldots,\mathcal{M}_p\)</span> 中选出一个最优模型；也可以使用交叉验证法。</p></li>
+</ol>
+</div>
+<p>与前向逐步选择一样，后向选择只搜索 <span class="math inline">\(1+p(p+1)/2\)</span> 个模型，因此适用于 <span class="math inline">\(p\)</span> 太大、无法进行最佳子集选择的情形。<sup><a href="#ch06-fn3" id="ch06-fnref3">3</a></sup> 同样，后向逐步选择也不能保证找到由 <span class="math inline">\(p\)</span> 个预测变量的某个子集构成的最佳模型。</p>
+<aside class="footnote" id="ch06-fn3">
+<a href="#ch06-fnref3">3</a> 与前向逐步选择一样，后向逐步选择在模型空间中进行有引导的搜索，因此实际上考虑的模型远多于 <span class="math inline">\(1+p(p+1)/2\)</span> 个。
+</aside>
+<p>后向选择要求样本数 <span class="math inline">\(n\)</span> 大于变量数 <span class="math inline">\(p\)</span>，这样才能拟合完整模型。相比之下，前向逐步选择甚至可以用于 <span class="math inline">\(n&lt;p\)</span> 的情形，因此当 <span class="math inline">\(p\)</span> 很大时，它是唯一可行的子集选择方法。</p>
+</section>
+<section id="混合方法hybrid-approaches" class="level4">
+<h4 class="anchored" data-anchor-id="混合方法hybrid-approaches">混合方法（Hybrid Approaches）</h4>
+<p>最佳子集选择、前向逐步选择和后向逐步选择通常会给出相似但并不完全相同的模型。另一种选择是将前向和后向逐步选择结合起来：与前向选择类似，依次向模型加入变量；但每加入一个新变量后，也可以删除那些已不能改善模型拟合的变量。这类方法试图在保留前向和后向逐步选择计算优势的同时，更接近最佳子集选择的结果。</p>
+</section>
+</section>
+<section id="选择最优模型" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="选择最优模型">6.1.3 选择最优模型</h3>
+<p>最佳子集选择、前向选择和后向选择都会产生一组模型，每个模型都包含 <span class="math inline">\(p\)</span> 个预测变量的一个子集。要使用这些方法，就需要判断哪个模型最好。</p>
+<p>如第6.1.1节所述，包含全部预测变量的模型总会有最小的RSS和最大的 <span class="math inline">\(R^2\)</span>，因为这些指标与训练误差有关。而我们希望选择的是测试误差较低的模型。这里已经可以看出，正如第2章所示，训练误差可能无法很好地估计测试误差。因此，RSS和 <span class="math inline">\(R^2\)</span> 不适合用于在预测变量数不同的一组模型中选择最优模型。</p>
+<p>要按测试误差选择最优模型，就需要估计测试误差。常见的做法有两种：</p>
+<ol type="1">
+<li>调整训练误差，校正过拟合带来的偏差，从而间接估计测试误差。</li>
+<li>使用第5章讨论的验证集法或交叉验证法，直接估计测试误差。</li>
+</ol>
+<p>下面分别考察这两类方法。</p>
+<section id="cpaicbic与调整后的r²" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="cpaicbic与调整后的r²">Cp、AIC、BIC与调整后的R²</h4>
+<p>第2章说明，训练集MSE通常低估测试MSE。（回顾一下，<span class="math inline">\(\operatorname{MSE}=\operatorname{RSS}/n\)</span>。）这是因为，用最小二乘法对训练数据拟合模型时，回归系数就是专门按训练RSS尽可能小来估计的，而不是使测试RSS最小。尤其是，随着模型纳入更多变量，训练误差会减小，测试误差却不一定。因此，不能使用训练集RSS和训练集 <span class="math inline">\(R^2\)</span>，在变量数不同的一组模型中作选择。</p>
+<p>不过，有多种技术可以根据模型大小调整训练误差，从而在变量数不同的一组模型中作选择。下面考察四种方法：<span class="math inline">\(C_p\)</span>、赤池信息准则（AIC）、贝叶斯信息准则（BIC）和调整后的 <span class="math inline">\(R^2\)</span>。图6.2给出了对 <code>Credit</code> 数据进行最佳子集选择后，每种大小的最佳模型所对应的 <span class="math inline">\(C_p\)</span>、BIC和调整后的 <span class="math inline">\(R^2\)</span>。</p>
+<p>对于包含 <span class="math inline">\(d\)</span> 个预测变量的最小二乘拟合模型，测试MSE的 <span class="math inline">\(C_p\)</span> 估计为</p>
+<p><span class="math display">\[
+C_p=\frac{1}{n}\left(\operatorname{RSS}+2d\hat\sigma^2\right), \tag{6.2}
+\]</span></p>
+<p>其中，<span class="math inline">\(\hat\sigma^2\)</span> 是式(6.1)中每个响应测量对应的误差 <span class="math inline">\(\epsilon\)</span> 的方差估计值。<sup><a href="#ch06-fn4" id="ch06-fnref4">4</a></sup> 通常用包含全部预测变量的完整模型估计 <span class="math inline">\(\hat\sigma^2\)</span>。本质上，<span class="math inline">\(C_p\)</span> 统计量在训练RSS上加了一个 <span class="math inline">\(2d\hat\sigma^2\)</span> 的<strong>惩罚项（penalty）</strong>，以校正训练误差倾向于低估测试误差这一事实。显然，模型的预测变量越多，惩罚项就越大，目的是校正训练RSS相应的下降。</p>
+<aside class="footnote" id="ch06-fn4">
+<a href="#ch06-fnref4">4</a> Mallow的 <span class="math inline">\(C_p\)</span> 有时定义为 <span class="math inline">\(C_p'=\operatorname{RSS}/\hat\sigma^2+2d-n\)</span>。这与上文的定义等价，因为 <span class="math inline">\(C_p=\frac{1}{n}\hat\sigma^2(C_p'+n)\)</span>，所以 <span class="math inline">\(C_p\)</span> 最小的模型也有最小的 <span class="math inline">\(C_p'\)</span>。
+</aside>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-2.png" class="img-fluid figure-img"></p>
+<figcaption>图6.2：Credit数据最佳子集模型的Cp、BIC和调整后的R²</figcaption>
+</figure>
+</div>
+<p><strong>图6.2</strong> <code>Credit</code> 数据集中每种大小的最佳模型（图6.1中的下边界）所对应的 <span class="math inline">\(C_p\)</span>、BIC和调整后的 <span class="math inline">\(R^2\)</span>。<span class="math inline">\(C_p\)</span> 和BIC是测试MSE的估计值。中图显示，当选入四个变量之后，BIC所估计的测试误差开始上升；另外两幅图在包含四个变量之后则相当平坦。图内文字：Number of Predictors＝预测变量个数；Adjusted <span class="math inline">\(R^2\)</span>＝调整后的 <span class="math inline">\(R^2\)</span>；<span class="math inline">\(C_p\)</span> 与BIC保持原样。</p>
+<p>虽然证明超出了本书范围，但可以证明：如果式(6.2)中的 <span class="math inline">\(\hat\sigma^2\)</span> 是 <span class="math inline">\(\sigma^2\)</span> 的无偏估计，那么 <span class="math inline">\(C_p\)</span> 就是测试MSE的无偏估计。因此，测试误差较低的模型往往有较小的 <span class="math inline">\(C_p\)</span> 值；在一组模型中作选择时，就选择 <span class="math inline">\(C_p\)</span> 最小的模型。在图6.2中，<span class="math inline">\(C_p\)</span> 选择了包含 <code>income</code>、<code>limit</code>、<code>rating</code>、<code>cards</code>、<code>age</code> 和 <code>student</code> 的六变量模型。</p>
+<p>AIC准则适用于通过极大似然拟合的一大类模型。对于具有高斯误差的模型(6.1)，极大似然与最小二乘是相同的。此时，AIC为</p>
+<p><span class="math display">\[
+\operatorname{AIC}=\frac{1}{n}\left(\operatorname{RSS}+2d\hat\sigma^2\right),
+\]</span></p>
+<p>为简便起见，这里省略了无关常数。<sup><a href="#ch06-fn5" id="ch06-fnref5">5</a></sup> 因此，对于最小二乘模型，<span class="math inline">\(C_p\)</span> 和AIC相互成比例，所以图6.2只展示了 <span class="math inline">\(C_p\)</span>。</p>
+<aside class="footnote" id="ch06-fn5">
+<a href="#ch06-fnref5">5</a> 最小二乘回归的AIC有两个公式。这里给出的公式需要一个 <span class="math inline">\(\sigma^2\)</span> 的表达式，我们使用包含全部预测变量的完整模型来获得它。第二个公式适用于 <span class="math inline">\(\sigma^2\)</span> 未知、且我们不想显式估计它的情形；其中使用 <span class="math inline">\(\log(\operatorname{RSS})\)</span> 项代替RSS项。这两个公式的详细推导超出了本书范围。
+</aside>
+<p>BIC是从贝叶斯观点推导出来的，但最终形式也与 <span class="math inline">\(C_p\)</span>（以及AIC）相似。对于包含 <span class="math inline">\(d\)</span> 个预测变量的最小二乘模型，略去无关常数后，BIC为</p>
+<p><span class="math display">\[
+\operatorname{BIC}=\frac{1}{n}\left(\operatorname{RSS}+\log(n)d\hat\sigma^2\right). \tag{6.3}
+\]</span></p>
+<p>与 <span class="math inline">\(C_p\)</span> 一样，测试误差较低的模型往往有较小的BIC值，因此通常选择BIC值最小的模型。注意，BIC用 <span class="math inline">\(\log(n)d\hat\sigma^2\)</span> 代替了 <span class="math inline">\(C_p\)</span> 中的 <span class="math inline">\(2d\hat\sigma^2\)</span>，其中 <span class="math inline">\(n\)</span> 是观测数。由于当 <span class="math inline">\(n&gt;7\)</span> 时 <span class="math inline">\(\log n&gt;2\)</span>，</p>
+<p>BIC通常对变量较多的模型施加更重的惩罚，因此选择的模型比 <span class="math inline">\(C_p\)</span> 更小。图6.2表明，<code>Credit</code> 数据集确实如此：BIC选择的模型只包含 <code>income</code>、<code>limit</code>、<code>cards</code> 和 <code>student</code> 四个预测变量。在这个例子中，各条曲线都很平坦，因此四变量模型与六变量模型的准确性似乎没有太大差别。</p>
+<p>调整后的 <span class="math inline">\(R^2\)</span> 统计量是另一种常用方法，可以在变量数不同的一组模型中进行选择。回顾第3章，通常的 <span class="math inline">\(R^2\)</span> 定义为 <span class="math inline">\(1-\operatorname{RSS}/\operatorname{TSS}\)</span>，其中 <span class="math inline">\(\operatorname{TSS}=\sum(y_i-\bar y)^2\)</span> 是响应的总平方和。由于模型加入更多变量时RSS总会下降，<span class="math inline">\(R^2\)</span> 就总会随之增大。对于包含 <span class="math inline">\(d\)</span> 个变量的最小二乘模型，调整后的 <span class="math inline">\(R^2\)</span> 统计量计算如下：</p>
+<p><span class="math display">\[
+\text{Adjusted }R^2=1-\frac{\operatorname{RSS}/(n-d-1)}{\operatorname{TSS}/(n-1)}. \tag{6.4}
+\]</span></p>
+<p><span class="math inline">\(C_p\)</span>、AIC和BIC的值越小，表示模型的测试误差越低；调整后的 <span class="math inline">\(R^2\)</span> 则是值越大，表示模型的测试误差越小。最大化调整后的 <span class="math inline">\(R^2\)</span> 等价于最小化 <span class="math inline">\(\frac{\operatorname{RSS}}{n-d-1}\)</span>。虽然RSS总会随模型变量数的增加而减小，但由于分母中含有 <span class="math inline">\(d\)</span>，<span class="math inline">\(\frac{\operatorname{RSS}}{n-d-1}\)</span> 既可能增大，也可能减小。</p>
+<p>调整后的 <span class="math inline">\(R^2\)</span> 背后的直观想法是：一旦模型已经包含所有正确的变量，再加入额外的噪声变量，只会使RSS略微下降。由于加入噪声变量会使 <span class="math inline">\(d\)</span> 增大，这类变量会使 <span class="math inline">\(\frac{\operatorname{RSS}}{n-d-1}\)</span> 增大，从而使调整后的 <span class="math inline">\(R^2\)</span> 减小。因此，从理论上说，调整后的 <span class="math inline">\(R^2\)</span> 最大的模型将只包含正确变量，而不包含噪声变量。通常的 <span class="math inline">\(R^2\)</span> 统计量不会因模型加入不必要的变量而付出代价，调整后的 <span class="math inline">\(R^2\)</span> 则会。图6.2给出了 <code>Credit</code> 数据集的调整后 <span class="math inline">\(R^2\)</span>。用这个统计量会选择七变量模型，即在 <span class="math inline">\(C_p\)</span> 和AIC选出的模型中再加入 <code>own</code>。</p>
+<p><span class="math inline">\(C_p\)</span>、AIC和BIC都有严格的理论依据，不过超出了本书范围。这些依据依赖于<strong>渐近论证（asymptotic arguments）</strong>，也就是样本量 <span class="math inline">\(n\)</span> 很大的情形。调整后的 <span class="math inline">\(R^2\)</span> 虽然很流行，也相当直观，但它的统计理论依据不如AIC、BIC和 <span class="math inline">\(C_p\)</span> 充分。所有这些指标都易于使用和计算。这里给出的是用最小二乘法拟合线性模型时的公式；AIC和BIC也可以为更一般的模型定义。</p>
+</section>
+<section id="验证与交叉验证" class="level4">
+<h4 class="anchored" data-anchor-id="验证与交叉验证">验证与交叉验证</h4>
+<p>除了刚才讨论的方法，也可以使用第5章介绍的验证集法和交叉验证法，直接估计测试误差。我们可以对每个候选模型计算验证集误差或交叉验证误差，然后选择估计测试误差最小的模型。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-3.png" class="img-fluid figure-img"></p>
+<figcaption>图6.3：Credit数据最佳子集模型的BIC平方根、验证集误差和交叉验证误差</figcaption>
+</figure>
+</div>
+<p><strong>图6.3</strong> 对于 <code>Credit</code> 数据集，图中给出了包含 <span class="math inline">\(d\)</span> 个预测变量的最佳模型所对应的三个量，其中 <span class="math inline">\(d\)</span> 从1到11。按各个量选出的总体最佳模型用蓝色叉号标出。左：BIC的平方根。中：验证集误差。右：交叉验证误差。图内文字：Number of Predictors＝预测变量个数；Square Root of BIC＝BIC的平方根；Validation Set Error＝验证集误差；Cross-Validation Error＝交叉验证误差。</p>
+<p>与AIC、BIC、<span class="math inline">\(C_p\)</span> 和调整后的 <span class="math inline">\(R^2\)</span> 相比，这一过程的优势是直接估计测试误差，并且对真实底层模型所作的假设更少。它还适用于更广泛的模型选择任务，包括模型自由度（例如模型中的预测变量数）难以明确界定，或误差方差 <span class="math inline">\(\sigma^2\)</span> 难以估计的情形。注意，使用交叉验证时，算法6.1—6.3中的模型序列 <span class="math inline">\(\mathcal M_k\)</span> 是对每个训练折分别确定的；对于每一种模型大小 <span class="math inline">\(k\)</span>，再将所有折的验证误差取平均。例如，在最佳子集回归中，大小为 <span class="math inline">\(k\)</span> 的最佳子集 <span class="math inline">\(\mathcal M_k\)</span> 在各折之间可能不同。选定最佳大小 <span class="math inline">\(k\)</span> 后，再在完整数据集上找到该大小的最佳模型。</p>
+<p>过去，对于许多 <span class="math inline">\(p\)</span> 较大和／或 <span class="math inline">\(n\)</span> 较大的问题，交叉验证的计算代价高得难以承受，因此AIC、BIC、<span class="math inline">\(C_p\)</span> 和调整后的 <span class="math inline">\(R^2\)</span> 是在一组模型中进行选择时更有吸引力的方法。如今计算机速度很快，交叉验证所需的计算几乎不再构成问题。因此，交叉验证是在多个候选模型中进行选择的一种很有吸引力的方法。</p>
+<p>图6.3针对 <code>Credit</code> 数据中每个包含 <span class="math inline">\(d\)</span> 个变量的最佳模型，绘出了BIC、验证集误差和交叉验证误差随 <span class="math inline">\(d\)</span> 的变化。验证误差的计算方法是随机选取四分之三的观测作为训练集，其余观测作为验证集。交叉验证误差使用 <span class="math inline">\(k=10\)</span> 折计算。在这个例子中，验证集法和交叉验证法都选择了六变量模型。不过，这三种方法都表明，四变量、五变量和六变量模型的测试误差大致相同。</p>
+<p>事实上，图6.3中图和右图中的估计测试误差曲线相当平坦。虽然三变量模型的估计测试误差明显低于二变量模型，但包含3到11个变量的模型，其估计测试误差都很接近。此外，如果我们</p>
+<p>改变数据的训练集与验证集划分，重新使用验证集法，或者改变交叉验证的折划分，重新进行交叉验证，那么估计测试误差最低的具体模型肯定会改变。在这种情况下，可以使用<strong>一标准误规则（one-standard-error rule）</strong> 来选择模型：先计算每种模型大小所对应的估计测试MSE的标准误，然后，在估计测试误差与曲线最低点相差不超过一个标准误的模型中，选择最小的模型。这一规则的依据是：如果一组模型看起来表现差不多，那么我们不妨选择最简单的模型，也就是预测变量数最少的模型。在这里，无论对验证集法还是交叉验证法应用一标准误规则，都会选出三变量模型。</p>
+</section>
+</section>
+</section>
+<section id="收缩方法shrinkage-methods" class="level2">
+<h2 class="anchored" data-anchor-id="收缩方法shrinkage-methods">6.2 收缩方法（Shrinkage Methods）</h2>
+<p>第6.1节介绍的子集选择方法，用最小二乘法拟合只包含部分预测变量的线性模型。另一种做法是拟合包含全部 <span class="math inline">\(p\)</span> 个预测变量的模型，同时对系数估计值施加约束或进行正则化；等价地说，就是将系数估计值向零收缩。这样的约束为何能改善拟合，也许并不一目了然，但收缩系数估计值确实能够大幅降低其方差。将回归系数向零收缩的两种最著名的方法，是岭回归和套索法（lasso）。</p>
+<section id="岭回归ridge-regression" class="level3">
+<h3 class="anchored" data-anchor-id="岭回归ridge-regression">6.2.1 岭回归（Ridge Regression）</h3>
+<p>回顾第3章，最小二乘拟合通过选取使下式最小的值，来估计 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span>：</p>
+<p><span class="math display">\[
+\operatorname{RSS}=\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}\beta_jx_{ij}\right)^2.
+\]</span></p>
+<p><strong>岭回归</strong>与最小二乘法非常相似，只是估计系数时最小化的量稍有不同。具体而言，岭回归系数估计值 <span class="math inline">\(\hat\beta^R\)</span> 是使下式最小的值：</p>
+<p><span class="math display">\[
+\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}\beta_jx_{ij}\right)^2+\lambda\sum_{j=1}^{p}\beta_j^2
+=\operatorname{RSS}+\lambda\sum_{j=1}^{p}\beta_j^2, \tag{6.5}
+\]</span></p>
+<p>其中，<span class="math inline">\(\lambda\geq 0\)</span> 是需要另外确定的调节参数。式(6.5)在两项不同的准则之间进行权衡。与最小二乘法一样，岭回归通过减小RSS，寻找能很好地拟合数据的系数估计值。不过，第二项 <span class="math inline">\(\lambda\sum_j\beta_j^2\)</span> 称为<strong>收缩惩罚项（shrinkage penalty）</strong>；当 <span class="math inline">\(\beta_1,\ldots,\beta_p\)</span> 接近零时，这一项就较小，因此它会将 <span class="math inline">\(\beta_j\)</span> 的估计值向零收缩。调节参数 <span class="math inline">\(\lambda\)</span> 用来控制这两项对回归系数估计值的相对影响。</p>
+<p>当 <span class="math inline">\(\lambda=0\)</span> 时，惩罚项不起作用，岭回归就会给出最小二乘估计值。然而，当 <span class="math inline">\(\lambda\to\infty\)</span> 时，收缩惩罚项的影响越来越大，岭回归系数估计值将趋近于零。最小二乘法只生成一组系数估计值，而岭回归对每个 <span class="math inline">\(\lambda\)</span> 值都会生成不同的一组系数估计值 <span class="math inline">\(\hat\beta^R_\lambda\)</span>。选择合适的 <span class="math inline">\(\lambda\)</span> 值至关重要；我们将这一讨论留到第6.2.3节，届时会使用交叉验证。</p>
+<p>注意，在式(6.5)中，收缩惩罚项作用于 <span class="math inline">\(\beta_1,\ldots,\beta_p\)</span>，却不作用于截距 <span class="math inline">\(\beta_0\)</span>。我们希望收缩每个变量与响应之间的估计关联，却不希望收缩截距，因为截距只是衡量 <span class="math inline">\(x_{i1}=x_{i2}=\cdots=x_{ip}=0\)</span> 时响应的均值。假定在进行岭回归之前，已将各变量——即数据矩阵 <span class="math inline">\(\mathbf X\)</span> 的各列——中心化，使其均值为零，那么截距估计值将为 <span class="math inline">\(\hat\beta_0=\bar y=\sum_{i=1}^{n}y_i/n\)</span>。</p>
+<section id="应用于credit数据" class="level4">
+<h4 class="anchored" data-anchor-id="应用于credit数据">应用于Credit数据</h4>
+<p>图6.4展示了 <code>Credit</code> 数据集的岭回归系数估计值。左图中的每条曲线对应十个变量之一的岭回归系数估计值，并将其表示为 <span class="math inline">\(\lambda\)</span> 的函数。例如，黑色实线表示 <code>income</code> 的系数估计值如何随 <span class="math inline">\(\lambda\)</span> 变化。在图的最左端，<span class="math inline">\(\lambda\)</span> 基本为零，因此相应的岭回归系数估计值与通常的最小二乘估计值相同。但随着 <span class="math inline">\(\lambda\)</span> 增大，岭回归系数估计值逐渐向零收缩。当 <span class="math inline">\(\lambda\)</span> 极大时，所有岭回归系数估计值都基本为零；这对应于不包含任何预测变量的空模型。图中以不同颜色标出 <code>income</code>、<code>limit</code>、<code>rating</code> 和 <code>student</code>，因为这些变量的系数估计值通常远大于其他变量。虽然随着 <span class="math inline">\(\lambda\)</span> 增大，岭回归系数估计值总体上趋于减小，但个别系数，例如 <code>rating</code> 和 <code>income</code> 的系数，有时也会随 <span class="math inline">\(\lambda\)</span> 增大而增大。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-4.png" class="img-fluid figure-img"></p>
+<figcaption>图6.4：Credit数据集的标准化岭回归系数</figcaption>
+</figure>
+</div>
+<p><strong>图6.4</strong> <code>Credit</code> 数据集的标准化岭回归系数，分别表示为 <span class="math inline">\(\lambda\)</span> 和 <span class="math inline">\(\|\hat\beta^R_\lambda\|_2/\|\hat\beta\|_2\)</span> 的函数。图内文字：Standardized Coefficients＝标准化系数；Income＝收入；Limit＝信用额度；Rating＝信用评级；Student＝学生身份。</p>
+<p>图6.4右图展示的岭回归系数估计值与左图相同，不过横轴不再表示 <span class="math inline">\(\lambda\)</span>，而是 <span class="math inline">\(\|\hat\beta^R_\lambda\|_2/\|\hat\beta\|_2\)</span>，其中 <span class="math inline">\(\hat\beta\)</span> 表示最小二乘系数估计值组成的向量。记号 <span class="math inline">\(\|\beta\|_2\)</span> 表示向量的 <strong><span class="math inline">\(\ell_2\)</span> 范数（<span class="math inline">\(\ell_2\)</span> norm，读作“ell two”）</strong>，其定义为 <span class="math inline">\(\|\beta\|_2=\sqrt{\sum_{j=1}^{p}\beta_j^2}\)</span>。它衡量 <span class="math inline">\(\beta\)</span> 到零的距离。随着 <span class="math inline">\(\lambda\)</span> 增大，<span class="math inline">\(\hat\beta^R_\lambda\)</span> 的 <span class="math inline">\(\ell_2\)</span> 范数总会减小，<span class="math inline">\(\|\hat\beta^R_\lambda\|_2/\|\hat\beta\|_2\)</span> 也随之减小。后一比值的取值范围从1到0：<span class="math inline">\(\lambda=0\)</span> 时，岭回归系数估计值与最小二乘估计值相同，二者的 <span class="math inline">\(\ell_2\)</span> 范数也相同，比值为1；<span class="math inline">\(\lambda=\infty\)</span> 时，岭回归系数估计值是零向量，其 <span class="math inline">\(\ell_2\)</span> 范数为零，比值也为0。因此，可以把图6.4右图的横轴看作岭回归系数估计值向零收缩程度的体现；横轴值较小，表示系数已被收缩到非常接近零的位置。</p>
+<p>第3章讨论的通常的最小二乘系数估计值具有<strong>尺度等变性（scale equivariance）</strong>：将 <span class="math inline">\(X_j\)</span> 乘以常数 <span class="math inline">\(c\)</span>，只会使相应的最小二乘系数估计值乘以 <span class="math inline">\(1/c\)</span>。换言之，无论如何改变第 <span class="math inline">\(j\)</span> 个预测变量的尺度，<span class="math inline">\(X_j\hat\beta_j\)</span> 都保持不变。相比之下，将某个预测变量乘以常数，可能会使岭回归系数估计值发生很大变化。例如，考虑以美元为单位的 <code>income</code> 变量。将收入改用千美元为单位也完全合理，这会使 <code>income</code> 的观测值缩小为原来的 <span class="math inline">\(1/1{,}000\)</span>。由于岭回归表达式(6.5)中包含系数平方和项，这样的尺度变化并不会只是让 <code>income</code> 的岭回归系数估计值变为原来的1,000倍。也就是说，<span class="math inline">\(X_j\hat\beta^R_{j,\lambda}\)</span> 不仅取决于 <span class="math inline">\(\lambda\)</span> 的值，还取决于第 <span class="math inline">\(j\)</span> 个预测变量的尺度。事实上，<span class="math inline">\(X_j\hat\beta^R_{j,\lambda}\)</span> 的值甚至可能取决于其他预测变量的尺度！因此，最好先用下式将预测变量标准化，再应用岭回归，使所有预测变量处在相同的尺度上：</p>
+<p><span class="math display">\[
+\tilde x_{ij}=\frac{x_{ij}}{\sqrt{\frac{1}{n}\sum_{i=1}^{n}(x_{ij}-\bar x_j)^2}}. \tag{6.6}
+\]</span></p>
+<p>式(6.6)的分母是第 <span class="math inline">\(j\)</span> 个预测变量的估计标准差。因此，所有标准化后的预测变量的标准差都为1，最终的拟合结果也就不会取决于预测变量所采用的计量尺度。图6.4的纵轴展示的是标准化岭回归系数估计值，即使用标准化后的预测变量进行岭回归所得的系数估计值。</p>
+</section>
+<section id="岭回归为何优于最小二乘法" class="level4">
+<h4 class="anchored" data-anchor-id="岭回归为何优于最小二乘法">岭回归为何优于最小二乘法？</h4>
+<p>岭回归相对于最小二乘法的优势，根源在于偏差—方差权衡。随着 <span class="math inline">\(\lambda\)</span> 增大，岭回归拟合的灵活程度降低，方差随之减小，而偏差增大。图6.5左图用一个包含 <span class="math inline">\(p=45\)</span> 个预测变量、<span class="math inline">\(n=50\)</span> 个观测的模拟数据集说明了这一点。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-5.png" class="img-fluid figure-img"></p>
+<figcaption>图6.5：岭回归预测的偏差平方、方差与测试MSE</figcaption>
+</figure>
+</div>
+<p><strong>图6.5</strong> 在一个模拟数据集上，岭回归预测的偏差平方（黑色）、方差（绿色）与测试均方误差（紫色），分别表示为 <span class="math inline">\(\lambda\)</span> 和 <span class="math inline">\(\|\hat\beta^R_\lambda\|_2/\|\hat\beta\|_2\)</span> 的函数。水平虚线表示可能达到的最小MSE。紫色叉号标示MSE最小的岭回归模型。图内文字：Mean Squared Error＝均方误差。</p>
+<p>图6.5左图的绿色曲线将岭回归预测的方差表示为 <span class="math inline">\(\lambda\)</span> 的函数。在最小二乘系数估计值处，也就是 <span class="math inline">\(\lambda=0\)</span> 的岭回归处，方差很大，但没有偏差。随着 <span class="math inline">\(\lambda\)</span> 增大，岭回归系数估计值的收缩大幅降低了预测的方差，代价是偏差略有增大。回顾一下，图中紫色的测试均方误差（MSE），与方差加偏差平方密切相关。在 <span class="math inline">\(\lambda\)</span> 增大到约10之前，方差迅速减小，而黑色曲线所表示的偏差几乎没有增加。因此，当 <span class="math inline">\(\lambda\)</span> 从0增大到10时，MSE大幅下降。超过这一点后，继续增大 <span class="math inline">\(\lambda\)</span> 所带来的方差下降趋缓，而系数收缩使其被明显低估，从而导致偏差大幅增加。MSE约在 <span class="math inline">\(\lambda=30\)</span> 时达到最小值。有意思的是，由于方差很大，<span class="math inline">\(\lambda=0\)</span> 时最小二乘拟合的MSE，几乎与 <span class="math inline">\(\lambda=\infty\)</span> 时所有系数估计值都为零的空模型一样高。然而，取一个居中的 <span class="math inline">\(\lambda\)</span> 值，MSE就会低得多。</p>
+<p>图6.5右图展示了与左图相同的曲线，只是横轴改成了岭回归系数估计值的 <span class="math inline">\(\ell_2\)</span> 范数与最小二乘估计值的 <span class="math inline">\(\ell_2\)</span> 范数之比。此时从左向右看，拟合越来越灵活，因此偏差减小，而方差增大。</p>
+<p>一般而言，当响应与预测变量之间的关系接近线性时，最小二乘估计值的偏差较小，但方差可能很大。这意味着，训练数据的微小变化就可能造成最小二乘系数估计值的巨大变化。尤其当变量个数 <span class="math inline">\(p\)</span> 几乎与观测数 <span class="math inline">\(n\)</span> 一样大时，如图6.5的例子，最小二乘估计值会非常不稳定。如果 <span class="math inline">\(p&gt;n\)</span>，最小二乘估计甚至没有唯一解；而岭回归仍然可以表现良好，以偏差的小幅增加换取方差的大幅下降。</p>
+<p>因此，在最小二乘估计值方差很大的情况下，岭回归的效果最好。</p>
+<p>与最佳子集选择相比，岭回归在计算上也有明显优势。最佳子集选择需要搜索 <span class="math inline">\(2^p\)</span> 个模型。如前所述，即使 <span class="math inline">\(p\)</span> 的大小适中，这样的搜索在计算上也可能不可行。相比之下，对任何固定的 <span class="math inline">\(\lambda\)</span> 值，岭回归都只拟合一个模型，而且拟合过程可以很快完成。事实上，可以证明，同时对所有 <span class="math inline">\(\lambda\)</span> 值求解式(6.5)所需的计算量，与用最小二乘法拟合一个模型的计算量几乎相同。</p>
+</section>
+</section>
+<section id="套索法" class="level3">
+<h3 class="anchored" data-anchor-id="套索法">6.2.2 套索法</h3>
+<p>岭回归有一个明显的缺点。最佳子集选择、前向逐步选择和后向逐步选择通常会选出只包含部分变量的模型，而岭回归的最终模型却会包含全部 <span class="math inline">\(p\)</span> 个预测变量。式(6.5)中的惩罚项 <span class="math inline">\(\lambda\sum\beta_j^2\)</span> 会将所有系数向零收缩，却不会把其中任何一个系数恰好设为零（除非 <span class="math inline">\(\lambda=\infty\)</span>）。这未必影响预测准确性，但当变量个数 <span class="math inline">\(p\)</span> 很大时，会给模型解释带来困难。例如，在 <code>Credit</code> 数据集中，最重要的变量似乎是 <code>income</code>、<code>limit</code>、<code>rating</code> 和 <code>student</code>，所以我们可能希望建立只包含这些预测变量的模型。然而，岭回归总会生成包含全部十个预测变量的模型。增大 <span class="math inline">\(\lambda\)</span> 值通常会减小系数的绝对值，却不会将任何变量排除在模型之外。</p>
+<p>套索法是较晚提出的一种替代岭回归的方法，它克服了上述缺点。套索法系数 <span class="math inline">\(\hat\beta^L_\lambda\)</span> 使下式最小：</p>
+<p><span class="math display">\[
+\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}\beta_jx_{ij}\right)^2+\lambda\sum_{j=1}^{p}|\beta_j|
+=\operatorname{RSS}+\lambda\sum_{j=1}^{p}|\beta_j|. \tag{6.7}
+\]</span></p>
+<p>比较式(6.7)与式(6.5)可见，套索法与岭回归的表达形式相似。唯一的区别是，岭回归惩罚项(6.5)中的 <span class="math inline">\(\beta_j^2\)</span>，在套索法惩罚项(6.7)中被替换为 <span class="math inline">\(|\beta_j|\)</span>。用统计学的术语说，套索法采用的是 <span class="math inline">\(\ell_1\)</span>（读作“ell one”）惩罚项，而非 <span class="math inline">\(\ell_2\)</span> 惩罚项。系数向量 <span class="math inline">\(\beta\)</span> 的 <strong><span class="math inline">\(\ell_1\)</span> 范数（<span class="math inline">\(\ell_1\)</span> norm）</strong> 为 <span class="math inline">\(\|\beta\|_1=\sum|\beta_j|\)</span>。</p>
+<p>与岭回归一样，套索法会将系数估计值向零收缩。不过，套索法的 <span class="math inline">\(\ell_1\)</span> 惩罚项会在调节参数 <span class="math inline">\(\lambda\)</span> 足够大时，迫使部分系数估计值恰好等于零。因此，套索法与最佳子集选择很相似，也会进行变量选择。由此，套索法生成的模型通常比岭回归模型更容易解释。我们说，套索法产生<strong>稀疏（sparse）</strong>模型，即只包含部分变量的模型。与岭回归一样，为套索法选择合适的 <span class="math inline">\(\lambda\)</span> 值至关重要；我们将这一讨论留到第6.2.3节，届时会使用交叉验证。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-6.png" class="img-fluid figure-img"></p>
+<figcaption>图6.6：Credit数据集的标准化套索法系数</figcaption>
+</figure>
+</div>
+<p><strong>图6.6</strong> <code>Credit</code> 数据集的标准化套索法系数，分别表示为 <span class="math inline">\(\lambda\)</span> 和 <span class="math inline">\(\|\hat\beta^L_\lambda\|_1/\|\hat\beta\|_1\)</span> 的函数。图内文字：Standardized Coefficients＝标准化系数；Income＝收入；Limit＝信用额度；Rating＝信用评级；Student＝学生身份。</p>
+<p>例如，考虑图6.6中的系数曲线，它们来自对 <code>Credit</code> 数据集应用套索法。当 <span class="math inline">\(\lambda=0\)</span> 时，套索法就是最小二乘拟合；当 <span class="math inline">\(\lambda\)</span> 足够大时，套索法给出所有系数估计值都等于零的空模型。然而，在这两个极端之间，岭回归与套索法模型却有很大差异。沿图6.6右图从左向右看，最初套索法生成的模型只包含 <code>rating</code> 这一个预测变量。随后，<code>student</code> 与 <code>limit</code> 几乎同时进入模型，紧接着是 <code>income</code>。最终，其余变量也进入模型。因此，视 <span class="math inline">\(\lambda\)</span> 的取值而定，套索法可以生成包含任意数量变量的模型。相比之下，岭回归总会将所有变量纳入模型，只是系数估计值的绝对大小取决于 <span class="math inline">\(\lambda\)</span>。</p>
+<section id="岭回归与套索法的另一种表达形式" class="level4">
+<h4 class="anchored" data-anchor-id="岭回归与套索法的另一种表达形式">岭回归与套索法的另一种表达形式</h4>
+<p>可以证明，套索法与岭回归的系数估计值，分别是下列两个问题的解：</p>
+<p><span class="math display">\[
+\underset{\beta}{\operatorname{min}}\left\{\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}\beta_jx_{ij}\right)^2\right\}
+\quad\text{约束为}\quad\sum_{j=1}^{p}|\beta_j|\leq s \tag{6.8}
+\]</span></p>
+<p>和</p>
+<p><span class="math display">\[
+\underset{\beta}{\operatorname{min}}\left\{\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}\beta_jx_{ij}\right)^2\right\}
+\quad\text{约束为}\quad\sum_{j=1}^{p}\beta_j^2\leq s. \tag{6.9}
+\]</span></p>
+<p>也就是说，对每一个 <span class="math inline">\(\lambda\)</span> 值，都存在某个 <span class="math inline">\(s\)</span>，使式(6.7)与式(6.8)给出相同的套索法系数估计值。类似地，对每一个 <span class="math inline">\(\lambda\)</span> 值，都存在一个对应的 <span class="math inline">\(s\)</span>，使式(6.5)与式(6.9)给出相同的岭回归系数估计值。</p>
+<p>当 <span class="math inline">\(p=2\)</span> 时，式(6.8)表明，在 <span class="math inline">\(|\beta_1|+|\beta_2|\leq s\)</span> 所定义的菱形区域内，套索法系数估计值对应的点具有最小RSS。类似地，在 <span class="math inline">\(\beta_1^2+\beta_2^2\leq s\)</span> 所定义的圆形区域内，岭回归估计值对应的点具有最小RSS。</p>
+<p>我们可以这样理解式(6.8)：使用套索法时，我们试图寻找使RSS最小的一组系数估计值，同时要求 <span class="math inline">\(\sum_{j=1}^{p}|\beta_j|\)</span> 不超过给定的“预算” <span class="math inline">\(s\)</span>。当 <span class="math inline">\(s\)</span> 极大时，这一预算的限制不强，所以系数估计值可以很大。事实上，如果 <span class="math inline">\(s\)</span> 大到足以容纳最小二乘解，那么式(6.8)就会给出最小二乘解。反之，如果 <span class="math inline">\(s\)</span> 很小，<span class="math inline">\(\sum_{j=1}^{p}|\beta_j|\)</span> 就必须很小，才不会超出预算。类似地，式(6.9)表明，使用岭回归时，我们寻找使RSS尽可能小的一组系数估计值，同时要求 <span class="math inline">\(\sum_{j=1}^{p}\beta_j^2\)</span> 不超过预算 <span class="math inline">\(s\)</span>。</p>
+<p>式(6.8)与式(6.9)揭示了套索法、岭回归与最佳子集选择之间的密切联系。考虑下列问题：</p>
+<p><span class="math display">\[
+\underset{\beta}{\operatorname{min}}\left\{\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}\beta_jx_{ij}\right)^2\right\}
+\quad\text{约束为}\quad\sum_{j=1}^{p}I(\beta_j\neq 0)\leq s. \tag{6.10}
+\]</span></p>
+<p>这里，<span class="math inline">\(I(\beta_j\neq 0)\)</span> 是一个指示变量：若 <span class="math inline">\(\beta_j\neq 0\)</span>，则取值为1，否则等于零。因此，式(6.10)就是在非零系数个数不超过 <span class="math inline">\(s\)</span> 的约束下，寻找使RSS尽可能小的一组系数估计值。问题(6.10)等价于最佳子集选择。遗憾的是，当 <span class="math inline">\(p\)</span> 很大时，式(6.10)在计算上无法求解，因为它需要考虑所有包含 <span class="math inline">\(s\)</span> 个预测变量的 <span class="math inline">\(\binom{p}{s}\)</span> 个模型。因此，可以将岭回归与套索法理解为最佳子集选择的可行替代方法：它们将式(6.10)中难以处理的预算形式，换成了容易求解得多的形式。当然，套索法与最佳子集选择的联系更紧密，因为当式(6.8)中的 <span class="math inline">\(s\)</span> 足够小时，套索法会进行特征选择，而岭回归不会。</p>
+</section>
+<section id="套索法的变量选择性质" class="level4">
+<h4 class="anchored" data-anchor-id="套索法的变量选择性质">套索法的变量选择性质</h4>
+<p>为什么套索法与岭回归不同，能够产生恰好等于零的系数估计值？式(6.8)与式(6.9)可以帮助解释这一点。图6.7展示了这种情况。最小二乘解标记为 <span class="math inline">\(\hat\beta\)</span>，蓝色菱形与圆形区域分别表示式(6.8)与式(6.9)中套索法和岭回归的约束。如果 <span class="math inline">\(s\)</span> 足够大，约束区域就会包含 <span class="math inline">\(\hat\beta\)</span>，岭回归与套索法的估计值也就与最小二乘估计值相同。（这么大的 <span class="math inline">\(s\)</span> 值对应于式(6.5)与式(6.7)中的 <span class="math inline">\(\lambda=0\)</span>。）然而，图6.7中的最小二乘估计值位于菱形与圆形区域之外，因此最小二乘估计值与套索法、岭回归估计值并不相同。</p>
+<p>以 <span class="math inline">\(\hat\beta\)</span> 为中心的每条椭圆都表示一条<strong>等高线（contour）</strong>，即同一条椭圆上各点的RSS值相同。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-7.png" class="img-fluid figure-img"></p>
+<figcaption>图6.7：套索法和岭回归的约束区域与RSS等高线</figcaption>
+</figure>
+</div>
+<p><strong>图6.7</strong> 套索法（左）与岭回归（右）的误差函数和约束函数的等高线。蓝色实心区域表示约束区域 <span class="math inline">\(|\beta_1|+|\beta_2|\leq s\)</span> 和 <span class="math inline">\(\beta_1^2+\beta_2^2\leq s\)</span>，红色椭圆表示RSS的等高线。</p>
+<p>当椭圆从最小二乘系数估计值处向外扩张时，RSS随之增大。式(6.8)与式(6.9)表明，椭圆首次接触约束区域的点，就是套索法与岭回归的系数估计值。由于岭回归的约束区域是没有尖角的圆形，这个接触点通常不会出现在坐标轴上，所以岭回归的系数估计值都会是非零值。然而，套索法的约束区域在每条坐标轴上都有尖角，因此椭圆常常会在坐标轴上与约束区域相交。一旦发生这种情况，就会有一个系数等于零。在更高维的情形下，许多系数估计值可能同时等于零。图6.7中的接触点位于 <span class="math inline">\(\beta_1=0\)</span> 处，因此所得模型只包含 <span class="math inline">\(\beta_2\)</span>。</p>
+<p>图6.7考虑的是 <span class="math inline">\(p=2\)</span> 的简单情形。当 <span class="math inline">\(p=3\)</span> 时，岭回归的约束区域变为球体，而套索法的约束区域变为多面体。当 <span class="math inline">\(p&gt;3\)</span> 时，岭回归的约束区域变为超球体，套索法的约束区域变为多胞体。不过，图6.7展示的核心思想仍然成立。尤其是，当 <span class="math inline">\(p&gt;2\)</span> 时，由于多面体或多胞体存在尖角，套索法仍然能够进行特征选择。</p>
+</section>
+<section id="比较套索法与岭回归" class="level4">
+<h4 class="anchored" data-anchor-id="比较套索法与岭回归">比较套索法与岭回归</h4>
+<p>显然，套索法相对于岭回归有一个重要优势：它能够生成更简单、更容易解释、只包含部分预测变量的模型。不过，哪种方法的预测准确性更高？图6.8在与图6.5相同的模拟数据上应用套索法，展示了其方差、偏差平方与测试MSE。显然，套索法与岭回归的总体表现相似：随着 <span class="math inline">\(\lambda\)</span> 增大，方差减小，偏差增大。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-8.png" class="img-fluid figure-img"></p>
+<figcaption>图6.8：全部45个预测变量均与响应相关时套索法与岭回归的比较</figcaption>
+</figure>
+</div>
+<p><strong>图6.8</strong> 左：在一个模拟数据集上，套索法的偏差平方（黑色）、方差（绿色）和测试MSE（紫色）。右：比较套索法（实线）与岭回归（点线）的偏差平方、方差和测试MSE。两者都以训练数据上的 <span class="math inline">\(R^2\)</span> 为横轴，作为统一的模型索引。两图中的叉号均标示MSE最小的套索法模型。图内文字：Mean Squared Error＝均方误差；<span class="math inline">\(R^2\)</span> on Training Data＝训练数据上的 <span class="math inline">\(R^2\)</span>。</p>
+<p>图6.8右图的点线表示岭回归拟合。这里，两种方法都以各自在训练数据上的 <span class="math inline">\(R^2\)</span> 为横轴。这是另一种有用的模型索引方式，可用于比较采用不同正则化形式的模型，正如此处所做的那样。在这个例子中，套索法与岭回归产生的偏差几乎相同。不过，岭回归的方差略低于套索法。因此，岭回归的最小MSE也略小于套索法。</p>
+<p>然而，图6.8的数据在生成时，设定了所有45个预测变量都与响应相关；也就是说，真实系数 <span class="math inline">\(\beta_1,\ldots,\beta_{45}\)</span> 中没有一个等于零。套索法则隐含地假定，一部分系数的真实值确实为零。因此，在这种情形下，岭回归的预测误差优于套索法，并不令人意外。图6.9展示了类似的情形，只是此时响应仅为45个预测变量中2个的函数。现在，无论从偏差、方差还是MSE来看，套索法的表现都往往优于岭回归。</p>
+<p>这两个例子表明，岭回归与套索法都不会在所有情况下优于另一种方法。一般而言，如果只有相对少数的预测变量具有较大的系数，其余预测变量的系数很小或等于零，那么可以预期套索法会表现得更好。如果响应是许多预测变量的函数，而且它们的系数大小大致相当，岭回归就会表现得更好。不过，对于真实数据集，我们无法事先知道究竟有多少个预测变量与响应相关。可以利用交叉验证等方法，来确定哪种方法更适合某个特定的数据集。</p>
+<p>与岭回归一样，当最小二乘估计值的方差过高时，套索法可以用偏差的小幅增加换取方差的下降，从而生成更准确的预测。与岭回归不同，套索法能够进行变量选择，因此所得模型更容易解释。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-9.png" class="img-fluid figure-img"></p>
+<figcaption>图6.9：仅两个预测变量与响应相关时套索法与岭回归的比较</figcaption>
+</figure>
+</div>
+<p><strong>图6.9</strong> 左：套索法的偏差平方（黑色）、方差（绿色）和测试MSE（紫色）。模拟数据与图6.8相似，只是此时仅有两个预测变量与响应相关。右：比较套索法（实线）与岭回归（点线）的偏差平方、方差和测试MSE。两者都以训练数据上的 <span class="math inline">\(R^2\)</span> 为横轴，作为统一的模型索引。两图中的叉号均标示MSE最小的套索法模型。图内文字：Mean Squared Error＝均方误差；<span class="math inline">\(R^2\)</span> on Training Data＝训练数据上的 <span class="math inline">\(R^2\)</span>。</p>
+<p>岭回归与套索法模型都有非常高效的拟合算法；两种方法计算完整系数路径的工作量，都与进行一次最小二乘拟合大致相同。本章末尾的实验将进一步探讨这一点。</p>
+</section>
+<section id="岭回归与套索法的一个简单特例" class="level4">
+<h4 class="anchored" data-anchor-id="岭回归与套索法的一个简单特例">岭回归与套索法的一个简单特例</h4>
+<p>为了更直观地理解岭回归与套索法的表现，考虑一个简单特例：<span class="math inline">\(n=p\)</span>，且 <span class="math inline">\(\mathbf X\)</span> 是一个对角矩阵，对角线上的元素均为1，所有非对角线元素均为0。为进一步简化问题，再假定回归不包含截距。在这些假定下，通常的最小二乘问题便简化为寻找使下式最小的 <span class="math inline">\(\beta_1,\ldots,\beta_p\)</span>：</p>
+<p><span class="math display">\[
+\sum_{j=1}^{p}(y_j-\beta_j)^2. \tag{6.11}
+\]</span></p>
+<p>此时，最小二乘解为</p>
+<p><span class="math display">\[
+\hat\beta_j=y_j.
+\]</span></p>
+<p>在这一情形下，岭回归就是寻找使下式最小的 <span class="math inline">\(\beta_1,\ldots,\beta_p\)</span>：</p>
+<p><span class="math display">\[
+\sum_{j=1}^{p}(y_j-\beta_j)^2+\lambda\sum_{j=1}^{p}\beta_j^2. \tag{6.12}
+\]</span></p>
+<p>套索法则是寻找使下式最小的系数：</p>
+<p><span class="math display">\[
+\sum_{j=1}^{p}(y_j-\beta_j)^2+\lambda\sum_{j=1}^{p}|\beta_j|. \tag{6.13}
+\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-10.png" class="img-fluid figure-img"></p>
+<figcaption>图6.10：简单特例下岭回归与套索法的系数收缩</figcaption>
+</figure>
+</div>
+<p><strong>图6.10</strong> 在 <span class="math inline">\(n=p\)</span>、<span class="math inline">\(\mathbf X\)</span> 为对角线上元素均为1的对角矩阵这一简单情形下，岭回归与套索法的系数估计值。左：相对于最小二乘估计值，岭回归系数估计值按比例向零收缩。右：套索法系数估计值通过软阈值处理向零收缩。图内文字：Coefficient Estimate＝系数估计值；Ridge＝岭回归；Lasso＝套索法；Least Squares＝最小二乘。</p>
+<p>可以证明，在这一情形下，岭回归估计值为</p>
+<p><span class="math display">\[
+\hat\beta^R_j=y_j/(1+\lambda), \tag{6.14}
+\]</span></p>
+<p>而套索法估计值为</p>
+<p><span class="math display">\[
+\hat\beta^L_j=\begin{cases}
+y_j-\lambda/2 &amp; y_j&gt;\lambda/2\text{ 时};\\
+y_j+\lambda/2 &amp; y_j&lt;-\lambda/2\text{ 时};\\
+0 &amp; |y_j|\leq\lambda/2\text{ 时}.
+\end{cases} \tag{6.15}
+\]</span></p>
+<p>图6.10展示了这一情形。可以看到，岭回归与套索法执行的是两种非常不同的收缩。岭回归将每个最小二乘系数估计值按相同的比例收缩。相比之下，套索法将每个最小二乘系数向零收缩一个固定的量 <span class="math inline">\(\lambda/2\)</span>；绝对值小于 <span class="math inline">\(\lambda/2\)</span> 的最小二乘系数，会被完全收缩为零。套索法在这一简单情形下所做的收缩(6.15)，称为<strong>软阈值处理（soft-thresholding）</strong>。部分套索法系数被完全收缩为零，解释了套索法为何能够进行特征选择。</p>
+<p>对于更一般的数据矩阵 <span class="math inline">\(\mathbf X\)</span>，情况比图6.10所示的稍复杂一些，但主要思想仍然近似成立：岭回归大致按相同的比例收缩数据的每一个维度；套索法则大致将所有系数向零收缩相近的量，而足够小的系数会被完全收缩为零。</p>
+</section>
+<section id="岭回归与套索法的贝叶斯解释" class="level4">
+<h4 class="anchored" data-anchor-id="岭回归与套索法的贝叶斯解释">岭回归与套索法的贝叶斯解释</h4>
+<p><img src="../assets/display-crops/exercise-marker.png" alt="原书较进阶内容标记" style="width:36px;display:inline-block;vertical-align:middle"></p>
+<p>下面说明如何从贝叶斯视角理解岭回归与套索法。回归的贝叶斯观点假定，系数向量 <span class="math inline">\(\beta\)</span> 具有某个<strong>先验分布（prior distribution）</strong>，记为 <span class="math inline">\(p(\beta)\)</span>，其中 <span class="math inline">\(\beta=(\beta_0,\beta_1,\ldots,\beta_p)^T\)</span>。数据的似然可以写成 <span class="math inline">\(f(Y\mid X,\beta)\)</span>，其中 <span class="math inline">\(X=(X_1,\ldots,X_p)\)</span>。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-11.png" class="img-fluid figure-img"></p>
+<figcaption>图6.11：岭回归与套索法对应的先验分布</figcaption>
+</figure>
+</div>
+<p><strong>图6.11</strong> 左：在高斯先验下，岭回归是 <span class="math inline">\(\beta\)</span> 的后验众数。右：在双指数先验下，套索法是 <span class="math inline">\(\beta\)</span> 的后验众数。</p>
+<p>将先验分布与似然相乘，就得到<strong>后验分布（posterior distribution）</strong>，其形式如下（忽略比例常数）：</p>
+<p><span class="math display">\[
+p(\beta\mid X,Y)\propto f(Y\mid X,\beta)p(\beta\mid X)=f(Y\mid X,\beta)p(\beta),
+\]</span></p>
+<p>其中，比例关系来自贝叶斯定理，等式则来自 <span class="math inline">\(X\)</span> 固定不变的假定。</p>
+<p>我们假设通常的线性模型</p>
+<p><span class="math display">\[
+Y=\beta_0+X_1\beta_1+\cdots+X_p\beta_p+\epsilon,
+\]</span></p>
+<p>并假定误差相互独立，且来自正态分布。再假定对某个密度函数 <span class="math inline">\(g\)</span>，有 <span class="math inline">\(p(\beta)=\prod_{j=1}^{p}g(\beta_j)\)</span>。事实表明，选取 <span class="math inline">\(g\)</span> 的下列两个特例，就能自然地得到岭回归与套索法：</p>
+<ul>
+<li>若 <span class="math inline">\(g\)</span> 为均值为零、标准差为 <span class="math inline">\(\lambda\)</span> 的某个函数的高斯分布，则 <span class="math inline">\(\beta\)</span> 的<strong>后验众数（posterior mode）</strong>——即给定数据后 <span class="math inline">\(\beta\)</span> 最可能的值——就是岭回归解。（事实上，岭回归解也是后验均值。）</li>
+<li>若 <span class="math inline">\(g\)</span> 为均值为零、尺度参数为 <span class="math inline">\(\lambda\)</span> 的某个函数的<strong>双指数（拉普拉斯）分布（double-exponential (Laplace) distribution）</strong>，则 <span class="math inline">\(\beta\)</span> 的后验众数就是套索法解。（不过，套索法解并不是后验均值；事实上，后验均值也不会产生稀疏的系数向量。）</li>
+</ul>
+<p>高斯先验与双指数先验如图6.11所示。因此，从贝叶斯观点看，只要假定带有正态误差的通常线性模型，并为 <span class="math inline">\(\beta\)</span> 设定一个简单的先验分布，就可以直接得到岭回归与套索法。注意，套索法的先验在零处具有陡峭的尖峰，而高斯分布在零处更平缓、更宽。因此，套索法事先预期许多系数会（恰好）为零，而岭回归则假定系数随机分布在零的周围。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-12.png" class="img-fluid figure-img"></p>
+<figcaption>图6.12：用交叉验证选择Credit数据集岭回归的调节参数</figcaption>
+</figure>
+</div>
+<p><strong>图6.12</strong> 左：对 <code>Credit</code> 数据集采用不同的 <span class="math inline">\(\lambda\)</span> 值进行岭回归所得的交叉验证误差。右：系数估计值随 <span class="math inline">\(\lambda\)</span> 的变化。竖直虚线标示交叉验证选出的 <span class="math inline">\(\lambda\)</span> 值。图内文字：Cross-Validation Error＝交叉验证误差；Standardized Coefficients＝标准化系数。</p>
+</section>
+</section>
+<section id="选择调节参数" class="level3">
+<h3 class="anchored" data-anchor-id="选择调节参数">6.2.3 选择调节参数</h3>
+<p>正如第6.1节讨论的子集选择方法需要确定候选模型中哪一个最好，使用岭回归与套索法时，也需要一种方法来选择式(6.5)与式(6.7)中调节参数 <span class="math inline">\(\lambda\)</span> 的值，或者等价地，选择式(6.9)与式(6.8)中约束 <span class="math inline">\(s\)</span> 的值。交叉验证为这一问题提供了简单的解决办法。按照第5章所述，先选取一组网格化的 <span class="math inline">\(\lambda\)</span> 值，再计算每个 <span class="math inline">\(\lambda\)</span> 值对应的交叉验证误差。随后选出交叉验证误差最小的调节参数值。最后，使用全部可用观测和选出的调节参数值，重新拟合模型。</p>
+<p>图6.12展示了对 <code>Credit</code> 数据集的岭回归拟合进行留一交叉验证后选出的 <span class="math inline">\(\lambda\)</span>。竖直虚线标示所选的 <span class="math inline">\(\lambda\)</span> 值。这里选出的值相对较小，表明最优拟合相对于最小二乘解只进行了少量收缩。此外，误差曲线的凹陷并不十分明显，因此，相当宽的取值范围都能得到很相近的误差。在这种情况下，我们也许直接使用最小二乘解即可。</p>
+<p>图6.13展示了对图6.9的稀疏模拟数据应用套索法拟合，并进行10折交叉验证的结果。左图展示交叉验证误差，右图展示系数估计值。竖直虚线标示交叉验证误差最小的位置。右图的两条彩色曲线代表与响应相关的两个预测变量，灰色曲线则代表与响应无关的预测变量；它们通常分别称为<strong>信号变量（signal variables）</strong> 和 <strong>噪声变量（noise variables）</strong>。套索法不仅正确地为这两个信号预测变量给出了大得多的系数估计值，而且最小交叉验证误差所对应的那组系数估计值中，只有信号变量的系数非零。因此，尽管这是一个颇具挑战的情形——有 <span class="math inline">\(p=45\)</span> 个变量，而观测数只有 <span class="math inline">\(n=50\)</span>——交叉验证与套索法相结合，仍然正确识别出了模型中的两个信号变量。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-13.png" class="img-fluid figure-img"></p>
+<figcaption>图6.13：稀疏模拟数据上的套索法交叉验证与系数路径</figcaption>
+</figure>
+</div>
+<p><strong>图6.13</strong> 左：对图6.9中的稀疏模拟数据集应用套索法，所得的10折交叉验证MSE。右：相应的套索法系数估计值。两个信号变量以彩色表示，噪声变量以灰色表示。竖直虚线标示交叉验证误差最小的套索法拟合。图内文字：Cross-Validation Error＝交叉验证误差；Standardized Coefficients＝标准化系数。</p>
+<p>相比之下，图6.13右图最右端所展示的最小二乘解，只为这两个信号变量中的一个赋予了较大的系数估计值。</p>
+</section>
+</section>
+<section id="降维方法dimension-reduction-methods" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="降维方法dimension-reduction-methods">6.3 降维方法（Dimension Reduction Methods）</h2>
+<p>本章到目前为止讨论的方法，通过两种不同的方式控制方差：使用原始变量的一个子集，或将其系数向零收缩。这些方法都以原始预测变量 <span class="math inline">\(X_1,X_2,\ldots,X_p\)</span> 来定义。现在，我们探讨一类先对预测变量进行变换，再用变换后的变量拟合最小二乘模型的方法。我们将这些技术称为<strong>降维</strong>方法。</p>
+<p>设 <span class="math inline">\(Z_1,Z_2,\ldots,Z_M\)</span> 表示原始 <span class="math inline">\(p\)</span> 个预测变量的 <span class="math inline">\(M&lt;p\)</span> 个线性组合，即</p>
+<p><span class="math display">\[
+Z_m=\sum_{j=1}^{p}\phi_{jm}X_j \tag{6.16}
+\]</span></p>
+<p>其中，<span class="math inline">\(\phi_{1m},\phi_{2m},\ldots,\phi_{pm}\)</span> 是一些常数，<span class="math inline">\(m=1,\ldots,M\)</span>。接着，可以用最小二乘法拟合线性回归模型</p>
+<p><span class="math display">\[
+y_i=\theta_0+\sum_{m=1}^{M}\theta_m z_{im}+\epsilon_i,\qquad i=1,\ldots,n, \tag{6.17}
+\]</span></p>
+<p>注意，式(6.17)中的回归系数为 <span class="math inline">\(\theta_0,\theta_1,\ldots,\theta_M\)</span>。如果恰当地选择常数 <span class="math inline">\(\phi_{1m},\phi_{2m},\ldots,\phi_{pm}\)</span>，那么这类降维方法的表现往往可以优于最小二乘回归。换句话说，用最小二乘法拟合式(6.17)，可能比用最小二乘法拟合式(6.1)得到更好的结果。</p>
+<p>“降维”这一名称源于：该方法把估计 <span class="math inline">\(p+1\)</span> 个系数 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span> 的问题，简化为估计 <span class="math inline">\(M+1\)</span> 个系数 <span class="math inline">\(\theta_0,\theta_1,\ldots,\theta_M\)</span> 的问题，其中 <span class="math inline">\(M&lt;p\)</span>。换句话说，问题的维数从 <span class="math inline">\(p+1\)</span> 降到了 <span class="math inline">\(M+1\)</span>。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-14.png" class="img-fluid figure-img"></p>
+<figcaption>图6.14：人口规模与广告支出及其两个主成分方向</figcaption>
+</figure>
+</div>
+<p><strong>图6.14</strong> 紫色圆点表示100个不同城市的人口规模（<code>pop</code>）和广告支出（<code>ad</code>）。绿色实线表示第一主成分，蓝色虚线表示第二主成分。图内文字：Population＝人口规模；Ad Spending＝广告支出。</p>
+<p>注意，由式(6.16)可得</p>
+<p><span class="math display">\[
+\sum_{m=1}^{M}\theta_m z_{im}
+=\sum_{m=1}^{M}\theta_m\sum_{j=1}^{p}\phi_{jm}x_{ij}
+=\sum_{j=1}^{p}\sum_{m=1}^{M}\theta_m\phi_{jm}x_{ij}
+=\sum_{j=1}^{p}\beta_jx_{ij},
+\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[
+\beta_j=\sum_{m=1}^{M}\theta_m\phi_{jm}. \tag{6.18}
+\]</span></p>
+<p>因此，式(6.17)可以看作式(6.1)所给出的原始线性回归模型的一个特例。降维对估计的系数 <span class="math inline">\(\beta_j\)</span> 施加了约束，因为它们现在必须具有式(6.18)的形式。这种对系数形式的约束可能使系数估计产生偏差。不过，当 <span class="math inline">\(p\)</span> 相对于 <span class="math inline">\(n\)</span> 较大时，选择 <span class="math inline">\(M\ll p\)</span> 可以明显降低拟合系数的方差。如果 <span class="math inline">\(M=p\)</span>，且所有 <span class="math inline">\(Z_m\)</span> 都线性无关，那么式(6.18)就不施加任何约束。此时没有发生降维，因此拟合式(6.17)等价于对原始的 <span class="math inline">\(p\)</span> 个预测变量进行最小二乘拟合。</p>
+<p>所有降维方法都分两步进行。首先，得到变换后的预测变量 <span class="math inline">\(Z_1,Z_2,\ldots,Z_M\)</span>；其次，用这 <span class="math inline">\(M\)</span> 个预测变量拟合模型。不过，选择 <span class="math inline">\(Z_1,Z_2,\ldots,Z_M\)</span>，或者等价地选择 <span class="math inline">\(\phi_{jm}\)</span>，可以通过不同方式实现。本章将考虑两种方法：<strong>主成分（principal components）</strong> 和 <strong>偏最小二乘（partial least squares）</strong>。</p>
+<section id="主成分回归principal-components-regression" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="主成分回归principal-components-regression">6.3.1 主成分回归（Principal Components Regression）</h3>
+<p><strong>主成分分析（principal components analysis，PCA）</strong> 是一种常用方法，用于从大量变量中提取一组低维特征。</p>
+<p>第12章将更详细地讨论PCA作为无监督学习工具的应用。这里介绍它如何作为一种回归降维技术使用。</p>
+<section id="主成分分析概述" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="主成分分析概述">主成分分析概述</h4>
+<p>PCA是一种降低 <span class="math inline">\(n\times p\)</span> 数据矩阵 <span class="math inline">\(\mathbf{X}\)</span> 维数的技术。数据的<strong>第一主成分方向</strong>，就是观测变异最大的方向。例如，图6.14展示了100个城市的人口规模（<code>pop</code>，单位为万人）以及某家公司在这些城市的广告支出（<code>ad</code>，单位为千美元）。<a id="ch06-fnref6" href="#ch06-fn6" class="footnote-ref">6</a> 绿色实线表示数据的第一主成分方向。直观上可以看出，数据沿这一方向的变异最大。也就是说，如果把这100个观测投影到这条直线上（如图6.15左图所示），所得投影观测的方差就会达到最大；把观测投影到任何其他直线上，所得投影观测的方差都会更小。将一个点投影到一条直线上，只需找出直线上距离该点最近的位置。</p>
+<aside id="ch06-fn6" class="footnote">
+<p>
+<a href="#ch06-fnref6">6</a> 这个数据集不同于第3章讨论的 Advertising 数据集。 <a href="#ch06-fnref6" class="footnote-back">↩︎</a>
+</p>
+</aside>
+<p>图6.14以图形展示了第一主成分，但如何用数学形式概括它呢？其公式为</p>
+<p><span class="math display">\[
+Z_1=0.839\times(\mathrm{pop}-\overline{\mathrm{pop}})+0.544\times(\mathrm{ad}-\overline{\mathrm{ad}}). \tag{6.19}
+\]</span></p>
+<p>这里，<span class="math inline">\(\phi_{11}=0.839\)</span> 和 <span class="math inline">\(\phi_{21}=0.544\)</span> 是<strong>主成分载荷（principal component loadings）</strong>，它们定义了上述方向。在式(6.19)中，<span class="math inline">\(\overline{\mathrm{pop}}\)</span> 表示该数据集中所有 <code>pop</code> 值的均值，<span class="math inline">\(\overline{\mathrm{ad}}\)</span> 表示所有广告支出的均值。其思想是：在 <code>pop</code> 与 <code>ad</code> 所有满足 <span class="math inline">\(\phi_{11}^2+\phi_{21}^2=1\)</span> 的线性组合中，这个特定的线性组合具有最大的方差，即它使 <span class="math inline">\(\operatorname{Var}(\phi_{11}\times(\mathrm{pop}-\overline{\mathrm{pop}})+\phi_{21}\times(\mathrm{ad}-\overline{\mathrm{ad}}))\)</span> 达到最大。必须只考虑满足 <span class="math inline">\(\phi_{11}^2+\phi_{21}^2=1\)</span> 的线性组合，否则可以任意增大 <span class="math inline">\(\phi_{11}\)</span> 和 <span class="math inline">\(\phi_{21}\)</span>，使方差无限增大。在式(6.19)中，两个载荷都为正且大小相近，因此 <span class="math inline">\(Z_1\)</span> 大致相当于这两个变量的一个平均值。</p>
+<p>由于 <span class="math inline">\(n=100\)</span>，<code>pop</code> 和 <code>ad</code> 都是长度为100的向量，式(6.19)中的 <span class="math inline">\(Z_1\)</span> 也是如此。例如，</p>
+<p><span class="math display">\[
+z_{i1}=0.839\times(\mathrm{pop}_i-\overline{\mathrm{pop}})+0.544\times(\mathrm{ad}_i-\overline{\mathrm{ad}}). \tag{6.20}
+\]</span></p>
+<p><span class="math inline">\(z_{11},\ldots,z_{n1}\)</span> 的值称为<strong>主成分得分（principal component scores）</strong>，见图6.15右图。</p>
+<p>PCA还有另一种解释：第一主成分向量定义了一条尽可能接近数据的直线。例如，在图6.14中，第一主成分直线使每个点到直线的垂直距离的平方和最小。图6.15左图用虚线段标出了这些距离，其中的叉号表示各个点在第一主成分直线上的投影。选择第一主成分，就是要使投影后的观测尽可能接近原始观测。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-15.png" class="img-fluid figure-img"></p>
+<figcaption>图6.15：广告数据在第一主成分上的投影与旋转表示</figcaption>
+</figure>
+</div>
+<p><strong>图6.15</strong> 广告数据的一个子集。蓝色圆点标出 <code>pop</code> 和 <code>ad</code> 预算的均值。<strong>左图：</strong> 绿色表示第一主成分方向。这是数据变异最大的维度，同时也定义了距离所有 <span class="math inline">\(n\)</span> 个观测最近的直线。黑色虚线段表示每个观测到主成分的距离。蓝点表示 <span class="math inline">\((\overline{\mathrm{pop}},\overline{\mathrm{ad}})\)</span>。<strong>右图：</strong> 将左图旋转，使第一主成分方向与 <span class="math inline">\(x\)</span> 轴重合。图内文字：Population＝人口规模；Ad Spending＝广告支出；1st Principal Component＝第一主成分；2nd Principal Component＝第二主成分。</p>
+<p>图6.15右图将左图旋转，使第一主成分方向与 <span class="math inline">\(x\)</span> 轴重合。可以证明，式(6.20)给出的第 <span class="math inline">\(i\)</span> 个观测的第一主成分得分，就是第 <span class="math inline">\(i\)</span> 个叉号沿 <span class="math inline">\(x\)</span> 方向到零点的距离。例如，图6.15左图左下角的点具有较大的负主成分得分 <span class="math inline">\(z_{i1}=-26.1\)</span>，而右上角的点具有较大的正得分 <span class="math inline">\(z_{i1}=18.7\)</span>。这些得分可以直接用式(6.20)计算。</p>
+<p>可以把主成分 <span class="math inline">\(Z_1\)</span> 的值看作一个数，用来概括各地的 <code>pop</code> 与 <code>ad</code> 预算。在这个例子中，如果 <span class="math inline">\(z_{i1}=0.839\times(\mathrm{pop}_i-\overline{\mathrm{pop}})+0.544\times(\mathrm{ad}_i-\overline{\mathrm{ad}})&lt;0\)</span>，就表示该城市的人口规模和广告支出都低于平均水平。正得分则表示相反的情况。用一个数能够在多大程度上同时表示 <code>pop</code> 和 <code>ad</code> 呢？在这个例子中，图6.14表明 <code>pop</code> 与 <code>ad</code> 之间近似存在线性关系，因此可以预期，用一个数来概括会有较好的效果。图6.16分别绘制了 <span class="math inline">\(z_{i1}\)</span> 与 <code>pop</code> 和 <code>ad</code> 的关系。<a id="ch06-fnref7" href="#ch06-fn7" class="footnote-ref">7</a> 图中显示，第一主成分与这两个特征之间都有很强的关系。换句话说，第一主成分似乎捕获了预测变量 <code>pop</code> 和 <code>ad</code> 所包含的大部分信息。</p>
+<aside id="ch06-fn7" class="footnote">
+<p>
+<a href="#ch06-fnref7">7</a> 计算主成分之前，先对 <code>pop</code> 和 <code>ad</code> 都进行了标准化，这是一种常见做法。因此，图6.15和图6.16的横轴采用不同的尺度。 <a href="#ch06-fnref7" class="footnote-back">↩︎</a>
+</p>
+</aside>
+<p>到目前为止，我们一直着重讨论第一主成分。一般而言，最多可以构造 <span class="math inline">\(p\)</span> 个不同的主成分。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-16.png" class="img-fluid figure-img"></p>
+<figcaption>图6.16：第一主成分得分与人口规模和广告支出的关系</figcaption>
+</figure>
+</div>
+<p><strong>图6.16</strong> 第一主成分得分 <span class="math inline">\(z_{i1}\)</span> 分别与 <code>pop</code>、<code>ad</code> 的关系图。两者的关系都很强。图内文字：1st Principal Component＝第一主成分；Population＝人口规模；Ad Spending＝广告支出。</p>
+<p>第二主成分 <span class="math inline">\(Z_2\)</span> 是变量的一个线性组合，它与 <span class="math inline">\(Z_1\)</span> 不相关，并且在这一约束下具有最大的方差。图6.14中的蓝色虚线表示第二主成分方向。可以证明，<span class="math inline">\(Z_1\)</span> 与 <span class="math inline">\(Z_2\)</span> 的相关为零这一条件，等价于两个方向必须<strong>垂直（perpendicular）</strong>，也就是<strong>正交（orthogonal）</strong>。第二主成分的公式为</p>
+<p><span class="math display">\[
+Z_2=0.544\times(\mathrm{pop}-\overline{\mathrm{pop}})-0.839\times(\mathrm{ad}-\overline{\mathrm{ad}}).
+\]</span></p>
+<p>由于广告数据有两个预测变量，前两个主成分就包含了 <code>pop</code> 和 <code>ad</code> 中的全部信息。不过，根据构造方式，第一主成分包含的信息最多。例如，在图6.15右图中，<span class="math inline">\(z_{i1}\)</span>（横轴）的变异远大于 <span class="math inline">\(z_{i2}\)</span>（纵轴）的变异。第二主成分得分更接近零，表明这个主成分捕获的信息少得多。图6.17进一步展示了 <span class="math inline">\(z_{i2}\)</span> 分别与 <code>pop</code> 和 <code>ad</code> 的关系。第二主成分与这两个预测变量几乎没有关系，这再次表明，在这个例子中，只需第一主成分就能准确地表示 <code>pop</code> 和 <code>ad</code> 预算。</p>
+<p>对于广告例子这样的二维数据，最多只能构造两个主成分。但是，如果还有人口年龄、收入水平、受教育程度等其他预测变量，就可以构造更多主成分。它们会在与先前各主成分不相关的约束下，依次使方差达到最大。</p>
+</section>
+<section id="主成分回归方法" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="主成分回归方法">主成分回归方法</h4>
+<p><strong>主成分回归（principal components regression，PCR）</strong> 方法先构造前 <span class="math inline">\(M\)</span> 个主成分 <span class="math inline">\(Z_1,\ldots,Z_M\)</span>，然后将这些主成分作为预测变量，用最小二乘法拟合线性回归模型。其核心思想是：往往只需少数几个主成分，就足以解释数据中的大部分变异，以及数据与响应之间的关系。换句话说，我们假设 <span class="math inline">\(X_1,\ldots,X_p\)</span> 变异最大的方向，就是与 <span class="math inline">\(Y\)</span> 有关联的方向。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-17.png" class="img-fluid figure-img"></p>
+<figcaption>图6.17：第二主成分得分与人口规模和广告支出的关系</figcaption>
+</figure>
+</div>
+<p><strong>图6.17</strong> 第二主成分得分 <span class="math inline">\(z_{i2}\)</span> 分别与 <code>pop</code>、<code>ad</code> 的关系图。两者的关系都很弱。图内文字：2nd Principal Component＝第二主成分；Population＝人口规模；Ad Spending＝广告支出。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-18.png" class="img-fluid figure-img"></p>
+<figcaption>图6.18：两个模拟数据集上PCR的偏差、方差与测试MSE</figcaption>
+</figure>
+</div>
+<p><strong>图6.18</strong> 对两个模拟数据集应用PCR。每幅图中的水平虚线表示不可约误差。<strong>左图：</strong> 图6.8中的模拟数据。<strong>右图：</strong> 图6.9中的模拟数据。图内文字：Number of Components＝主成分数量；Mean Squared Error＝均方误差；Squared Bias＝偏差平方；Test MSE＝测试MSE；Variance＝方差。</p>
+<p>虽然不能保证上述假设成立，但它往往是足够合理的近似，能够得到良好的结果。</p>
+<p>如果PCR的基本假设成立，那么对 <span class="math inline">\(Z_1,\ldots,Z_M\)</span> 拟合最小二乘模型，会比对 <span class="math inline">\(X_1,\ldots,X_p\)</span> 拟合最小二乘模型得到更好的结果。这是因为，数据中与响应有关的大部分或全部信息都包含在 <span class="math inline">\(Z_1,\ldots,Z_M\)</span> 中，而且只估计 <span class="math inline">\(M\ll p\)</span> 个系数可以减轻过拟合。在广告数据中，第一主成分解释了 <code>pop</code> 和 <code>ad</code> 两者的大部分方差，因此，只用这一个变量来预测某个感兴趣的响应（如 <code>sales</code>）的主成分回归，很可能会有相当好的表现。</p>
+<p>图6.18展示了在图6.8和图6.9的模拟数据集上进行PCR拟合的结果。回顾一下，这两个数据集都使用 <span class="math inline">\(n=50\)</span> 个观测和 <span class="math inline">\(p=45\)</span> 个预测变量生成。不过，第一个数据集中的响应是所有预测变量的函数，而第二个数据集的响应只由其中两个预测变量生成。各条曲线都是 <span class="math inline">\(M\)</span> 的函数，其中 <span class="math inline">\(M\)</span> 是回归模型中用作预测变量的主成分数量。随着回归模型中使用的主成分增多，偏差减小，方差增大。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-19.png" class="img-fluid figure-img"></p>
+<figcaption>图6.19：响应只依赖前五个主成分时PCR、岭回归与套索法的比较</figcaption>
+</figure>
+</div>
+<p><strong>图6.19</strong> 对一个模拟数据集应用PCR、岭回归和套索法；该数据集的 <span class="math inline">\(\mathbf{X}\)</span> 的前五个主成分包含了有关响应 <span class="math inline">\(Y\)</span> 的全部信息。每幅图中的水平虚线表示不可约误差 <span class="math inline">\(\operatorname{Var}(\epsilon)\)</span>。<strong>左图：</strong> PCR的结果。<strong>右图：</strong> 套索法（实线）和岭回归（点线）的结果。横轴表示系数估计值的收缩因子，定义为收缩后系数估计值的 <span class="math inline">\(\ell_2\)</span> 范数除以最小二乘估计值的 <span class="math inline">\(\ell_2\)</span> 范数。图内文字：PCR＝主成分回归；Ridge Regression and Lasso＝岭回归和套索法；Number of Components＝主成分数量；Shrinkage Factor＝收缩因子；Mean Squared Error＝均方误差；Squared Bias＝偏差平方；Test MSE＝测试MSE；Variance＝方差。</p>
+<p>这使均方误差呈现典型的U形。当 <span class="math inline">\(M=p=45\)</span> 时，PCR就相当于用全部原始预测变量进行最小二乘拟合。图中表明，恰当地选择 <span class="math inline">\(M\)</span> 并进行PCR，能够比最小二乘法取得明显改善，尤其是在左图中。不过，考察图6.5、图6.8和图6.9中岭回归和套索法的结果，可以看出，在这个例子中PCR不及这两种收缩方法。</p>
+<p>图6.18中PCR表现相对较差，是因为生成这些数据的方式使得需要很多主成分才能充分建模响应。相反，如果前几个主成分就足以捕获预测变量的大部分变异，以及它们与响应之间的关系，PCR往往会表现良好。图6.19左图展示了另一个模拟数据集的结果，这个数据集的设计更有利于PCR。这里生成的响应只依赖前五个主成分。此时，随着PCR中主成分数量 <span class="math inline">\(M\)</span> 的增加，偏差迅速降为零。均方误差在 <span class="math inline">\(M=5\)</span> 处出现了清楚的最小值。图6.19右图展示了岭回归和套索法在这些数据上的结果。这三种方法都比最小二乘法有明显改善。不过，PCR和岭回归的表现略优于套索法。</p>
+<p>需要注意，尽管PCR提供了一种用 <span class="math inline">\(M&lt;p\)</span> 个预测变量进行回归的简单方式，但它并不是特征选择方法。这是因为，回归中使用的 <span class="math inline">\(M\)</span> 个主成分，每一个都是全部 <span class="math inline">\(p\)</span> 个原始特征的线性组合。例如，在式(6.19)中，<span class="math inline">\(Z_1\)</span> 是 <code>pop</code> 与 <code>ad</code> 两者的线性组合。因此，虽然PCR在许多实际情形中往往表现良好，但它不会得到一个仅依赖少数原始特征的模型。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-20.png" class="img-fluid figure-img"></p>
+<figcaption>图6.20：Credit数据集的PCR系数估计值与交叉验证误差</figcaption>
+</figure>
+</div>
+<p><strong>图6.20</strong> <strong>左图：</strong> Credit 数据集中，不同 <span class="math inline">\(M\)</span> 值对应的PCR标准化系数估计值。<strong>右图：</strong> 使用PCR得到的10折交叉验证MSE随 <span class="math inline">\(M\)</span> 的变化。图内文字：Number of Components＝主成分数量；Standardized Coefficients＝标准化系数；Cross-Validation MSE＝交叉验证MSE；Income＝收入；Limit＝信用额度；Rating＝信用评分；Student＝学生身份。</p>
+<p>从这个意义上说，PCR与岭回归的关系比与套索法的关系更密切。事实上，可以证明PCR与岭回归之间有非常密切的联系。甚至可以把岭回归看作PCR的连续版本！<a id="ch06-fnref8" href="#ch06-fn8" class="footnote-ref">8</a></p>
+<aside id="ch06-fn8" class="footnote">
+<p>
+<a href="#ch06-fnref8">8</a> 更多细节参见 Hastie、Tibshirani 和 Friedman 所著《统计学习基础》（The Elements of Statistical Learning）第3.5节。 <a href="#ch06-fnref8" class="footnote-back">↩︎</a>
+</p>
+</aside>
+<p>在PCR中，主成分数量 <span class="math inline">\(M\)</span> 通常通过交叉验证选择。图6.20展示了将PCR应用于 Credit 数据集的结果；右图给出了交叉验证误差随 <span class="math inline">\(M\)</span> 的变化。在这些数据上，当主成分数量 <span class="math inline">\(M=10\)</span> 时，交叉验证误差最低；这几乎没有降维，因为 <span class="math inline">\(M=11\)</span> 的PCR就等价于直接进行最小二乘拟合。</p>
+<p>进行PCR时，我们通常建议先用式(6.6)对每个预测变量进行标准化，再生成主成分。这种标准化可以确保所有变量处在相同的尺度上。如果不进行标准化，方差较大的变量往往会在得到的主成分中发挥更大的作用，而变量的测量尺度最终会影响PCR模型。不过，如果所有变量都用相同单位测量（例如千克或英寸），也可以选择不进行标准化。</p>
+</section>
+</section>
+<section id="偏最小二乘partial-least-squares" class="level3">
+<h3 class="anchored" data-anchor-id="偏最小二乘partial-least-squares">6.3.2 偏最小二乘（Partial Least Squares）</h3>
+<p>刚才介绍的PCR方法，是寻找能够最好地表示预测变量 <span class="math inline">\(X_1,\ldots,X_p\)</span> 的线性组合，也就是方向。这些方向以无监督方式确定，因为在确定主成分方向时，并未借助响应 <span class="math inline">\(Y\)</span>。也就是说，响应没有对主成分的确定过程提供监督。因此，PCR有一个缺点：不能保证最能解释预测变量的方向，也最适合用来预测响应。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-21.png" class="img-fluid figure-img"></p>
+<figcaption>图6.21：广告数据的第一PLS方向与第一PCR方向</figcaption>
+</figure>
+</div>
+<p><strong>图6.21</strong> 广告数据的第一PLS方向（实线）与第一PCR方向（点线）。图内文字：Population＝人口规模；Ad Spending＝广告支出。</p>
+<p>第12章将进一步讨论无监督方法。</p>
+<p>现在介绍<strong>偏最小二乘（PLS）</strong>，它是PCR的一种监督替代方法。与PCR一样，PLS也是降维方法：先找出一组新特征 <span class="math inline">\(Z_1,\ldots,Z_M\)</span>，它们是原始特征的线性组合，再用这 <span class="math inline">\(M\)</span> 个新特征通过最小二乘法拟合线性模型。不过，PLS与PCR不同，它以监督方式确定这些新特征；也就是说，它利用响应 <span class="math inline">\(Y\)</span>，寻找既能很好地近似原始特征、又与响应有关的新特征。粗略地说，PLS方法试图寻找同时有助于解释响应和预测变量的方向。</p>
+<p>下面说明如何计算第一PLS方向。对 <span class="math inline">\(p\)</span> 个预测变量进行标准化后，PLS将式(6.16)中的每个 <span class="math inline">\(\phi_{j1}\)</span> 设为 <span class="math inline">\(Y\)</span> 对 <span class="math inline">\(X_j\)</span> 进行简单线性回归所得的系数，从而计算第一方向 <span class="math inline">\(Z_1\)</span>。可以证明，这个系数与 <span class="math inline">\(Y\)</span> 和 <span class="math inline">\(X_j\)</span> 之间的相关成正比。因此，在计算 <span class="math inline">\(Z_1=\sum_{j=1}^{p}\phi_{j1}X_j\)</span> 时，PLS赋予与响应关系最强的变量最大的权重。</p>
+<p>图6.21展示了在一个合成数据集上应用PLS的例子，其中，响应为100个地区各自的销售量（Sales），两个预测变量分别为人口规模（Population Size）和广告支出（Advertising Spending）。绿色实线表示第一PLS方向，点线表示第一主成分方向。与PCA相比，PLS选出的方向在 <code>pop</code> 维度每变化一个单位时，<code>ad</code> 维度的变化较小。这表明，<code>pop</code> 与响应的相关强于 <code>ad</code>。PLS方向对预测变量的拟合不如PCA紧密，但它能更好地解释响应。</p>
+<p>为了确定第二PLS方向，首先对每个变量调整掉 <span class="math inline">\(Z_1\)</span> 的作用：将每个变量对 <span class="math inline">\(Z_1\)</span> 回归，并取其残差。这些残差可以理解为尚未被第一PLS方向解释的剩余信息。然后，使用这些正交化后的数据计算 <span class="math inline">\(Z_2\)</span>，方法与根据原始数据计算 <span class="math inline">\(Z_1\)</span> 完全相同。</p>
+<p>这种迭代方法可以重复 <span class="math inline">\(M\)</span> 次，从而确定多个PLS成分 <span class="math inline">\(Z_1,\ldots,Z_M\)</span>。最后，在这一过程结束时，与PCR完全一样，使用最小二乘法拟合线性模型，用 <span class="math inline">\(Z_1,\ldots,Z_M\)</span> 预测 <span class="math inline">\(Y\)</span>。</p>
+<p>与PCR一样，PLS中使用的偏最小二乘方向数量 <span class="math inline">\(M\)</span> 是一个调节参数，通常通过交叉验证选择。进行PLS之前，我们一般会对预测变量和响应都进行标准化。</p>
+<p>PLS在化学计量学（chemometrics）领域很常用，该领域的许多变量来自数字化的光谱信号。在实际应用中，它的表现往往并不优于岭回归或PCR。虽然PLS的监督降维可以降低偏差，但也可能增大方差，因此，相对于PCR，PLS的整体收益会相互抵消。</p>
+</section>
+</section>
+<section id="高维情形下的考量" class="level2">
+<h2 class="anchored" data-anchor-id="高维情形下的考量">6.4 高维情形下的考量</h2>
+<section id="高维数据" class="level3">
+<h3 class="anchored" data-anchor-id="高维数据">6.4.1 高维数据</h3>
+<p>大多数传统的回归与分类统计技术，都是针对观测数 <span class="math inline">\(n\)</span> 远大于特征数 <span class="math inline">\(p\)</span> 的<strong>低维（low-dimensional）</strong> 情形设计的。部分原因在于，统计学发展史上的大部分时期，需要使用统计方法的科学问题主要是低维问题。例如，考虑根据患者的年龄、性别和<strong>体质指数（body mass index，BMI）</strong> 建立模型，预测其血压。这里有三个预测变量；如果把截距也计入模型，则是四个。我们可能有数千名患者的血压、年龄、性别和BMI数据。因此，<span class="math inline">\(n\gg p\)</span>，问题是低维的。（这里的维数指 <span class="math inline">\(p\)</span> 的大小。）</p>
+<p>过去20年中，新技术改变了金融、营销和医学等众多领域的数据采集方式。如今，采集几乎不受数量限制的特征测量值已经十分常见，也就是 <span class="math inline">\(p\)</span> 非常大。虽然 <span class="math inline">\(p\)</span> 可以极大，但由于成本、样本可获得性或其他因素的限制，观测数 <span class="math inline">\(n\)</span> 往往有限。下面是两个例子：</p>
+<ol type="1">
+<li>预测血压时，除了年龄、性别和BMI，还可以测量50万个<strong>单核苷酸多态性（single nucleotide polymorphisms，SNPs）</strong>，并将其纳入预测模型。这些是在人群中相对常见的单个DNA突变。此时，<span class="math inline">\(n\approx200\)</span>，<span class="math inline">\(p\approx500{,}000\)</span>。</li>
+<li>一位希望了解人们网上购物模式的营销分析师，可以将搜索引擎用户输入的所有搜索词都作为特征。这有时称为<strong>词袋模型（bag-of-words model）</strong>。这位研究者可能只能获得几百或几千名搜索引擎用户的搜索历史，这些用户同意向其分享自己的信息。对于某个用户，将 <span class="math inline">\(p\)</span> 个搜索词逐一记为出现(0)或未出现(1)，由此构成一个很长的二元特征向量。此时，<span class="math inline">\(n\approx1{,}000\)</span>，而 <span class="math inline">\(p\)</span> 要大得多。</li>
+</ol>
+<p>特征数多于观测数的数据集通常称为<strong>高维（high-dimensional）</strong> 数据集。最小二乘线性回归等经典方法不适用于这种情形。分析高维数据时出现的许多问题，本书前面已经讨论过，因为它们也适用于 <span class="math inline">\(n&gt;p\)</span> 的情形，包括偏差—方差权衡的作用与过拟合的风险。这些问题始终值得关注；而当特征数相对于观测数非常大时，它们就尤其重要。</p>
+<p>我们将高维情形定义为特征数 <span class="math inline">\(p\)</span> 大于观测数 <span class="math inline">\(n\)</span> 的情形。不过，下面讨论的考量当然也适用于 <span class="math inline">\(p\)</span> 略小于 <span class="math inline">\(n\)</span> 的情况；进行监督学习时，最好始终将其牢记在心。</p>
+</section>
+<section id="高维情形下会出现什么问题" class="level3">
+<h3 class="anchored" data-anchor-id="高维情形下会出现什么问题">6.4.2 高维情形下会出现什么问题？</h3>
+<p>为了说明当 <span class="math inline">\(p&gt;n\)</span> 时，回归与分类为什么需要格外谨慎并采用专门技术，我们先考察将不适用于高维情形的统计技术直接用于这类数据时，会出现什么问题。这里以最小二乘回归为例，但同样的概念也适用于逻辑回归、线性判别分析和其他经典统计方法。</p>
+<p>当特征数 <span class="math inline">\(p\)</span> 大于或等于观测数 <span class="math inline">\(n\)</span> 时，第3章介绍的最小二乘法就不能使用，或者更准确地说，<strong>不应该</strong>使用。原因很简单：不论特征与响应之间是否真的存在关系，最小二乘法都会给出一组系数估计，使数据被完全拟合，残差为零。</p>
+<p>图6.22给出了一个例子，其中只有 <span class="math inline">\(p=1\)</span> 个特征（另加一个截距），分别考察20个观测和只有两个观测的情形。有20个观测时，<span class="math inline">\(n&gt;p\)</span>，最小二乘回归直线不会完全拟合数据，而是尽可能逼近这20个观测。相反，只有两个观测时，不论这两个观测的取值如何，回归直线都会精确地拟合数据。这会带来问题，因为这种完全拟合几乎肯定会导致对数据过拟合。换句话说，虽然在高维情形下可以完全拟合训练数据，但得到的线性模型在独立测试集上会表现得极差，因此并不是一个有用的模型。事实上，图6.22就展示了这一点：右图得到的最小二乘直线，如果用左图的观测组成测试集，其表现将很差。问题很简单：当 <span class="math inline">\(p&gt;n\)</span> 或 <span class="math inline">\(p\approx n\)</span> 时，一条简单的最小二乘回归直线就已经过于灵活，因而会过拟合数据。</p>
+<p>图6.23进一步说明了当特征数 <span class="math inline">\(p\)</span> 很大时，不加谨慎地使用最小二乘法的风险。这里模拟了 <span class="math inline">\(n=20\)</span> 个观测，分别使用1到20个特征进行回归，且每个特征都与响应完全无关。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-22.png" class="img-fluid figure-img"></p>
+<figcaption>图6.22：低维情形与仅有两个观测时的最小二乘回归</figcaption>
+</figure>
+</div>
+<p><strong>图6.22</strong> 左：低维情形下的最小二乘回归。右：<span class="math inline">\(n=2\)</span> 个观测、需要估计两个参数（一个截距和一个系数）时的最小二乘回归。图内坐标符号 <span class="math inline">\(X\)</span>、<span class="math inline">\(Y\)</span> 保持原样。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-23.png" class="img-fluid figure-img"></p>
+<figcaption>图6.23：加入无关特征时R²、训练MSE与测试MSE的变化</figcaption>
+</figure>
+</div>
+<p><strong>图6.23</strong> 在一个包含 <span class="math inline">\(n=20\)</span> 个训练观测的模拟例子中，向模型加入与结果完全无关的特征。左：随着纳入的特征增多，<span class="math inline">\(R^2\)</span> 增大到1。中：随着纳入的特征增多，训练集MSE减小到0。右：随着纳入的特征增多，测试集MSE增大。图内文字：Number of Variables＝变量个数；Training MSE＝训练MSE；Test MSE＝测试MSE；<span class="math inline">\(R^2\)</span> 保持原样。</p>
+<p>如图所示，随着模型纳入的特征数增加，模型的 <span class="math inline">\(R^2\)</span> 增大到1，相应地，训练集MSE减小到0，<strong>尽管这些特征与响应完全无关</strong>。另一方面，随着模型纳入的特征数增加，独立测试集上的MSE会变得极大，因为加入额外预测变量会使系数估计的方差大幅增加。查看测试集MSE就会发现，最佳模型至多只包含少量变量。然而，如果只是不加仔细地查看 <span class="math inline">\(R^2\)</span> 或训练集MSE，就可能错误地认定，变量最多的模型才是最好的。这说明，分析包含大量变量的数据集时，必须格外谨慎，并且始终在独立测试集上评价模型表现。</p>
+<p>第6.1.3节介绍了若干方法，通过调整训练集RSS或 <span class="math inline">\(R^2\)</span>，将拟合最小二乘模型所用的变量数考虑在内。遗憾的是，<span class="math inline">\(C_p\)</span>、AIC和BIC不适用于高维情形，因为这时估计 <span class="math inline">\(\hat\sigma^2\)</span> 存在问题。（例如，在这种情形下，第3章给出的 <span class="math inline">\(\hat\sigma^2\)</span> 公式会产生 <span class="math inline">\(\hat\sigma^2=0\)</span> 的估计。）同样，在高维情形下使用调整后的 <span class="math inline">\(R^2\)</span> 也会出现问题，因为很容易得到调整后的 <span class="math inline">\(R^2\)</span> 等于1的模型。显然，我们需要更适合高维情形的其他方法。</p>
+</section>
+<section id="高维情形下的回归" class="level3">
+<h3 class="anchored" data-anchor-id="高维情形下的回归">6.4.3 高维情形下的回归</h3>
+<p>本章介绍了许多方法，用于拟合灵活性较低的最小二乘模型，例如前向逐步选择、岭回归、套索法和主成分回归。这些方法在高维情形下进行回归时尤其有用。它们的基本做法是，采用比最小二乘法灵活性更低的拟合方法，从而避免过拟合。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-6-24.png" class="img-fluid figure-img"></p>
+<figcaption>图6.24：特征数与正则化程度对套索法测试MSE的影响</figcaption>
+</figure>
+</div>
+<p><strong>图6.24</strong> 对 <span class="math inline">\(n=100\)</span> 个观测和三种不同的特征数 <span class="math inline">\(p\)</span> 使用套索法。在 <span class="math inline">\(p\)</span> 个特征中，有20个与响应有关。箱线图展示了式(6.7)中的调节参数 <span class="math inline">\(\lambda\)</span> 取三个不同值时得到的测试MSE。为便于解释，图中标出的是自由度而非 <span class="math inline">\(\lambda\)</span>；对于套索法，自由度就是估计得到的非零系数个数。当 <span class="math inline">\(p=20\)</span> 时，最弱的正则化得到最低的测试MSE。当 <span class="math inline">\(p=50\)</span> 时，较强的正则化得到最低的测试MSE。当 <span class="math inline">\(p=2{,}000\)</span> 时，不论正则化程度如何，套索法的表现都很差，因为2,000个特征中只有20个真正与结果有关。图内文字：Degrees of Freedom＝自由度；<span class="math inline">\(p\)</span> 的取值保持原样。</p>
+<p>图6.24用一个简单的模拟例子展示了套索法的表现。这里有 <span class="math inline">\(p=20\)</span>、50或2,000个特征，其中20个真正与结果有关。在 <span class="math inline">\(n=100\)</span> 个训练观测上使用套索法，并在独立测试集上评价均方误差。随着特征数增加，测试集误差增大。当 <span class="math inline">\(p=20\)</span> 时，式(6.7)中的 <span class="math inline">\(\lambda\)</span> 较小可获得最低的验证集误差；然而，当 <span class="math inline">\(p\)</span> 较大时，较大的 <span class="math inline">\(\lambda\)</span> 才能获得最低的验证集误差。</p>
+<p>每幅箱线图都用得到的套索解的自由度，代替实际使用的 <span class="math inline">\(\lambda\)</span> 值；它就是套索解中非零系数估计的个数，也是套索拟合灵活性的一种度量。图6.24强调了三个要点：(1)正则化或收缩在高维问题中起着关键作用；(2)恰当地选择调节参数，对于良好的预测表现至关重要；(3)随着问题维数（即特征或预测变量的个数）增加，测试误差往往也会增加，除非新增特征确实与响应有关。</p>
+<p>上述第三点实际上是高维数据分析中的一个关键原则，称为<strong>维数灾难（curse of dimensionality）</strong>。我们可能认为，用来拟合模型的特征数越多，拟合模型的质量也会越高。然而，比较图6.24的左图和右图就会发现，情况未必如此：在这个例子中，<span class="math inline">\(p\)</span> 从20增大到2,000时，测试集MSE几乎翻了一倍。一般来说，<strong>加入确实与响应有关的额外信号特征，会改善拟合模型，表现为测试集误差下降</strong>。然而，加入实际上与响应无关的噪声特征，则会使拟合模型变差，导致测试集误差上升。这是因为，噪声特征增加了问题的维数，加剧了过拟合的风险：由于它们在训练集上与响应存在偶然关联，可能被赋予非零系数；但它们没有降低测试集误差的潜在收益。因此，能够采集数千乃至数百万个特征测量值的新技术是一把双刃剑：如果这些特征确实与当前问题有关，就可能改善预测模型；如果无关，就会使结果变差。即使特征是相关的，拟合其系数所产生的方差，也可能超过它们带来的偏差下降。</p>
+</section>
+<section id="解释高维情形下的结果" class="level3">
+<h3 class="anchored" data-anchor-id="解释高维情形下的结果">6.4.4 解释高维情形下的结果</h3>
+<p>在高维情形下使用套索法、岭回归或其他回归方法时，必须非常谨慎地报告结果。第3章介绍了多重共线性，也就是回归中的变量可能彼此相关。在高维情形下，多重共线性问题十分严重：模型中的任一变量，都可以写成模型中所有其他变量的线性组合。这基本上意味着，我们永远无法确切知道哪些变量真正能够预测结果（如果确有这样的变量），也永远无法确定回归中应使用的最佳系数。我们至多只能希望，对那些与真正具有预测能力的变量相关的变量，赋予较大的回归系数。</p>
+<p>例如，假设我们试图根据50万个SNP预测血压，而前向逐步选择表明，其中17个SNP可以在训练数据上得到一个良好的预测模型。若据此断言，这17个SNP预测血压的能力优于未纳入模型的其他SNP，就是错误的。很可能存在许多由17个SNP组成的集合，预测血压的效果与选出的模型一样好。如果获得一个独立数据集，并在其中进行前向逐步选择，很可能会得到包含另一组SNP的模型，这组SNP甚至可能与原先的一组完全没有重叠。这并不减损所得模型的价值。例如，这个模型可能在一组独立患者中非常有效地预测血压，对医生具有临床价值。但我们必须谨慎，避免夸大结果，并明确说明：我们找出的只是许多可能的血压预测模型之一，还必须在独立数据集上进一步验证。</p>
+<p>在高维情形下报告误差和模型拟合程度的度量时，也必须格外小心。我们已经看到，当 <span class="math inline">\(p&gt;n\)</span> 时，很容易得到一个残差为零、却毫无用处的模型。因此，在高维情形下，<strong>绝不能</strong>把训练数据上的误差平方和、<span class="math inline">\(p\)</span> 值、<span class="math inline">\(R^2\)</span> 统计量或其他传统拟合指标，作为模型拟合良好的证据。例如，正如图6.23所示，当 <span class="math inline">\(p&gt;n\)</span> 时，很容易得到 <span class="math inline">\(R^2=1\)</span> 的模型。报告这一点，可能误导他人以为已经获得了一个统计上有效且有用的模型；事实上，这完全不能证明模型具有说服力。应当报告独立测试集上的结果，或交叉验证误差。例如，独立测试集上的MSE或 <span class="math inline">\(R^2\)</span> 是有效的模型拟合度量，而训练集上的MSE当然不是。</p>
+</section>
+</section>
+<section id="实验线性模型与正则化方法" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="实验线性模型与正则化方法">6.5 实验：线性模型与正则化方法</h2>
+<p>本实验将实现本章讨论的许多技术。我们先在顶层导入部分所需的库。</p>
+<p>In [1]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.pyplot <span class="im">import</span> subplots</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.api <span class="im">import</span> OLS</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.model_selection <span class="im">as</span> skm</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.linear_model <span class="im">as</span> skl</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP <span class="im">import</span> load_data</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.models <span class="im">import</span> ModelSpec <span class="im">as</span> MS</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> functools <span class="im">import</span> partial</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>我们再次把本实验需要的新导入集中列出。</p>
+<p>In [2]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.cross_decomposition <span class="im">import</span> PLSRegression</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.models <span class="im">import</span> <span class="op">\</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>     (Stepwise,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      sklearn_selected,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      sklearn_selection_path)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install l0bnb</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> l0bnb <span class="im">import</span> fit_path</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>我们在这里即时安装了 <code>l0bnb</code> 包。注意，带有转义符的 <code>!pip install</code> 会作为一条单独的系统命令运行。</p>
+<section id="子集选择方法" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="子集选择方法">6.5.1 子集选择方法</h3>
+<p>这里实现的方法将模型限制为仅使用输入变量的一个子集，从而减少模型中的参数个数。</p>
+<section id="前向选择" class="level4">
+<h4 class="anchored" data-anchor-id="前向选择">前向选择</h4>
+<p>我们将对 <code>Hitters</code> 数据集应用前向选择法，希望根据与上一年比赛表现有关的各项统计量，预测棒球运动员的薪水 <code>Salary</code>。</p>
+<p>首先注意到，一些运动员的 <code>Salary</code> 变量存在缺失值。<code>np.isnan()</code> 函数可用于识别缺失的观测。它返回一个与输入向量形状相同的数组：缺失元素对应 <code>True</code>，非缺失元素对应 <code>False</code>。然后可以使用 <code>sum()</code> 方法统计缺失元素的总数。</p>
+<p>In [3]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Hitters <span class="op">=</span> load_data(<span class="st">'Hitters'</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>np.isnan(Hitters[<span class="st">'Salary'</span>]).<span class="bu">sum</span>()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[3]:</p>
+<pre class="text"><code>59</code></pre>
+<p>可以看到，59名运动员的 <code>Salary</code> 缺失。数据框的 <code>dropna()</code> 方法会移除任一变量存在缺失值的所有行（这是默认行为，参见 <code>Hitters.dropna?</code>）。</p>
+<p>In [4]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Hitters <span class="op">=</span> Hitters.dropna()<span class="op">;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>Hitters.shape</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[4]:</p>
+<pre class="text"><code>(263, 20)</code></pre>
+<p>我们先采用基于 <span class="math inline">\(C_p\)</span>（6.2）的前向选择来选出最佳模型。<code>sklearn</code> 没有内置这一评分指标，因此我们自己定义一个函数来计算它，并将其用作评分函数（scorer）。默认情况下，<code>sklearn</code> 会尝试将评分最大化，所以我们的评分函数计算的是 <span class="math inline">\(C_p\)</span> 统计量的负值。</p>
+<p>In [5]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nCp(sigma2, estimator, X, Y):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Negative Cp statistic"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    n, p <span class="op">=</span> X.shape</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    Yhat <span class="op">=</span> estimator.predict(X)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    RSS <span class="op">=</span> np.<span class="bu">sum</span>((Y <span class="op">-</span> Yhat)<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>(RSS <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> p <span class="op">*</span> sigma2) <span class="op">/</span> n</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>我们需要估计残差方差 <span class="math inline">\(\sigma^2\)</span>，也就是上述评分函数的第一个参数。为此，使用全部变量拟合最大的模型，再根据它的MSE估计 <span class="math inline">\(\sigma^2\)</span>。</p>
+<p>In [6]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>design <span class="op">=</span> MS(Hitters.columns.drop(<span class="st">'Salary'</span>)).fit(Hitters)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> np.array(Hitters[<span class="st">'Salary'</span>])</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> design.transform(Hitters)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>sigma2 <span class="op">=</span> OLS(Y,X).fit().scale</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>sklearn_selected()</code> 函数要求评分函数只有三个参数，即上面 <code>nCp()</code> 定义中的最后三个参数。我们使用5.3.3节首次介绍的 <code>partial()</code> 函数，将第一个参数固定为 <span class="math inline">\(\sigma^2\)</span> 的估计值。</p>
+<p>In [7]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>neg_Cp <span class="op">=</span> partial(nCp, sigma2)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在可以把 <code>neg_Cp()</code> 用作模型选择的评分函数。</p>
+<p>除了评分，还需要指定搜索策略。这通过 <code>ISLP.models</code> 包中的 <code>Stepwise()</code> 对象来完成。<code>Stepwise.first_peak()</code> 方法执行前向逐步选择，直到继续向模型中添加任何变量都无法改善评估评分为止。类似地，<code>Stepwise.fixed_steps()</code> 方法执行固定步数的逐步搜索。</p>
+<p>In [8]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> Stepwise.first_peak(design,</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                               direction<span class="op">=</span><span class="st">'forward'</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                               max_terms<span class="op">=</span><span class="bu">len</span>(design.terms))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在使用前向选择，拟合以 <code>Salary</code> 为响应变量的线性回归模型。为此，使用 <code>ISLP.models</code> 包中的 <code>sklearn_selected()</code> 函数。它接收一个 <code>statsmodels</code> 模型和一种搜索策略，并通过其 <code>fit</code> 方法选择模型。如果不指定 <code>scoring</code> 参数，默认使用MSE评分，因此全部19个变量都会被选中（输出未展示）。</p>
+<p>In [9]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>hitters_MSE <span class="op">=</span> sklearn_selected(OLS,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                              strategy)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>hitters_MSE.fit(Hitters, Y)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>hitters_MSE.selected_state_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>与预期一致，使用 <code>neg_Cp</code> 会得到更小的模型，只选中10个变量。</p>
+<p>In [10]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>hitters_Cp <span class="op">=</span> sklearn_selected(OLS,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                             strategy,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                             scoring<span class="op">=</span>neg_Cp)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>hitters_Cp.fit(Hitters, Y)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>hitters_Cp.selected_state_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[10]:</p>
+<pre class="text"><code>('Assists',
+ 'AtBat',
+ 'CAtBat',
+ 'CRBI',
+ 'CRuns',
+ 'CWalks',
+ 'Division',
+ 'Hits',
+ 'PutOuts',
+ 'Walks')</code></pre>
+</section>
+<section id="使用验证集法与交叉验证选择模型" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="使用验证集法与交叉验证选择模型">使用验证集法与交叉验证选择模型</h4>
+<p>除了使用 <span class="math inline">\(C_p\)</span>，也可以尝试通过交叉验证，在前向选择过程中选出模型。为此，需要一种方法，既能保存前向选择找到的完整模型路径，又能使用其中每个模型进行预测。<code>ISLP.models</code> 中的 <code>sklearn_selection_path()</code> 估计器可以完成这项工作。<code>ISLP.models</code> 中的 <code>cross_val_predict()</code> 函数会计算路径上每个模型的交叉验证预测值，进而可以用这些预测值评估路径上的交叉验证MSE。</p>
+<p>这里定义一种拟合完整前向选择路径的策略。虽然 <code>sklearn_selection_path()</code> 有多种参数可供选择，这里采用默认设置，即每一步都选择使RSS下降最多的模型。</p>
+<p>In [11]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>strategy <span class="op">=</span> Stepwise.fixed_steps(design,</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                                <span class="bu">len</span>(design.terms),</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                                direction<span class="op">=</span><span class="st">'forward'</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>full_path <span class="op">=</span> sklearn_selection_path(OLS, strategy)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在对 <code>Hitters</code> 数据拟合完整的前向选择路径，并计算拟合值。</p>
+<p>In [12]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>full_path.fit(Hitters, Y)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>Yhat_in <span class="op">=</span> full_path.predict(Hitters)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>Yhat_in.shape</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[12]:</p>
+<pre class="text"><code>(263, 20)</code></pre>
+<p>这样得到一个拟合值数组，共有20步，包括空模型所拟合的均值。我们可以据此评估样本内MSE。与预期一致，每增加一步，样本内MSE都会改善，这说明必须使用验证集法或交叉验证来选择步数。我们将 <span class="math inline">\(y\)</span> 轴范围固定为50,000至250,000，以便与下文的交叉验证MSE、验证集MSE，以及岭回归、套索法和主成分回归等其他方法进行比较。</p>
+<p>In [13]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mse_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>insample_mse <span class="op">=</span> ((Yhat_in <span class="op">-</span> Y[:,<span class="va">None</span>])<span class="op">**</span><span class="dv">2</span>).mean(<span class="dv">0</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>n_steps <span class="op">=</span> insample_mse.shape[<span class="dv">0</span>]</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>ax.plot(np.arange(n_steps),</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>        insample_mse,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">'k'</span>, <span class="co"># color black</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">'In-sample'</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'MSE'</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>              fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'# steps of forward stepwise'</span>,</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>              fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(np.arange(n_steps)[::<span class="dv">2</span>])</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">50000</span>,<span class="dv">250000</span>])<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>注意上面 <code>Y[:,None]</code> 中的 <code>None</code> 表达式。它给一维数组 <code>Y</code> 增加了一个轴（维度），使 <code>Y</code> 能在从二维数组 <code>Yhat_in</code> 中相减时重复使用。</p>
+<p>现在可以使用交叉验证，估计模型路径上的测试误差。模型拟合的所有环节，包括变量选择，都必须<em>只使用训练观测</em>。因此，对于给定的模型大小，判断哪个模型最优时，也必须<em>只使用每个训练折内的训练观测</em>。这一点细微却很重要。如果每一步都使用完整数据集来选择最佳子集，所得到的验证集误差和交叉验证误差就无法准确估计测试误差。</p>
+<p>下面使用5折交叉验证计算交叉验证预测值。</p>
+<p>In [14]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>kfold <span class="op">=</span> skm.KFold(K,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>                   random_state<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                   shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>Yhat_cv <span class="op">=</span> skm.cross_val_predict(full_path,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                               Hitters,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                               Y,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                               cv<span class="op">=</span>kfold)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>Yhat_cv.shape</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[14]:</p>
+<pre class="text"><code>(263, 20)</code></pre>
+<p>预测矩阵 <code>Yhat_cv</code> 与 <code>Yhat_in</code> 形状相同；区别在于，每行对应一个特定的样本索引，该行预测值来自未包含这一行的训练折所拟合的模型。</p>
+<p>对于路径上的每个模型，我们计算各个交叉验证折的MSE。对这些值取平均，得到平均MSE，也可以用各个值粗略估计均值的标准误。<sup><a id="ch06-fnref9" href="#ch06-fn9">9</a></sup> 因此，必须知道每次交叉验证划分的测试索引。使用 <code>kfold</code> 的 <code>split()</code> 方法即可获得。由于上面固定了随机状态，无论划分哪个与 <code>Y</code> 行数相同的数组，得到的训练索引和测试索引都相同；不过，下面直接忽略训练索引。</p>
+<aside id="ch06-fn9" class="footnote">
+<p>
+<a href="#ch06-fnref9">9</a> 这一估计较为粗略，因为五个误差估计基于彼此重叠的训练集，因此并不独立。
+</p>
+</aside>
+<p>In [15]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>cv_mse <span class="op">=</span> []</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> train_idx, test_idx <span class="kw">in</span> kfold.split(Y):</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    errors <span class="op">=</span> (Yhat_cv[test_idx] <span class="op">-</span> Y[test_idx,<span class="va">None</span>])<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    cv_mse.append(errors.mean(<span class="dv">0</span>)) <span class="co"># column means</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>cv_mse <span class="op">=</span> np.array(cv_mse).T</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>cv_mse.shape</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[15]:</p>
+<pre class="text"><code>(20, 5)</code></pre>
+<p>现在将交叉验证误差估计加入MSE图，包括五个折的平均误差，以及均值标准误的估计值。</p>
+<p>In [16]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>ax.errorbar(np.arange(n_steps),</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>            cv_mse.mean(<span class="dv">1</span>),</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>            cv_mse.std(<span class="dv">1</span>) <span class="op">/</span> np.sqrt(K),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>            label<span class="op">=</span><span class="st">'Cross-validated'</span>,</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>            c<span class="op">=</span><span class="st">'r'</span>) <span class="co"># color red</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">50000</span>,<span class="dv">250000</span>])</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>mse_fig</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>若要使用验证集法重复上述过程，只需将 <code>cv</code> 参数改为验证集划分：把数据随机划分为测试集和训练集一次。我们选择20%的数据作为测试集，与5折交叉验证中每个测试集的大小相近。</p>
+<p>In [17]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>validation <span class="op">=</span> skm.ShuffleSplit(n_splits<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                               test_size<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                               random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> train_idx, test_idx <span class="kw">in</span> validation.split(Y):</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    full_path.fit(Hitters.iloc[train_idx],</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                  Y[train_idx])</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    Yhat_val <span class="op">=</span> full_path.predict(Hitters.iloc[test_idx])</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    errors <span class="op">=</span> (Yhat_val <span class="op">-</span> Y[test_idx,<span class="va">None</span>])<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    validation_mse <span class="op">=</span> errors.mean(<span class="dv">0</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>与样本内MSE的情况一样，验证集法不提供标准误。</p>
+<p>In [18]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ax.plot(np.arange(n_steps),</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>        validation_mse,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">'b--'</span>, <span class="co"># color blue, broken line</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">'Validation'</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(np.arange(n_steps)[::<span class="dv">2</span>])</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">50000</span>,<span class="dv">250000</span>])</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>mse_fig</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="最佳子集选择" class="level4">
+<h4 class="anchored" data-anchor-id="最佳子集选择">最佳子集选择</h4>
+<p>前向逐步选择是一种<em>贪心</em>选择过程：每一步都向当前变量集合中增加一个变量。现在对 <code>Hitters</code> 数据应用最佳子集选择，对每一种子集大小搜索最佳的预测变量集合。</p>
+<p>我们将使用名为 <code>l0bnb</code> 的包执行最佳子集选择。这个包并不将子集大小约束为某个给定值，而是把子集大小作为惩罚项，生成一条解路径。两者的区别虽然细微，却会在交叉验证时体现出来。</p>
+<p>In [19]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> design.fit_transform(Hitters)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> D.drop(<span class="st">'intercept'</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.asarray(D)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>这里去掉了对应截距的第一列，因为 <code>l0bnb</code> 会单独拟合截距。可以使用 <code>fit_path()</code> 函数得到一条路径。</p>
+<p>In [20]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> fit_path(X,</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>                Y,</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                max_nonzeros<span class="op">=</span>X.shape[<span class="dv">1</span>])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>fit_path()</code> 函数返回一个列表，其中包含拟合系数 <code>B</code>、截距 <code>B0</code>，以及与所用具体路径算法有关的其他一些属性。这些细节超出了本书的讨论范围。</p>
+<p>In [21]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>path[<span class="dv">3</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[21]:</p>
+<pre class="text"><code>{'B': array([0.      , 3.254844, 0.      , 0.      , 0.      ,
+       0.      , 0.      , 0.      , 0.      , 0.      ,
+       0.      , 0.677753, 0.      , 0.      , 0.      ,
+       0.      , 0.      , 0.      , 0.      ]),
+ 'B0': -38.98216739555494,
+ 'lambda_0': 0.011416248027450194,
+ 'M': 0.5829861733382011,
+ 'Time_exceeded': False}</code></pre>
+<p>在上例中，路径的第四步在 <code>'B'</code> 中有两个非零系数，对应的惩罚参数 <code>lambda_0</code> 为0.114。我们可以用这一系列拟合结果在验证集上进行预测，并考察预测表现如何随 <code>lambda_0</code> 变化；也可以多做一些工作，使用交叉验证。</p>
+</section>
+</section>
+<section id="岭回归与套索法" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="岭回归与套索法">6.5.2 岭回归与套索法</h3>
+<p>我们将使用 <code>sklearn.linear_model</code> 包（下文简写为 <code>skl</code>），对 <code>Hitters</code> 数据拟合岭回归和套索法正则化线性模型。首先使用上一小节最佳子集回归中计算的模型矩阵 <code>X</code>（不含截距）。</p>
+<section id="岭回归" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="岭回归">岭回归</h4>
+<p>我们将使用 <code>skl.ElasticNet()</code> 函数拟合岭回归和套索法。要拟合一条岭回归模型<em>路径</em>，可以使用 <code>skl.ElasticNet.path()</code>，它既可以拟合岭回归和套索法，也可以拟合两者的混合形式；岭回归对应 <code>l1_ratio=0</code>。在这些应用中，如果变量采用不同的度量单位，最好对 <code>X</code> 的各列做标准化。由于 <code>skl.ElasticNet()</code> 不进行归一化，需要我们自行处理。因为先做了标准化，要得到原始尺度上的系数估计值，就必须对系数估计值<em>撤销标准化</em>。式（6.5）和式（6.7）中的参数 <span class="math inline">\(\lambda\)</span> 在 <code>sklearn</code> 中称为 <code>alphas</code>。为了与本章其余内容一致，下文使用 <code>lambdas</code>。<sup><a id="ch06-fnref10" href="#ch06-fn10">10</a></sup></p>
+<aside id="ch06-fn10" class="footnote">
+<p>
+<a href="#ch06-fnref10">10</a> 本书出版时，像代码块[22]这样的岭回归拟合会产生本不应出现的收敛警告信息；我们预计，随着这个包逐渐成熟，这些警告会消失。
+</p>
+</aside>
+<p>In [22]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>Xs <span class="op">=</span> X <span class="op">-</span> X.mean(<span class="dv">0</span>)[<span class="va">None</span>,:]</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>X_scale <span class="op">=</span> X.std(<span class="dv">0</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>Xs <span class="op">=</span> Xs <span class="op">/</span> X_scale[<span class="va">None</span>,:]</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>lambdas <span class="op">=</span> <span class="dv">10</span><span class="op">**</span>np.linspace(<span class="dv">8</span>, <span class="op">-</span><span class="dv">2</span>, <span class="dv">100</span>) <span class="op">/</span> Y.std()</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>soln_array <span class="op">=</span> skl.ElasticNet.path(Xs,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>                                Y,</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>                                l1_ratio<span class="op">=</span><span class="fl">0.</span>,</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>                                alphas<span class="op">=</span>lambdas)[<span class="dv">1</span>]</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>soln_array.shape</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[22]:</p>
+<pre class="text"><code>(19, 100)</code></pre>
+<p>这里提取正则化路径（regularization path）上各个解所对应的系数数组。默认情况下，<code>skl.ElasticNet.path</code> 方法会自动选择一段 <span class="math inline">\(\lambda\)</span> 的取值范围，并沿着这一范围拟合路径；但当 <code>l1_ratio=0</code>、即进行岭回归时（正如此处），情况例外。<sup><a id="ch06-fnref11" href="#ch06-fn11">11</a></sup> 因此，这里选择从 <span class="math inline">\(\lambda=10^8\)</span> 到 <span class="math inline">\(\lambda=10^{-2}\)</span> 的一组网格值，并按 <span class="math inline">\(y\)</span> 的标准差缩放，再在这些值上运行该函数。这基本涵盖了从仅含截距的空模型到最小二乘拟合的全部情形。</p>
+<aside id="ch06-fn11" class="footnote">
+<p>
+<a href="#ch06-fnref11">11</a> 原因较为技术性：除岭回归外，对于其他模型，都可以找到使所有系数均为零的最小 <span class="math inline">\(\lambda\)</span> 值；岭回归的这个值为 <span class="math inline">\(\infty\)</span>。
+</p>
+</aside>
+<p>每个 <span class="math inline">\(\lambda\)</span> 值都对应一个岭回归系数向量，可以通过 <code>soln_array</code> 的一列访问。在这里，<code>soln_array</code> 是一个 <span class="math inline">\(19\times100\)</span> 矩阵，有19行（每个预测变量一行）和100列（每个 <span class="math inline">\(\lambda\)</span> 值一列）。</p>
+<p>为了便于查看和绘图，我们将这个矩阵转置，并转换为数据框。</p>
+<p>In [23]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>soln_path <span class="op">=</span> pd.DataFrame(soln_array.T,</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>                         columns<span class="op">=</span>D.columns,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>                         index<span class="op">=-</span>np.log(lambdas))</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>soln_path.index.name <span class="op">=</span> <span class="st">'negative log(lambda)'</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>soln_path</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[23]:</p>
+<pre class="text"><code>                   AtBat      Hits     HmRun      Runs  ...
+   negative
+log(lambda)
+ -12.310855      0.000800  0.000889  0.000695  0.000851  ...
+ -12.078271      0.001010  0.001122  0.000878  0.001074  ...
+ -11.845686      0.001274  0.001416  0.001107  0.001355  ...
+ -11.613102      0.001608  0.001787  0.001397  0.001710  ...
+ -11.380518      0.002029  0.002255  0.001763  0.002158  ...
+        ...           ...       ...       ...       ...  ...
+100 rows × 19 columns</code></pre>
+<p>将路径画出来，就能直观了解系数如何随 <span class="math inline">\(\lambda\)</span> 变化。为了控制图例的位置，先在绘图方法中设置 <code>legend=False</code>，随后再通过 <code>ax</code> 的 <code>legend()</code> 方法添加图例。</p>
+<p>In [24]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>path_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>soln_path.plot(ax<span class="op">=</span>ax, legend<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'$-</span><span class="er">\</span><span class="st">log(</span><span class="er">\</span><span class="st">lambda)$'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Standardized coefficients'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">'upper left'</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>（横轴标签使用了 <code>latex</code> 格式，以便正确显示希腊字母 <span class="math inline">\(\lambda\)</span>。）我们预期，与较小的 <span class="math inline">\(\lambda\)</span> 值相比，采用较大的 <span class="math inline">\(\lambda\)</span> 值时，系数估计的 <span class="math inline">\(\ell_2\)</span> 范数会小得多。（回顾一下，<span class="math inline">\(\ell_2\)</span> 范数是各系数平方和的平方根。）下面显示第40步的系数，此时 <span class="math inline">\(\lambda\)</span> 为25.535。</p>
+<p>In [25]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>beta_hat <span class="op">=</span> soln_path.loc[soln_path.index[<span class="dv">39</span>]]</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>lambdas[<span class="dv">39</span>], beta_hat</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[25]:</p>
+<pre class="text"><code>(25.535,
+ AtBat          5.433750
+ Hits           6.223582
+ HmRun          4.585498
+ Runs           5.880855
+ RBI            6.195921
+ Walks          6.277975
+ Years          5.299767
+ ...            ...</code></pre>
+<p>下面计算标准化系数的 <span class="math inline">\(\ell_2\)</span> 范数。</p>
+<p>In [26]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>np.linalg.norm(beta_hat)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[26]:</p>
+<pre class="text"><code>24.17</code></pre>
+<p>作为对比，下面给出 <span class="math inline">\(\lambda\)</span> 为 <code>2.44e-01</code> 时的 <span class="math inline">\(\ell_2\)</span> 范数。注意，这个较小的 <span class="math inline">\(\lambda\)</span> 值对应的系数，其 <span class="math inline">\(\ell_2\)</span> 范数大得多。</p>
+<p>In [27]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>beta_hat <span class="op">=</span> soln_path.loc[soln_path.index[<span class="dv">59</span>]]</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>lambdas[<span class="dv">59</span>], np.linalg.norm(beta_hat)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[27]:</p>
+<pre class="text"><code>(0.2437, 160.4237)</code></pre>
+<p>上面先对 <code>X</code> 做了归一化，再使用 <code>Xs</code> 拟合岭回归模型。<code>sklearn</code> 中的 <code>Pipeline()</code> 对象提供了一种清晰的方法，将特征归一化与岭回归模型本身的拟合分开。</p>
+<p>In [28]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>ridge <span class="op">=</span> skl.ElasticNet(alpha<span class="op">=</span>lambdas[<span class="dv">59</span>], l1_ratio<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler(with_mean<span class="op">=</span><span class="va">True</span>, with_std<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>pipe <span class="op">=</span> Pipeline(steps<span class="op">=</span>[(<span class="st">'scaler'</span>, scaler), (<span class="st">'ridge'</span>, ridge)])</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>pipe.fit(X, Y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>下面可以看到，得到的 <span class="math inline">\(\ell_2\)</span> 范数与先前在标准化数据上的拟合结果相同。</p>
+<p>In [29]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>np.linalg.norm(ridge.coef_)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[29]:</p>
+<pre class="text"><code>160.4237</code></pre>
+<p>注意，上面的 <code>pipe.fit(X, Y)</code> 操作改变了 <code>ridge</code> 对象，尤其是添加了此前并不存在的 <code>coef_</code> 等属性。</p>
+</section>
+<section id="估计岭回归的测试误差" class="level4">
+<h4 class="anchored" data-anchor-id="估计岭回归的测试误差">估计岭回归的测试误差</h4>
+<p>要预先为岭回归选定一个 <span class="math inline">\(\lambda\)</span> 值，即使并非不可能，也十分困难。我们希望使用验证集法或交叉验证来选择调节参数。读者应该不会意外：<code>Pipeline()</code> 方法可以用于 <code>skm.cross_validate()</code>，既可以配合验证集法（即 <code>validation</code>），也可以配合 <span class="math inline">\(k\)</span> 折交叉验证。</p>
+<p>我们固定划分器的随机状态，使所得结果可以复现。</p>
+<p>In [30]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>validation <span class="op">=</span> skm.ShuffleSplit(n_splits<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>                               test_size<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>                               random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>ridge.alpha <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> skm.cross_validate(ridge,</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>                             X,</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>                             Y,</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>                             scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>,</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>                             cv<span class="op">=</span>validation)</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>results[<span class="st">'test_score'</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[30]:</p>
+<pre class="text"><code>array([134214.0])</code></pre>
+<p>测试MSE为 <code>1.342e+05</code>。注意，如果只拟合一个仅含截距的模型，就会用训练观测的均值来预测每个测试观测。使用<em>非常大</em>的 <span class="math inline">\(\lambda\)</span> 值拟合岭回归模型，可以得到相同结果。注意，<code>1e10</code> 表示 <span class="math inline">\(10^{10}\)</span>。</p>
+<p>In [31]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>ridge.alpha <span class="op">=</span> <span class="fl">1e10</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> skm.cross_validate(ridge,</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>                             X,</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>                             Y,</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>                             scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>,</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>                             cv<span class="op">=</span>validation)</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>results[<span class="st">'test_score'</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[31]:</p>
+<pre class="text"><code>array([231788.32])</code></pre>
+<p>显然，选择 <span class="math inline">\(\lambda=0.01\)</span> 是任意的，因此我们将使用交叉验证或验证集法来选择调节参数 <span class="math inline">\(\lambda\)</span>。<code>GridSearchCV()</code> 对象可通过穷举网格搜索来选择这类参数。</p>
+<p>首先使用验证集法选择 <span class="math inline">\(\lambda\)</span>。</p>
+<p>In [32]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>param_grid <span class="op">=</span> {<span class="st">'ridge__alpha'</span>: lambdas}</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> skm.GridSearchCV(pipe,</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>                        param_grid,</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>                        cv<span class="op">=</span>validation,</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>                        scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>grid.fit(X, Y)</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>grid.best_params_[<span class="st">'ridge__alpha'</span>]</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>grid.best_estimator_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[32]:</p>
+<pre class="text"><code>Pipeline(steps=[('scaler', StandardScaler()),
+                ('ridge', ElasticNet(alpha=0.005899, l1_ratio=0))])</code></pre>
+<p>也可以使用5折交叉验证。</p>
+<p>In [33]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> skm.GridSearchCV(pipe,</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                        param_grid,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>                        cv<span class="op">=</span>kfold,</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>                        scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>)</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>grid.fit(X, Y)</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>grid.best_params_[<span class="st">'ridge__alpha'</span>]</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>grid.best_estimator_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>回顾一下，我们在第271页设置了用于5折交叉验证的 <code>kfold</code> 对象。现在以 <span class="math inline">\(-\log(\lambda)\)</span> 为横轴，画出交叉验证MSE；从左到右，收缩程度逐渐减弱。</p>
+<p>In [34]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>ridge_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>ax.errorbar(<span class="op">-</span>np.log(lambdas),</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>            <span class="op">-</span>grid.cv_results_[<span class="st">'mean_test_score'</span>],</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>            yerr<span class="op">=</span>grid.cv_results_[<span class="st">'std_test_score'</span>] <span class="op">/</span> np.sqrt(K))</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">50000</span>,<span class="dv">250000</span>])</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'$-</span><span class="er">\</span><span class="st">log(</span><span class="er">\</span><span class="st">lambda)$'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Cross-validated MSE'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以对不同的指标做交叉验证来选择参数。<code>skl.ElasticNet()</code> 的默认指标为测试 <span class="math inline">\(R^2\)</span>。下面比较使用 <span class="math inline">\(R^2\)</span> 和MSE进行交叉验证的结果。</p>
+<p>In [35]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>grid_r2 <span class="op">=</span> skm.GridSearchCV(pipe,</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>                           param_grid,</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>                           cv<span class="op">=</span>kfold)</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>grid_r2.fit(X, Y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>最后，画出交叉验证 <span class="math inline">\(R^2\)</span> 的结果。</p>
+<p>In [36]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>r2_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>ax.errorbar(<span class="op">-</span>np.log(lambdas),</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>            grid_r2.cv_results_[<span class="st">'mean_test_score'</span>],</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>            yerr<span class="op">=</span>grid_r2.cv_results_[<span class="st">'std_test_score'</span>] <span class="op">/</span> np.sqrt(K)</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'$-</span><span class="er">\</span><span class="st">log(</span><span class="er">\</span><span class="st">lambda)$'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Cross-validated $R^2$'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="解路径的快速交叉验证" class="level4">
+<h4 class="anchored" data-anchor-id="解路径的快速交叉验证">解路径的快速交叉验证</h4>
+<p>岭回归、套索法和弹性网（elastic net）都可以沿着一系列 <span class="math inline">\(\lambda\)</span> 值高效拟合，从而得到所谓的<em>解路径（solution path）</em>或<em>正则化路径</em>。因此，有专门的代码来拟合这样的路径，并通过交叉验证选择合适的 <span class="math inline">\(\lambda\)</span> 值。即使采用相同的数据划分，所得结果也不会与上面的 <code>grid</code> <em>完全</em>一致，因为 <code>grid</code> 会在每个折中分别对各个特征进行标准化，而下面的 <code>pipeCV</code> 只做一次标准化。不过，各折中的归一化相对稳定，因此结果相近。</p>
+<p>In [37]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>ridgeCV <span class="op">=</span> skl.ElasticNetCV(alphas<span class="op">=</span>lambdas,</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>                            l1_ratio<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>                            cv<span class="op">=</span>kfold)</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>pipeCV <span class="op">=</span> Pipeline(steps<span class="op">=</span>[(<span class="st">'scaler'</span>, scaler),</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>                         (<span class="st">'ridge'</span>, ridgeCV)])</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>pipeCV.fit(X, Y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>再画一次交叉验证误差图，看看它与使用 <code>skm.GridSearchCV</code> 的结果是否相近。</p>
+<p>In [38]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>tuned_ridge <span class="op">=</span> pipeCV.named_steps[<span class="st">'ridge'</span>]</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>ridgeCV_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>ax.errorbar(<span class="op">-</span>np.log(lambdas),</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>            tuned_ridge.mse_path_.mean(<span class="dv">1</span>),</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>            yerr<span class="op">=</span>tuned_ridge.mse_path_.std(<span class="dv">1</span>) <span class="op">/</span> np.sqrt(K))</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>ax.axvline(<span class="op">-</span>np.log(tuned_ridge.alpha_), c<span class="op">=</span><span class="st">'k'</span>, ls<span class="op">=</span><span class="st">'--'</span>)</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">50000</span>,<span class="dv">250000</span>])</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'$-</span><span class="er">\</span><span class="st">log(</span><span class="er">\</span><span class="st">lambda)$'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Cross-validated MSE'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以看到，使交叉验证误差最小的 <span class="math inline">\(\lambda\)</span> 值为 <code>1.19e-02</code>，可通过 <code>tuned_ridge.alpha_</code> 获得。这个 <span class="math inline">\(\lambda\)</span> 值对应的测试MSE是多少？</p>
+<p>In [39]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>np.<span class="bu">min</span>(tuned_ridge.mse_path_.mean(<span class="dv">1</span>))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[39]:</p>
+<pre class="text"><code>115526.71</code></pre>
+<p>与使用 <span class="math inline">\(\lambda=4\)</span> 时得到的测试MSE相比，这又有了进一步改善。最后，<code>tuned_ridge.coef_</code> 保存了在这个 <span class="math inline">\(\lambda\)</span> 值下，用整个数据集拟合得到的系数。</p>
+<p>In [40]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>tuned_ridge.coef_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[40]:</p>
+<pre class="text"><code>array([-222.80877051,  238.77246614,    3.21103754,   -2.93050845,
+          3.64888723,  108.90953869,  -50.81896152, -105.15731984,
+        122.00714801,   57.1859509 ,  210.35170348,  118.05683748,
+       -150.21959435,   30.36634231,  -61.62459095,   77.73832472,
+         40.07350744,  -25.02151514,  -13.68429544])</code></pre>
+<p>与预期一致，没有任何系数为零：岭回归不进行变量选择！</p>
+</section>
+<section id="评估交叉验证调参后的岭回归测试误差" class="level4">
+<h4 class="anchored" data-anchor-id="评估交叉验证调参后的岭回归测试误差">评估交叉验证调参后的岭回归测试误差</h4>
+<p>通过交叉验证选择 <span class="math inline">\(\lambda\)</span> 后，会得到一个回归估计器，类似于第3章中拟合线性回归模型的情形。因此，估计它的测试误差是合理的。但这里遇到一个问题：交叉验证在选择 <span class="math inline">\(\lambda\)</span> 时已经<em>用到了</em>全部数据，因此没有额外数据可供估计测试误差。一种折中方法是先把数据划分为两个互不重叠的集合：训练集和测试集。然后在训练集上拟合经过交叉验证调参的岭回归，并在测试集上评估其表现。可以把这称为嵌套在验证集法中的交叉验证。在验证集法中，事先并没有理由一定要把数据对半划分。下面使用75%的数据训练，25%的数据测试，估计器采用通过5折交叉验证调参的岭回归。代码如下。</p>
+<p>In [41]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>outer_valid <span class="op">=</span> skm.ShuffleSplit(n_splits<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>                                test_size<span class="op">=</span><span class="fl">0.25</span>,</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>                                random_state<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>inner_cv <span class="op">=</span> skm.KFold(n_splits<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>                      shuffle<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>                      random_state<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>ridgeCV <span class="op">=</span> skl.ElasticNetCV(alphas<span class="op">=</span>lambdas,</span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>                            l1_ratio<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>                            cv<span class="op">=</span>inner_cv)</span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>pipeCV <span class="op">=</span> Pipeline(steps<span class="op">=</span>[(<span class="st">'scaler'</span>, scaler),</span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>                         (<span class="st">'ridge'</span>, ridgeCV)])<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>In [42]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> skm.cross_validate(pipeCV,</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>                             X,</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>                             Y,</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>                             cv<span class="op">=</span>outer_valid,</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>                             scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>)</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>results[<span class="st">'test_score'</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[42]:</p>
+<pre class="text"><code>array([132393.84])</code></pre>
+</section>
+<section id="套索法-1" class="level4">
+<h4 class="anchored" data-anchor-id="套索法-1">套索法</h4>
+<p>我们已经看到，在 <code>Hitters</code> 数据集上，只要妥善选择 <span class="math inline">\(\lambda\)</span>，岭回归就能优于最小二乘法和空模型。现在要问的是：套索法能否得到比岭回归更准确或更容易解释的模型？为了拟合套索模型，再次使用 <code>ElasticNetCV()</code> 函数，不过这次设置参数 <code>l1_ratio=1</code>。除此之外，步骤与拟合岭回归模型时相同。</p>
+<p>In [43]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>lassoCV <span class="op">=</span> skl.ElasticNetCV(n_alphas<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>                            l1_ratio<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>                            cv<span class="op">=</span>kfold)</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>pipeCV <span class="op">=</span> Pipeline(steps<span class="op">=</span>[(<span class="st">'scaler'</span>, scaler),</span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>                         (<span class="st">'lasso'</span>, lassoCV)])</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>pipeCV.fit(X, Y)</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>tuned_lasso <span class="op">=</span> pipeCV.named_steps[<span class="st">'lasso'</span>]</span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>tuned_lasso.alpha_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[43]:</p>
+<pre class="text"><code>3.147</code></pre>
+<p>In [44]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>lambdas, soln_array <span class="op">=</span> skl.Lasso.path(Xs,</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>                                     Y,</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>                                     l1_ratio<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>                                     n_alphas<span class="op">=</span><span class="dv">100</span>)[:<span class="dv">2</span>]</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>soln_path <span class="op">=</span> pd.DataFrame(soln_array.T,</span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>                         columns<span class="op">=</span>D.columns,</span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>                         index<span class="op">=-</span>np.log(lambdas))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>从标准化系数的系数图可以看到，随着调节参数的选择不同，某些系数会恰好等于零。</p>
+<p>In [45]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>path_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>soln_path.plot(ax<span class="op">=</span>ax, legend<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">'upper left'</span>)</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'$-</span><span class="er">\</span><span class="st">log(</span><span class="er">\</span><span class="st">lambda)$'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Standardized coefficiients'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>最小的交叉验证误差低于空模型和最小二乘法的测试集MSE，并且与通过交叉验证选择 <span class="math inline">\(\lambda\)</span> 的岭回归测试MSE 115526.71（第278页）非常接近。</p>
+<p>In [46]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>np.<span class="bu">min</span>(tuned_lasso.mse_path_.mean(<span class="dv">1</span>))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[46]:</p>
+<pre class="text"><code>114690.73</code></pre>
+<p>再次画出交叉验证误差图。</p>
+<p>In [47]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>lassoCV_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>ax.errorbar(<span class="op">-</span>np.log(tuned_lasso.alphas_),</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>            tuned_lasso.mse_path_.mean(<span class="dv">1</span>),</span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>            yerr<span class="op">=</span>tuned_lasso.mse_path_.std(<span class="dv">1</span>) <span class="op">/</span> np.sqrt(K))</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>ax.axvline(<span class="op">-</span>np.log(tuned_lasso.alpha_), c<span class="op">=</span><span class="st">'k'</span>, ls<span class="op">=</span><span class="st">'--'</span>)</span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">50000</span>,<span class="dv">250000</span>])</span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'$-</span><span class="er">\</span><span class="st">log(</span><span class="er">\</span><span class="st">lambda)$'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Cross-validated MSE'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>不过，套索法相对于岭回归有一个很大的优势：得到的系数估计是稀疏的。这里可以看到，19个系数估计中有6个恰好为零。因此，通过交叉验证选择 <span class="math inline">\(\lambda\)</span> 的套索模型只包含13个变量。</p>
+<p>In [48]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>tuned_lasso.coef_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[48]:</p>
+<pre class="text"><code>array([-210.01008773,  243.4550306 ,    0.        ,    0.        ,
+          0.        ,   97.69397357,  -41.52283116,   -0.        ,
+          0.        ,   39.62298193,  205.75273856,  124.55456561,
+       -126.29986768,   15.70262427,  -59.50157967,   75.24590036,
+         21.62698014,  -12.04423675,   -0.        ])</code></pre>
+<p>与岭回归一样，可以先把数据划分为测试集和训练集，再在训练集内部运行交叉验证，以评估经过交叉验证调参的套索模型的测试误差。这留给读者作为练习。</p>
+</section>
+</section>
+<section id="pcr与pls回归" class="level3">
+<h3 class="anchored" data-anchor-id="pcr与pls回归">6.5.3 PCR与PLS回归</h3>
+<section id="主成分回归" class="level4">
+<h4 class="anchored" data-anchor-id="主成分回归">主成分回归</h4>
+<p>可以使用 <code>sklearn.decomposition</code> 模块中的 <code>PCA()</code> 进行主成分回归（PCR）。现在将PCR应用于 <code>Hitters</code> 数据，用来预测 <code>Salary</code>。再次提醒，请按照6.5.1节所述，确保已经移除数据中的缺失值。</p>
+<p>这里使用 <code>LinearRegression()</code> 拟合回归模型。注意，与6.5.1节前面使用的 <code>OLS()</code> 函数不同，它默认拟合截距。</p>
+<p>In [49]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>pca <span class="op">=</span> PCA(n_components<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>linreg <span class="op">=</span> skl.LinearRegression()</span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>pipe <span class="op">=</span> Pipeline([(<span class="st">'pca'</span>, pca),</span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>                  (<span class="st">'linreg'</span>, linreg)])</span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>pipe.fit(X, Y)</span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>pipe.named_steps[<span class="st">'linreg'</span>].coef_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[49]:</p>
+<pre class="text"><code>array([0.09846131, 0.4758765 ])</code></pre>
+<p>进行PCA时，数据是否经过<em>标准化</em>会影响结果。与前面的例子一样，可以在流水线中增加一步来完成标准化。</p>
+<p>In [50]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>pipe <span class="op">=</span> Pipeline([(<span class="st">'scaler'</span>, scaler),</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>                  (<span class="st">'pca'</span>, pca),</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>                  (<span class="st">'linreg'</span>, linreg)])</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>pipe.fit(X, Y)</span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>pipe.named_steps[<span class="st">'linreg'</span>].coef_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[50]:</p>
+<pre class="text"><code>array([106.36859204, -21.60350456])</code></pre>
+<p>当然，也可以使用 <code>skm.GridSearchCV</code>，通过交叉验证选择成分个数；此时设置参数搜索范围，使 <code>n_components</code> 发生变化。</p>
+<p>In [51]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>param_grid <span class="op">=</span> {<span class="st">'pca__n_components'</span>: <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">20</span>)}</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> skm.GridSearchCV(pipe,</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>                        param_grid,</span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>                        cv<span class="op">=</span>kfold,</span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>                        scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>)</span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>grid.fit(X, Y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>与其他方法一样，画出结果。</p>
+<p>In [52]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>pcr_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>n_comp <span class="op">=</span> param_grid[<span class="st">'pca__n_components'</span>]</span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>ax.errorbar(n_comp,</span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>            <span class="op">-</span>grid.cv_results_[<span class="st">'mean_test_score'</span>],</span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>            grid.cv_results_[<span class="st">'std_test_score'</span>] <span class="op">/</span> np.sqrt(K))</span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Cross-validated MSE'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'# principal components'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb76-8"><a href="#cb76-8" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(n_comp[::<span class="dv">2</span>])</span>
+<span id="cb76-9"><a href="#cb76-9" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">50000</span>,<span class="dv">250000</span>])<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以看到，使用17个成分时，交叉验证误差最小。不过，从图中也可以看到，模型只包含一个成分时，交叉验证误差也大致相同。这说明，仅使用少量成分的模型可能就已足够。</p>
+<p>这里给出了成分个数从1到19（含两端）时各自的交叉验证评分。如果设为 <code>n_components=0</code>，尝试只拟合截距，<code>PCA()</code> 方法会报错，因此我们还要使用相同的数据划分，计算仅含空模型时的MSE。</p>
+<p>In [53]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>Xn <span class="op">=</span> np.zeros((X.shape[<span class="dv">0</span>], <span class="dv">1</span>))</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>cv_null <span class="op">=</span> skm.cross_validate(linreg,</span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>                             Xn,</span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>                             Y,</span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>                             cv<span class="op">=</span>kfold,</span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>                             scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>)</span>
+<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>cv_null[<span class="st">'test_score'</span>].mean()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[53]:</p>
+<pre class="text"><code>204139.31</code></pre>
+<p><code>PCA</code> 对象的 <code>explained_variance_ratio_</code> 属性给出了使用不同成分个数时，预测变量和响应变量中<em>被解释的方差百分比</em>。12.2节将更详细地讨论这一概念。</p>
+<p>In [54]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb79"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>pipe.named_steps[<span class="st">'pca'</span>].explained_variance_ratio_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[54]:</p>
+<pre class="text"><code>array([0.3831424 , 0.21841076])</code></pre>
+<p>简要地说，可以将其理解为使用 <span class="math inline">\(M\)</span> 个主成分所捕获的预测变量信息量。例如，设置 <span class="math inline">\(M=1\)</span> 只能捕获38.31%的方差，而 <span class="math inline">\(M=2\)</span> 会额外捕获21.84%，合计捕获60.15%的方差。到 <span class="math inline">\(M=6\)</span> 时，这一比例增至88.63%。此后，增量继续减小，直到使用全部 <span class="math inline">\(M=p=19\)</span> 个成分，捕获全部100%的方差。</p>
+</section>
+<section id="偏最小二乘" class="level4">
+<h4 class="anchored" data-anchor-id="偏最小二乘">偏最小二乘</h4>
+<p>偏最小二乘（PLS）由 <code>PLSRegression()</code> 函数实现。</p>
+<p>In [55]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>pls <span class="op">=</span> PLSRegression(n_components<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>                     scale<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>pls.fit(X, Y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>与PCR一样，我们希望通过交叉验证来选择成分个数。</p>
+<p>In [56]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>param_grid <span class="op">=</span> {<span class="st">'n_components'</span>:<span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">20</span>)}</span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> skm.GridSearchCV(pls,</span>
+<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>                        param_grid,</span>
+<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>                        cv<span class="op">=</span>kfold,</span>
+<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a>                        scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>)</span>
+<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a>grid.fit(X, Y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>与其他方法一样，画出MSE。</p>
+<p>In [57]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>pls_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>n_comp <span class="op">=</span> param_grid[<span class="st">'n_components'</span>]</span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>ax.errorbar(n_comp,</span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>            <span class="op">-</span>grid.cv_results_[<span class="st">'mean_test_score'</span>],</span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a>            grid.cv_results_[<span class="st">'std_test_score'</span>] <span class="op">/</span> np.sqrt(K))</span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Cross-validated MSE'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'# principal components'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb83-8"><a href="#cb83-8" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(n_comp[::<span class="dv">2</span>])</span>
+<span id="cb83-9"><a href="#cb83-9" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">50000</span>,<span class="dv">250000</span>])<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>成分个数为12时，交叉验证误差最小，不过它与成分个数少得多（例如2个或3个）时的结果相比，差异并不明显。</p>
+</section>
+</section>
+</section>
+<section id="习题" class="level2">
+<h2 class="anchored" data-anchor-id="习题">6.6 习题</h2>
+<section id="概念题" class="level3">
+<h3 class="anchored" data-anchor-id="概念题">概念题</h3>
+<p><strong>1.</strong> 对同一个数据集分别进行最佳子集选择、前向逐步选择和后向逐步选择。每种方法都会得到 <span class="math inline">\(p+1\)</span> 个模型，分别包含 <span class="math inline">\(0,1,2,\ldots,p\)</span> 个预测变量。回答下列问题并解释理由。</p>
+<p><strong>(a)</strong> 三个包含 <span class="math inline">\(k\)</span> 个预测变量的模型中，哪个模型的训练RSS最小？</p>
+<p><strong>(b)</strong> 三个包含 <span class="math inline">\(k\)</span> 个预测变量的模型中，哪个模型的测试RSS最小？</p>
+<p><strong>(c)</strong> 判断下列说法是否正确。</p>
+<p><strong>i.</strong> 前向逐步选择得到的含 <span class="math inline">\(k\)</span> 个变量的模型，其预测变量是前向逐步选择得到的含 <span class="math inline">\(k+1\)</span> 个变量的模型的预测变量的子集。</p>
+<p><strong>ii.</strong> 后向逐步选择得到的含 <span class="math inline">\(k\)</span> 个变量的模型，其预测变量是后向逐步选择得到的含 <span class="math inline">\(k+1\)</span> 个变量的模型的预测变量的子集。</p>
+<p><strong>iii.</strong> 后向逐步选择得到的含 <span class="math inline">\(k\)</span> 个变量的模型，其预测变量是前向逐步选择得到的含 <span class="math inline">\(k+1\)</span> 个变量的模型的预测变量的子集。</p>
+<p><strong>iv.</strong> 前向逐步选择得到的含 <span class="math inline">\(k\)</span> 个变量的模型，其预测变量是后向逐步选择得到的含 <span class="math inline">\(k+1\)</span> 个变量的模型的预测变量的子集。</p>
+<p><strong>v.</strong> 最佳子集选择得到的含 <span class="math inline">\(k\)</span> 个变量的模型，其预测变量是最佳子集选择得到的含 <span class="math inline">\(k+1\)</span> 个变量的模型的预测变量的子集。</p>
+<p><strong>2.</strong> 在(a)至(c)中，指出i至iv中哪个选项正确，并说明理由。</p>
+<p><strong>(a)</strong> 与最小二乘法相比，套索法：</p>
+<p><strong>i.</strong> 更灵活，因此，当其偏差的增加小于方差的减少时，会提高预测准确性。</p>
+<p><strong>ii.</strong> 更灵活，因此，当其方差的增加小于偏差的减少时，会提高预测准确性。</p>
+<p><strong>iii.</strong> 灵活程度更低，因此，当其偏差的增加小于方差的减少时，会提高预测准确性。</p>
+<p><strong>iv.</strong> 灵活程度更低，因此，当其方差的增加小于偏差的减少时，会提高预测准确性。</p>
+<p><strong>(b)</strong> 针对岭回归相对于最小二乘法的情况，重复(a)。</p>
+<p><strong>(c)</strong> 针对非线性方法相对于最小二乘法的情况，重复(a)。</p>
+<p><strong>3.</strong> 假设对于某个给定的 <span class="math inline">\(s\)</span> 值，通过在约束条件下最小化下式，估计线性回归模型的回归系数：</p>
+<p><span class="math display">\[
+\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}\beta_jx_{ij}\right)^2
+\qquad\text{约束条件为}\qquad
+\sum_{j=1}^{p}|\beta_j|\leq s.
+\]</span></p>
+<p>在(a)至(e)中，指出i至v中哪个选项正确，并说明理由。</p>
+<p><strong>(a)</strong> 当 <span class="math inline">\(s\)</span> 从0开始增大时，训练RSS将：</p>
+<p><strong>i.</strong> 先增大，最终开始减小，呈倒U形。</p>
+<p><strong>ii.</strong> 先减小，最终开始增大，呈U形。</p>
+<p><strong>iii.</strong> 持续增大。</p>
+<p><strong>iv.</strong> 持续减小。</p>
+<p><strong>v.</strong> 保持不变。</p>
+<p><strong>(b)</strong> 针对测试RSS重复(a)。</p>
+<p><strong>(c)</strong> 针对方差重复(a)。</p>
+<p><strong>(d)</strong> 针对偏差（的平方）重复(a)。</p>
+<p><strong>(e)</strong> 针对不可约误差重复(a)。</p>
+<p><strong>4.</strong> 假设对于某个给定的 <span class="math inline">\(\lambda\)</span> 值，通过最小化下式，估计线性回归模型的回归系数：</p>
+<p><span class="math display">\[
+\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}\beta_jx_{ij}\right)^2
++\lambda\sum_{j=1}^{p}\beta_j^2.
+\]</span></p>
+<p>在(a)至(e)中，指出i至v中哪个选项正确，并说明理由。</p>
+<p><strong>(a)</strong> 当 <span class="math inline">\(\lambda\)</span> 从0开始增大时，训练RSS将：</p>
+<p><strong>i.</strong> 先增大，最终开始减小，呈倒U形。</p>
+<p><strong>ii.</strong> 先减小，最终开始增大，呈U形。</p>
+<p><strong>iii.</strong> 持续增大。</p>
+<p><strong>iv.</strong> 持续减小。</p>
+<p><strong>v.</strong> 保持不变。</p>
+<p><strong>(b)</strong> 针对测试RSS重复(a)。</p>
+<p><strong>(c)</strong> 针对方差重复(a)。</p>
+<p><strong>(d)</strong> 针对偏差（的平方）重复(a)。</p>
+<p><strong>(e)</strong> 针对不可约误差重复(a)。</p>
+<p><strong>5.</strong> <img src="../assets/display-crops/exercise-marker.png" alt="原书习题标记" style="width:36px;display:inline-block;vertical-align:middle"> 众所周知，岭回归倾向于给相关变量相近的系数值，而套索法可能给相关变量差别很大的系数值。下面在一个非常简单的情形中考察这一性质。</p>
+<p>假设 <span class="math inline">\(n=2\)</span>、<span class="math inline">\(p=2\)</span>、<span class="math inline">\(x_{11}=x_{12}\)</span>、<span class="math inline">\(x_{21}=x_{22}\)</span>。进一步假设 <span class="math inline">\(y_1+y_2=0\)</span>、<span class="math inline">\(x_{11}+x_{21}=0\)</span>，且 <span class="math inline">\(x_{12}+x_{22}=0\)</span>，因此最小二乘、岭回归或套索模型中的截距估计值均为零：<span class="math inline">\(\hat{\beta}_0=0\)</span>。</p>
+<p><strong>(a)</strong> 写出这一情形下的岭回归优化问题。</p>
+<p><strong>(b)</strong> 论证在这一情形下，岭回归系数估计值满足 <span class="math inline">\(\hat{\beta}_1=\hat{\beta}_2\)</span>。</p>
+<p><strong>(c)</strong> 写出这一情形下的套索法优化问题。</p>
+<p><strong>(d)</strong> 论证在这一情形下，套索法系数 <span class="math inline">\(\hat{\beta}_1\)</span> 和 <span class="math inline">\(\hat{\beta}_2\)</span> 不唯一。换句话说，(c)中的优化问题有许多可能的解。描述这些解。</p>
+<p><strong>6.</strong> 下面进一步探讨式(6.12)和式(6.13)。</p>
+<p><strong>(a)</strong> 考虑 <span class="math inline">\(p=1\)</span> 时的式(6.12)。选择某个 <span class="math inline">\(y_1\)</span> 和 <span class="math inline">\(\lambda&gt;0\)</span>，将式(6.12)绘制为 <span class="math inline">\(\beta_1\)</span> 的函数。图形应能验证，式(6.12)的解由式(6.14)给出。</p>
+<p><strong>(b)</strong> 考虑 <span class="math inline">\(p=1\)</span> 时的式(6.13)。选择某个 <span class="math inline">\(y_1\)</span> 和 <span class="math inline">\(\lambda&gt;0\)</span>，将式(6.13)绘制为 <span class="math inline">\(\beta_1\)</span> 的函数。图形应能验证，式(6.13)的解由式(6.15)给出。</p>
+<p><strong>7.</strong> <img src="../assets/display-crops/exercise-marker.png" alt="原书习题标记" style="width:36px;display:inline-block;vertical-align:middle"> 下面推导第6.2.2节讨论的套索法、岭回归与贝叶斯方法之间的联系。</p>
+<p><strong>(a)</strong> 假设 <span class="math inline">\(y_i=\beta_0+\sum_{j=1}^{p}x_{ij}\beta_j+\epsilon_i\)</span>，其中 <span class="math inline">\(\epsilon_1,\ldots,\epsilon_n\)</span> 独立同分布于 <span class="math inline">\(N(0,\sigma^2)\)</span>。写出数据的似然函数。</p>
+<p><strong>(b)</strong> 假设 <span class="math inline">\(\boldsymbol{\beta}\)</span> 的先验如下：<span class="math inline">\(\beta_1,\ldots,\beta_p\)</span> 独立同分布于均值为0、共同尺度参数为 <span class="math inline">\(b\)</span> 的双指数分布，即 <span class="math inline">\(p(\beta)=\frac{1}{2b}\exp(-|\beta|/b)\)</span>。写出这一情形下 <span class="math inline">\(\boldsymbol{\beta}\)</span> 的后验分布。</p>
+<p><strong>(c)</strong> 论证套索法估计值是这一后验分布下 <span class="math inline">\(\boldsymbol{\beta}\)</span> 的众数。</p>
+<p><strong>(d)</strong> 现在假设 <span class="math inline">\(\boldsymbol{\beta}\)</span> 的先验如下：<span class="math inline">\(\beta_1,\ldots,\beta_p\)</span> 独立同分布于均值为零、方差为 <span class="math inline">\(c\)</span> 的正态分布。写出这一情形下 <span class="math inline">\(\boldsymbol{\beta}\)</span> 的后验分布。</p>
+<p><strong>(e)</strong> 论证岭回归估计值既是这一后验分布下 <span class="math inline">\(\boldsymbol{\beta}\)</span> 的众数，也是其均值。</p>
+</section>
+<section id="应用题" class="level3">
+<h3 class="anchored" data-anchor-id="应用题">应用题</h3>
+<p><strong>8.</strong> 本题先生成模拟数据，再使用这些数据进行前向逐步选择和后向逐步选择。</p>
+<p><strong>(a)</strong> 创建一个随机数生成器，使用其 <code>normal()</code> 方法生成长度为 <span class="math inline">\(n=100\)</span> 的预测变量 <span class="math inline">\(X\)</span>，以及长度为 <span class="math inline">\(n=100\)</span> 的噪声向量 <span class="math inline">\(\epsilon\)</span>。</p>
+<p><strong>(b)</strong> 根据模型</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1X+\beta_2X^2+\beta_3X^3+\epsilon,
+\]</span></p>
+<p>生成长度为 <span class="math inline">\(n=100\)</span> 的响应向量 <span class="math inline">\(Y\)</span>，其中 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span>、<span class="math inline">\(\beta_2\)</span> 和 <span class="math inline">\(\beta_3\)</span> 是自行选定的常数。</p>
+<p><strong>(c)</strong> 使用前向逐步选择，从预测变量 <span class="math inline">\(X,X^2,\ldots,X^{10}\)</span> 中选择一个模型。根据 <span class="math inline">\(C_p\)</span> 得到的模型是什么？报告所得模型的系数。</p>
+<p><strong>(d)</strong> 使用后向逐步选择，重复(c)。你的答案与(c)的结果相比如何？</p>
+<p><strong>(e)</strong> 现在对模拟数据拟合套索模型，仍以 <span class="math inline">\(X,X^2,\ldots,X^{10}\)</span> 为预测变量。使用交叉验证选择最优的 <span class="math inline">\(\lambda\)</span> 值。绘制交叉验证误差随 <span class="math inline">\(\lambda\)</span> 变化的图形。报告所得的系数估计值，并讨论结果。</p>
+<p><strong>(f)</strong> 现在根据模型</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_7X^7+\epsilon,
+\]</span></p>
+<p>生成响应向量 <span class="math inline">\(Y\)</span>，并进行前向逐步选择和套索法拟合。讨论所得结果。</p>
+<p><strong>9.</strong> 本题使用 College 数据集中的其他变量，预测收到的申请数量。</p>
+<p><strong>(a)</strong> 将数据集划分为训练集和测试集。</p>
+<p><strong>(b)</strong> 在训练集上用最小二乘法拟合线性模型，报告所得的测试误差。</p>
+<p><strong>(c)</strong> 在训练集上拟合岭回归模型，通过交叉验证选择 <span class="math inline">\(\lambda\)</span>。报告所得的测试误差。</p>
+<p><strong>(d)</strong> 在训练集上拟合套索模型，通过交叉验证选择 <span class="math inline">\(\lambda\)</span>。报告所得的测试误差，以及非零系数估计值的数量。</p>
+<p><strong>(e)</strong> 在训练集上拟合PCR模型，通过交叉验证选择 <span class="math inline">\(M\)</span>。报告所得的测试误差，以及交叉验证选出的 <span class="math inline">\(M\)</span> 值。</p>
+<p><strong>(f)</strong> 在训练集上拟合PLS模型，通过交叉验证选择 <span class="math inline">\(M\)</span>。报告所得的测试误差，以及交叉验证选出的 <span class="math inline">\(M\)</span> 值。</p>
+<p><strong>(g)</strong> 评论所得结果。对于大学收到的申请数量，我们能够预测得多准确？这五种方法产生的测试误差是否有很大差异？</p>
+<p><strong>10.</strong> 我们已经看到，随着模型使用的特征数量增加，训练误差必然减小，但测试误差未必如此。下面在模拟数据集中考察这一点。</p>
+<p><strong>(a)</strong> 生成一个具有 <span class="math inline">\(p=20\)</span> 个特征、<span class="math inline">\(n=1{,}000\)</span> 个观测的数据集，并根据模型</p>
+<p><span class="math display">\[
+Y=X\boldsymbol{\beta}+\epsilon,
+\]</span></p>
+<p>生成对应的定量响应向量，其中 <span class="math inline">\(\boldsymbol{\beta}\)</span> 的某些元素恰好等于零。</p>
+<p><strong>(b)</strong> 将数据集划分为包含100个观测的训练集和包含900个观测的测试集。</p>
+<p><strong>(c)</strong> 在训练集上进行最佳子集选择，并绘制每种规模的最佳模型对应的训练集MSE。</p>
+<p><strong>(d)</strong> 绘制每种规模的最佳模型对应的测试集MSE。</p>
+<p><strong>(e)</strong> 测试集MSE在哪一种模型规模下取得最小值？评论所得结果。如果它在仅含截距的模型或包含全部特征的模型处取得最小值，就尝试调整(a)中生成数据的方式，直到得到测试集MSE在某个中等模型规模下最小的情形。</p>
+<p><strong>(f)</strong> 测试集MSE最小的模型，与用来生成数据的真实模型相比如何？评论系数值。</p>
+<p><strong>(g)</strong> 针对一系列 <span class="math inline">\(r\)</span> 值，绘制 <span class="math inline">\(\sqrt{\sum_{j=1}^{p}(\beta_j-\hat{\beta}_j^r)^2}\)</span>，其中 <span class="math inline">\(\hat{\beta}_j^r\)</span> 是包含 <span class="math inline">\(r\)</span> 个系数的最佳模型的第 <span class="math inline">\(j\)</span> 个系数估计值。评论观察到的现象。它与(d)中的测试MSE图相比如何？</p>
+<p><strong>11.</strong> 下面尝试预测 Boston 数据集中的人均犯罪率。</p>
+<p><strong>(a)</strong> 尝试本章探讨的一些回归方法，例如最佳子集选择、套索法、岭回归和PCR。展示并讨论你所考虑的各方法的结果。</p>
+<p><strong>(b)</strong> 提出一个在该数据集上似乎表现良好的模型（或一组模型），并说明理由。务必使用验证集误差、交叉验证或其他合理方式评估模型表现，而不是使用训练误差。</p>
+<p><strong>(c)</strong> 你选出的模型是否包含数据集中的全部特征？为什么？</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "已复制");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "已复制");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"可滚动的代码","output":"可滚动的输出"};
+  </script>
+<nav class="page-navigation" aria-label="页面">
+  <div class="nav-page nav-page-previous">
+      <a href="../dist/chapter5.html" class="pagination-link" aria-label="第五章　重抽样方法">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">第五章　重抽样方法</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>An Introduction to Statistical Learning: with Applications in Python<br> Authors: Gareth James et al.<br> Translator: Yuechen Qi</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
