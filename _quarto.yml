@@ -13,6 +13,7 @@ book:
     - dist/chapter4.qmd
     - dist/chapter5.qmd
     - dist/chapter6.qmd
+    - dist/chapter7.qmd
 
   page-footer:
     left: |
