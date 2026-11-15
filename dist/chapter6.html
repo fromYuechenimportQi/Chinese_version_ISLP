@@ -71,6 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../dist/chapter7.html" rel="next">
 <link href="../dist/chapter5.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -204,6 +205,16 @@ window.Quarto = {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../dist/chapter6.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第六章　线性模型选择与正则化</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter7.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第七章　超越线性</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter8.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第八章　基于树的方法</span></a>
   </div>
 </li>
     </ul>
@@ -1272,7 +1283,7 @@ log(lambda)
 <span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>grid.fit(X, Y)</span>
 <span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>grid.best_params_[<span class="st">'ridge__alpha'</span>]</span>
 <span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>grid.best_estimator_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
-<p>回顾一下，我们在第271页设置了用于5折交叉验证的 <code>kfold</code> 对象。现在以 <span class="math inline">\(-\log(\lambda)\)</span> 为横轴，画出交叉验证MSE；从左到右，收缩程度逐渐减弱。</p>
+<p>回顾一下，在先前的可视化中，我们设置了用于5折交叉验证的 <code>kfold</code> 对象。现在以 <span class="math inline">\(-\log(\lambda)\)</span> 为横轴，画出交叉验证MSE；从左到右，收缩程度逐渐减弱。</p>
 <p>In [34]:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>ridge_fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>ax.errorbar(<span class="op">-</span>np.log(lambdas),</span>
@@ -1388,7 +1399,7 @@ log(lambda)
 <span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">'upper left'</span>)</span>
 <span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'$-</span><span class="er">\</span><span class="st">log(</span><span class="er">\</span><span class="st">lambda)$'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
 <span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Standardized coefficiients'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
-<p>最小的交叉验证误差低于空模型和最小二乘法的测试集MSE，并且与通过交叉验证选择 <span class="math inline">\(\lambda\)</span> 的岭回归测试MSE 115526.71（第278页）非常接近。</p>
+<p>最小的交叉验证误差低于空模型和最小二乘法的测试集MSE，并且与通过交叉验证选择 <span class="math inline">\(\lambda\)</span> 的岭回归测试MSE 115526.71非常接近。</p>
 <p>In [46]:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>np.<span class="bu">min</span>(tuned_lasso.mse_path_.mean(<span class="dv">1</span>))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Out[46]:</p>
@@ -2107,6 +2118,9 @@ Y=X\boldsymbol{\beta}+\epsilon,
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../dist/chapter7.html" class="pagination-link" aria-label="第七章　超越线性">
+        <span class="nav-page-text"><span class="chapter-title">第七章　超越线性</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->

@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>第七章　超越线性 – 统计学习导论：Python 应用 · 中文译本</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../dist/chapter8.html" rel="next">
+<link href="../dist/chapter6.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-fc3b36746e1955fb88c77d3f07db1d35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "没有结果",
+    "search-matching-documents-text": "匹配的文档",
+    "search-copy-link-title": "复制搜索链接",
+    "search-hide-matches-text": "隐藏其它匹配结果",
+    "search-more-match-text": "更多匹配结果",
+    "search-more-matches-text": "更多匹配结果",
+    "search-clear-button-title": "清除",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "取消",
+    "search-submit-button-title": "提交",
+    "search-label": "搜索"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">跳至主要内容</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="工具栏">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="展开或折叠侧边栏导航" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter7.html"><span class="chapter-title">第七章　超越线性</span></a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="搜索" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto" aria-label="网站">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">统计学习导论：Python 应用 · 中文译本</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/fromYuechenimportQi/Chinese_version_ISLP" title="源代码" class="quarto-navigation-tool px-1" aria-label="源代码"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="搜索"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">译者序</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter3.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第三章　线性回归</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter4.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第四章　分类</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter5.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第五章　重抽样方法</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter6.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第六章　线性模型选择与正则化</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter7.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第七章　超越线性</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter8.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第八章　基于树的方法</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">目录</h2>
+   
+  <ul>
+  <li><a href="#多项式回归" id="toc-多项式回归" class="nav-link active" data-scroll-target="#多项式回归">7.1 多项式回归</a></li>
+  <li><a href="#基函数basis-functions" id="toc-基函数basis-functions" class="nav-link" data-scroll-target="#基函数basis-functions">7.3 基函数（Basis Functions）</a></li>
+  <li><a href="#回归样条" id="toc-回归样条" class="nav-link" data-scroll-target="#回归样条">7.4 回归样条</a>
+  <ul class="collapse">
+  <li><a href="#分段多项式piecewise-polynomials" id="toc-分段多项式piecewise-polynomials" class="nav-link" data-scroll-target="#分段多项式piecewise-polynomials">7.4.1 分段多项式（Piecewise Polynomials）</a></li>
+  <li><a href="#约束与样条constraints-and-splines" id="toc-约束与样条constraints-and-splines" class="nav-link" data-scroll-target="#约束与样条constraints-and-splines">7.4.2 约束与样条（Constraints and Splines）</a></li>
+  <li><a href="#样条的基表示the-spline-basis-representation" id="toc-样条的基表示the-spline-basis-representation" class="nav-link" data-scroll-target="#样条的基表示the-spline-basis-representation">7.4.3 样条的基表示（The Spline Basis Representation）</a></li>
+  <li><a href="#选择结点的数量和位置" id="toc-选择结点的数量和位置" class="nav-link" data-scroll-target="#选择结点的数量和位置">7.4.4 选择结点的数量和位置</a></li>
+  <li><a href="#与多项式回归的比较" id="toc-与多项式回归的比较" class="nav-link" data-scroll-target="#与多项式回归的比较">7.4.5 与多项式回归的比较</a></li>
+  </ul></li>
+  <li><a href="#平滑样条" id="toc-平滑样条" class="nav-link" data-scroll-target="#平滑样条">7.5 平滑样条</a>
+  <ul class="collapse">
+  <li><a href="#平滑样条概述" id="toc-平滑样条概述" class="nav-link" data-scroll-target="#平滑样条概述">7.5.1 平滑样条概述</a></li>
+  <li><a href="#选择平滑参数smoothing-parameterlambda" id="toc-选择平滑参数smoothing-parameterlambda" class="nav-link" data-scroll-target="#选择平滑参数smoothing-parameterlambda">7.5.2 选择平滑参数（smoothing parameter）<span class="math inline">\(\lambda\)</span></a></li>
+  </ul></li>
+  <li><a href="#局部回归" id="toc-局部回归" class="nav-link" data-scroll-target="#局部回归">7.6 局部回归</a></li>
+  <li><a href="#广义加性模型" id="toc-广义加性模型" class="nav-link" data-scroll-target="#广义加性模型">7.7 广义加性模型</a>
+  <ul class="collapse">
+  <li><a href="#回归问题中的gam" id="toc-回归问题中的gam" class="nav-link" data-scroll-target="#回归问题中的gam">7.7.1 回归问题中的GAM</a></li>
+  <li><a href="#分类问题中的gam" id="toc-分类问题中的gam" class="nav-link" data-scroll-target="#分类问题中的gam">7.7.2 分类问题中的GAM</a></li>
+  </ul></li>
+  <li><a href="#实验非线性建模" id="toc-实验非线性建模" class="nav-link" data-scroll-target="#实验非线性建模">7.8 实验：非线性建模</a>
+  <ul class="collapse">
+  <li><a href="#多项式回归与阶梯函数" id="toc-多项式回归与阶梯函数" class="nav-link" data-scroll-target="#多项式回归与阶梯函数">7.8.1 多项式回归与阶梯函数</a></li>
+  <li><a href="#样条" id="toc-样条" class="nav-link" data-scroll-target="#样条">7.8.2 样条</a></li>
+  <li><a href="#平滑样条与gam" id="toc-平滑样条与gam" class="nav-link" data-scroll-target="#平滑样条与gam">7.8.3 平滑样条与GAM</a></li>
+  <li><a href="#局部回归-1" id="toc-局部回归-1" class="nav-link" data-scroll-target="#局部回归-1">7.8.4 局部回归</a></li>
+  </ul></li>
+  <li><a href="#习题" id="toc-习题" class="nav-link" data-scroll-target="#习题">7.9 习题</a>
+  <ul class="collapse">
+  <li><a href="#概念题" id="toc-概念题" class="nav-link" data-scroll-target="#概念题">概念题</a></li>
+  <li><a href="#应用题" id="toc-应用题" class="nav-link" data-scroll-target="#应用题">应用题</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">第七章　超越线性</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>本书到目前为止主要讨论了线性模型。线性模型较容易描述和实现，在解释与推断方面也优于其他方法。然而，标准线性回归的预测能力可能有很大的局限。这是因为，线性假设几乎总是一种近似，有时还是一种很差的近似。第6章介绍了如何使用岭回归 (Ridge regression)、套索法 (Lasso)、主成分回归 (Principal component regression) 等技术改进最小二乘法。在那里，改进来自降低线性模型的复杂度，进而减小估计值的方差。但我们使用的仍然是线性模型，能够改进的程度终究有限！本章将放宽线性假设，同时尽可能保留可解释性。为此，我们既考察多项式回归、阶梯函数等对线性模型十分简单的扩展，也考察样条（splines）、局部回归（local regression）和广义加性模型等更复杂的方法。</p>
+<ul>
+<li><p><strong>多项式回归</strong>通过添加额外的预测变量来扩展线性模型。这些变量由原始预测变量取幂得到。例如，三次回归使用 <span class="math inline">\(X\)</span>、<span class="math inline">\(X^2\)</span> 和 <span class="math inline">\(X^3\)</span> 三个变量作为预测变量。这是一种对数据进行非线性拟合的简单方法。</p></li>
+<li><p><strong>阶梯函数</strong>把一个变量的取值范围划分成 <span class="math inline">\(K\)</span> 个不同区域，从而产生一个定性变量。这相当于拟合一个分段常数函数。</p></li>
+<li><p><strong>回归样条（regression splines）</strong> 比多项式和阶梯函数更灵活，实际上也是这两种方法的扩展。它将 <span class="math inline">\(X\)</span> 的取值范围划分成 <span class="math inline">\(K\)</span> 个不同区域，在每个区域内用一个多项式函数拟合数据。不过，这些多项式受到约束，要求它们在区域边界处平滑地连接起来；这些边界称为<strong>结点（knots）</strong>。只要把区间划分成足够多的区域，就能得到极其灵活的拟合。</p></li>
+<li><p><strong>平滑样条</strong>与回归样条相似，但产生的情形略有不同。平滑样条通过在平滑性惩罚项的约束下，最小化残差平方和准则得到。</p></li>
+<li><p><strong>局部回归</strong>与样条相似，但有一个重要区别：各个区域可以重叠，而且是以十分平滑的方式重叠。</p></li>
+<li><p><strong>广义加性模型</strong>使我们能够将上述方法扩展到多个预测变量的情形。</p></li>
+</ul>
+<p>第7.1—7.6节介绍若干方法，用来灵活地建模响应 <span class="math inline">\(Y\)</span> 与单个预测变量 <span class="math inline">\(X\)</span> 之间的关系。第7.7节将说明，如何将这些方法自然地结合起来，把响应 <span class="math inline">\(Y\)</span> 建模为多个预测变量 <span class="math inline">\(X_1,\ldots,X_p\)</span> 的函数。</p>
+<section id="多项式回归" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="多项式回归">7.1 多项式回归</h2>
+<p>以往，将线性回归扩展到预测变量与响应之间存在非线性关系的情形时，标准做法是将标准线性模型</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1x_i+\epsilon_i,
+\]</span></p>
+<p>替换为多项式函数</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1x_i+\beta_2x_i^2+\beta_3x_i^3+\cdots+\beta_dx_i^d+\epsilon_i, \tag{7.1}
+\]</span></p>
+<p>其中，<span class="math inline">\(\epsilon_i\)</span> 是误差项。这种方法称为多项式回归，第3.3.2节已经给过一个例子。只要次数 <span class="math inline">\(d\)</span> 足够大，多项式回归就能产生高度非线性的曲线。注意，式(7.1)中的系数很容易用最小二乘线性回归来估计，因为它只是一个以 <span class="math inline">\(x_i,x_i^2,x_i^3,\ldots,x_i^d\)</span> 为预测变量的标准线性模型。一般很少使用大于3或4的 <span class="math inline">\(d\)</span>，因为 <span class="math inline">\(d\)</span> 很大时，多项式曲线可能过于灵活，呈现出十分奇怪的形状，在变量 <span class="math inline">\(X\)</span> 取值范围的边界附近尤其如此。</p>
+<p>图7.1左图绘出了 <code>Wage</code> 数据集中 <code>wage</code> 与 <code>age</code> 的关系。这个数据集包含居住在美国大西洋中部沿岸地区的男性的收入和人口学信息。图中展示了用最小二乘法拟合四次多项式的结果（蓝色实线）。虽然这和其他线性回归模型一样，但这里单个系数并不是我们特别关心的对象。为了理解年龄与工资之间的关系，我们会在18到80岁之间由63个 <code>age</code> 值构成的网格上，考察整个拟合函数。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-1.png" class="img-fluid figure-img"></p>
+<figcaption>图7.1：Wage数据的四次多项式回归与逻辑回归拟合</figcaption>
+</figure>
+</div>
+<p><strong>图7.1</strong> <code>Wage</code> 数据。左：蓝色实线是以 <code>age</code> 为预测变量、<code>wage</code>（单位为千美元）为响应变量的四次多项式，由最小二乘法拟合。虚线表示估计的95%置信区间。右：使用逻辑回归对二元事件 <code>wage&gt;250</code> 建模，同样采用四次多项式。蓝色曲线表示拟合得到的工资超过250,000美元的后验概率，同时给出了估计的95%置信区间。图内文字：Degree-4 Polynomial＝四次多项式；Age＝年龄；Wage＝工资；<span class="math inline">\(\Pr(\mathrm{Wage}&gt;250\mid\mathrm{Age})\)</span>＝给定年龄时工资超过250（千美元）的概率。</p>
+<p>图7.1的拟合曲线两侧各有一条虚线，它们是相差两倍标准误的曲线。下面看看这些曲线是如何得到的。假设我们已经计算了某个特定年龄值 <span class="math inline">\(x_0\)</span> 处的拟合值：</p>
+<p><span class="math display">\[
+\hat f(x_0)=\hat\beta_0+\hat\beta_1x_0+\hat\beta_2x_0^2+\hat\beta_3x_0^3+\hat\beta_4x_0^4. \tag{7.2}
+\]</span></p>
+<p>这个拟合值的方差，也就是 <span class="math inline">\(\operatorname{Var}\hat f(x_0)\)</span>，是多少？最小二乘法会给出每个系数估计 <span class="math inline">\(\hat\beta_j\)</span> 的方差估计，以及各对系数估计之间的协方差。利用这些量，就能计算 <span class="math inline">\(\hat f(x_0)\)</span> 的估计方差。<sup><a href="#ch07-fn1" id="ch07-fnref1">1</a></sup> <span class="math inline">\(\hat f(x_0)\)</span> 的估计<strong>逐点标准误（pointwise standard error）</strong> 就是这个方差的平方根。在每个参考点 <span class="math inline">\(x_0\)</span> 处重复这一计算，再绘出拟合曲线，以及在拟合曲线两侧各相差两倍标准误的曲线。之所以绘制两倍标准误，是因为当误差项服从正态分布时，这对应于近似95%的置信区间。</p>
+<aside class="footnote" id="ch07-fn1">
+<a href="#ch07-fnref1">1</a> 若 <span class="math inline">\(\hat{\mathbf C}\)</span> 是各个 <span class="math inline">\(\hat\beta_j\)</span> 的 <span class="math inline">\(5\times5\)</span> 协方差矩阵，且 <span class="math inline">\(\ell_0^T=(1,x_0,x_0^2,x_0^3,x_0^4)\)</span>，则 <span class="math inline">\(\operatorname{Var}[\hat f(x_0)]=\ell_0^T\hat{\mathbf C}\ell_0\)</span>。
+</aside>
+<p>图7.1中的工资似乎来自两个不同的总体：一组是年收入超过250,000美元的高收入者，另一组是低收入者。将 <code>wage</code> 划分成这两组，就可以把它当作二元变量。然后，可以使用 <code>age</code> 的多项式函数作为预测变量，通过逻辑回归预测这一二元响应。</p>
+<p>换句话说，我们拟合模型</p>
+<p><span class="math display">\[
+\Pr(y_i&gt;250\mid x_i)=\frac{\exp(\beta_0+\beta_1x_i+\beta_2x_i^2+\cdots+\beta_dx_i^d)}{1+\exp(\beta_0+\beta_1x_i+\beta_2x_i^2+\cdots+\beta_dx_i^d)}. \tag{7.3}
+\]</span></p>
+<p>结果见图7.1右图。面板顶部和底部的灰色刻线分别表示高收入者和低收入者的年龄。蓝色实线表示拟合得到的成为高收入者的概率，它是年龄的函数。图中也给出了估计的95%置信区间。这里的置信区间相当宽，右侧尤其如此。尽管数据集的样本量不小（<span class="math inline">\(n=3{,}000\)</span>），但高收入者只有79名，因此系数估计的方差较大，相应的置信区间也较宽。 ## 7.2 阶梯函数</p>
+<p>在线性模型中使用特征的多项式函数作为预测变量，相当于对 <span class="math inline">\(X\)</span> 的非线性函数施加了一种全局结构。为了避免施加这样的全局结构，我们可以改用阶梯函数：把 <span class="math inline">\(X\)</span> 的取值范围划分成若干<strong>分箱区间（bins）</strong>，并在每个区间内拟合一个不同的常数。这相当于把一个连续变量转化为一个<strong>有序类别型变量（ordered categorical variable）</strong>。</p>
+<p>具体来说，在 <span class="math inline">\(X\)</span> 的取值范围内设置<strong>切分点（cutpoints）</strong> <span class="math inline">\(c_1,c_2,\ldots,c_K\)</span>，然后构造 <span class="math inline">\(K+1\)</span> 个新变量：</p>
+<p><span class="math display">\[
+\begin{aligned}
+C_0(X)&amp;=I(X&lt;c_1),\\
+C_1(X)&amp;=I(c_1\le X&lt;c_2),\\
+C_2(X)&amp;=I(c_2\le X&lt;c_3),\\
+&amp;\vdots\\
+C_{K-1}(X)&amp;=I(c_{K-1}\le X&lt;c_K),\\
+C_K(X)&amp;=I(c_K\le X).
+\end{aligned} \tag{7.4}
+\]</span></p>
+<p>其中，<span class="math inline">\(I(\cdot)\)</span> 是<strong>指示函数（indicator function）</strong>：条件成立时返回1，否则返回0。例如，若 <span class="math inline">\(c_K\le X\)</span>，则 <span class="math inline">\(I(c_K\le X)\)</span> 等于1，否则等于0。这些变量有时称为虚拟变量。注意，对于任意 <span class="math inline">\(X\)</span>，都有 <span class="math inline">\(C_0(X)+C_1(X)+\cdots+C_K(X)=1\)</span>，因为 <span class="math inline">\(X\)</span> 必定恰好位于这 <span class="math inline">\(K+1\)</span> 个区间中的一个。然后，以 <span class="math inline">\(C_1(X),C_2(X),\ldots,C_K(X)\)</span> 为预测变量，使用最小二乘法拟合线性模型：<sup><a href="#ch07-fn2" id="ch07-fnref2">2</a></sup></p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1C_1(x_i)+\beta_2C_2(x_i)+\cdots+\beta_KC_K(x_i)+\epsilon_i. \tag{7.5}
+\]</span></p>
+<aside class="footnote" id="ch07-fn2">
+<a href="#ch07-fnref2">2</a> 式(7.5)没有把 <span class="math inline">\(C_0(X)\)</span> 纳入预测变量，因为它与截距是冗余的。这与下面的情况类似：只要模型包含截距，就只需要两个虚拟变量来编码一个具有三个水平的定性变量。在式(7.5)中，选择排除 <span class="math inline">\(C_0(X)\)</span> 而不是其他某个 <span class="math inline">\(C_k(X)\)</span> 是任意的。另一种做法是纳入 <span class="math inline">\(C_0(X),C_1(X),\ldots,C_K(X)\)</span>，同时排除截距。
+</aside>
+<p>对于给定的 <span class="math inline">\(X\)</span>，<span class="math inline">\(C_1,C_2,\ldots,C_K\)</span> 至多只有一个非零。注意，当 <span class="math inline">\(X&lt;c_1\)</span> 时，式(7.5)中的所有预测变量都为零，因此 <span class="math inline">\(\beta_0\)</span> 可以解释为 <span class="math inline">\(X&lt;c_1\)</span> 时 <span class="math inline">\(Y\)</span> 的均值。相比之下，当 <span class="math inline">\(c_j\le X&lt;c_{j+1}\)</span> 时，式(7.5)预测的响应为 <span class="math inline">\(\beta_0+\beta_j\)</span>，因此 <span class="math inline">\(\beta_j\)</span> 表示 <span class="math inline">\(X\)</span> 处于 <span class="math inline">\(c_j\le X&lt;c_{j+1}\)</span> 时，相对于 <span class="math inline">\(X&lt;c_1\)</span>，响应的平均增量。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-2.png" class="img-fluid figure-img"></p>
+<figcaption>图7.2：Wage数据的年龄阶梯函数与逻辑回归拟合</figcaption>
+</figure>
+</div>
+<p><strong>图7.2</strong> <code>Wage</code> 数据。左：实线表示以 <code>age</code> 的阶梯函数为预测变量，对 <code>wage</code>（单位为千美元）进行最小二乘回归所得到的拟合值。虚线表示估计的95%置信区间。右：使用逻辑回归对二元事件 <code>wage&gt;250</code> 建模，同样使用 <code>age</code> 的阶梯函数。图中给出了拟合得到的工资超过250,000美元的后验概率，以及估计的95%置信区间。图内文字：Piecewise Constant＝分段常数；Age＝年龄；Wage＝工资；<span class="math inline">\(\Pr(\mathrm{Wage}&gt;250\mid\mathrm{Age})\)</span>＝给定年龄时工资超过250（千美元）的概率。</p>
+<p>图7.2左图给出了对图7.1的 <code>Wage</code> 数据拟合阶梯函数的例子。我们还拟合了逻辑回归模型</p>
+<p><span class="math display">\[
+\Pr(y_i&gt;250\mid x_i)=\frac{\exp(\beta_0+\beta_1C_1(x_i)+\cdots+\beta_KC_K(x_i))}{1+\exp(\beta_0+\beta_1C_1(x_i)+\cdots+\beta_KC_K(x_i))}, \tag{7.6}
+\]</span></p>
+<p>以根据年龄预测一个人成为高收入者的概率。图7.2右图展示了用这种方法拟合得到的后验概率。</p>
+<p>遗憾的是，除非预测变量中存在自然的分界点，否则分段常数函数可能捕捉不到关键变化。例如，图7.2左图中的第一个分箱区间，明显没有捕捉到工资随年龄上升的趋势。尽管如此，阶梯函数方法在生物统计学、流行病学等学科中仍然十分流行。例如，常常用每5岁一组的年龄组来定义分箱区间。</p>
+</section>
+<section id="基函数basis-functions" class="level2">
+<h2 class="anchored" data-anchor-id="基函数basis-functions">7.3 基函数（Basis Functions）</h2>
+<p>多项式回归和分段常数回归模型，实际上都是基函数方法的特例。其想法是，准备一组可以应用于变量 <span class="math inline">\(X\)</span> 的函数或变换：<span class="math inline">\(b_1(X),b_2(X),\ldots,b_K(X)\)</span>。</p>
+<p>我们不再拟合关于 <span class="math inline">\(X\)</span> 的线性模型，而是拟合模型</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1b_1(x_i)+\beta_2b_2(x_i)+\beta_3b_3(x_i)+\cdots+\beta_Kb_K(x_i)+\epsilon_i. \tag{7.7}
+\]</span></p>
+<p>注意，基函数 <span class="math inline">\(b_1(\cdot),b_2(\cdot),\ldots,b_K(\cdot)\)</span> 是固定且已知的。也就是说，这些函数由我们事先选定。对于多项式回归，基函数是 <span class="math inline">\(b_j(x_i)=x_i^j\)</span>；对于分段常数函数，基函数是 <span class="math inline">\(b_j(x_i)=I(c_j\le x_i&lt;c_{j+1})\)</span>。可以把式(7.7)看作以 <span class="math inline">\(b_1(x_i),b_2(x_i),\ldots,b_K(x_i)\)</span> 为预测变量的标准线性模型。因此，可以使用最小二乘法估计式(7.7)中未知的回归系数。这意味着，第3章讨论的所有线性模型推断工具，在这里都适用，例如系数估计的标准误，以及检验模型整体显著性的F统计量。</p>
+<p>到目前为止，我们考虑了用多项式函数和分段常数函数作为基函数，但还可以作许多其他选择。例如，可以使用<strong>小波（wavelets）</strong> 或<strong>傅里叶级数（Fourier series）</strong> 来构造基函数。下一节将考察一种十分常用的基函数选择：回归样条。</p>
+</section>
+<section id="回归样条" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="回归样条">7.4 回归样条</h2>
+<p>下面讨论一类灵活的基函数，它们扩展了我们刚刚介绍的多项式回归和分段常数回归方法。</p>
+<section id="分段多项式piecewise-polynomials" class="level3">
+<h3 class="anchored" data-anchor-id="分段多项式piecewise-polynomials">7.4.1 分段多项式（Piecewise Polynomials）</h3>
+<p>分段多项式回归（piecewise polynomial regression）在<span class="math inline">\(X\)</span>的不同区域分别拟合低次多项式，而不是在<span class="math inline">\(X\)</span>的整个取值范围内拟合一个高次多项式。例如，分段三次多项式会拟合如下形式的三次回归模型：</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1x_i+\beta_2x_i^2+\beta_3x_i^3+\epsilon_i,
+\tag{7.8}
+\]</span></p>
+<p>其中，系数<span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span>、<span class="math inline">\(\beta_2\)</span>和<span class="math inline">\(\beta_3\)</span>在<span class="math inline">\(X\)</span>取值范围的不同部分可以不同。系数发生变化的位置称为结点。</p>
+<p>例如，没有结点的分段三次多项式就是通常的三次多项式，也就是式(7.1)中<span class="math inline">\(d=3\)</span>的情形。只有一个结点<span class="math inline">\(c\)</span>的分段三次多项式具有如下形式：</p>
+<p><span class="math display">\[
+y_i=\begin{cases}
+\beta_{01}+\beta_{11}x_i+\beta_{21}x_i^2+\beta_{31}x_i^3+\epsilon_i &amp; \text{若 }x_i&lt;c,\\
+\beta_{02}+\beta_{12}x_i+\beta_{22}x_i^2+\beta_{32}x_i^3+\epsilon_i &amp; \text{若 }x_i\geq c.
+\end{cases}
+\]</span></p>
+<p>换句话说，我们对数据拟合两个不同的多项式函数：一个使用满足<span class="math inline">\(x_i&lt;c\)</span>的观测子集，另一个使用满足<span class="math inline">\(x_i\geq c\)</span>的观测子集。第一个多项式函数的系数为<span class="math inline">\(\beta_{01}\)</span>、<span class="math inline">\(\beta_{11}\)</span>、<span class="math inline">\(\beta_{21}\)</span>和<span class="math inline">\(\beta_{31}\)</span>，第二个的系数为<span class="math inline">\(\beta_{02}\)</span>、<span class="math inline">\(\beta_{12}\)</span>、<span class="math inline">\(\beta_{22}\)</span>和<span class="math inline">\(\beta_{32}\)</span>。将最小二乘法用于原预测变量的简单函数，就可以分别拟合这两个多项式函数。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-3.png" class="img-fluid figure-img"></p>
+<figcaption>图7.3：在50岁处设置结点的四种分段多项式拟合</figcaption>
+</figure>
+</div>
+<p><strong>图7.3</strong> 对Wage数据的一个子集拟合不同的分段多项式，结点设在<code>age=50</code>处。<strong>左上：</strong>三次多项式不受约束。<strong>右上：</strong>约束三次多项式在<code>age=50</code>处连续。<strong>左下：</strong>约束三次多项式连续，且一阶、二阶导数（derivative）连续。<strong>右下：</strong>线性样条，约束其连续。</p>
+<p>图内英文对照：Age＝年龄；Wage＝工资；Piecewise Cubic＝分段三次多项式；Continuous Piecewise Cubic＝连续的分段三次多项式；Cubic Spline＝三次样条；Linear Spline＝线性样条。</p>
+<p>增加结点会使分段多项式更加灵活。一般来说，如果在<span class="math inline">\(X\)</span>的取值范围内设置<span class="math inline">\(K\)</span>个不同结点，就需要拟合<span class="math inline">\(K+1\)</span>个不同的三次多项式。注意，并非一定要用三次多项式。例如，也可以拟合分段线性函数。实际上，7.2节中的分段常数函数就是0次分段多项式！</p>
+<p>图7.3左上图对Wage数据的一个子集拟合了分段三次多项式，唯一的结点设在<code>age=50</code>处。我们立刻就能看到一个问题：这个函数不连续，看起来很不合理！由于每个多项式有四个参数，拟合这个分段多项式模型总共使用了八个自由度。</p>
+</section>
+<section id="约束与样条constraints-and-splines" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="约束与样条constraints-and-splines">7.4.2 约束与样条（Constraints and Splines）</h3>
+<p>图7.3左上图看起来不对，是因为拟合曲线过于灵活。为解决这一问题，我们可以在拟合曲线必须连续的约束下拟合分段多项式。换句话说，在<code>age=50</code>处不能出现跳跃。图7.3右上图展示了这样的拟合结果。它比左上图更好，但V形连接仍显得不自然。</p>
+<p>在左下图中，我们又加了两个约束：现在，分段多项式的一阶和二阶导数（derivative）在<code>age=50</code>处也都连续。也就是说，我们要求分段多项式在<code>age=50</code>处不仅连续，还要非常平滑。对分段三次多项式施加的每一个约束，都会降低所得分段多项式拟合的复杂程度，从而减少一个自由度。因此，左上图使用了八个自由度，而在左下图中，我们施加了三个约束，即函数连续、一阶导数连续和二阶导数连续，于是剩下五个自由度。左下图中的曲线称为三次样条（cubic spline）。<sup><a id="ch07-fnref3" href="#ch07-fn3">3</a></sup>一般来说，具有<span class="math inline">\(K\)</span>个结点的三次样条总共使用<span class="math inline">\(4+K\)</span>个自由度。</p>
+<aside class="footnote" id="ch07-fn3">
+<a href="#ch07-fnref3">3</a> 三次样条很受欢迎，因为大多数人的眼睛察觉不到结点处的不连续。
+</aside>
+<p>图7.3右下图是一个线性样条（linear spline），它在<code>age=50</code>处连续。<span class="math inline">\(d\)</span>次样条的一般定义是：它是一个<span class="math inline">\(d\)</span>次分段多项式，在每个结点处，直到<span class="math inline">\(d-1\)</span>阶的导数都连续。因此，要得到线性样条，就在由结点划分的预测变量空间的每个区域中拟合一条直线，并要求各结点处连续。</p>
+<p>图7.3中只在<code>age=50</code>处设置了一个结点。当然，我们可以增加结点，并在每个结点处施加连续性约束。</p>
+</section>
+<section id="样条的基表示the-spline-basis-representation" class="level3">
+<h3 class="anchored" data-anchor-id="样条的基表示the-spline-basis-representation">7.4.3 样条的基表示（The Spline Basis Representation）</h3>
+<p>上一小节介绍的回归样条可能显得有些复杂：怎样才能在函数本身（以及可能要求的前<span class="math inline">\(d-1\)</span>阶导数）连续的约束下，拟合一个<span class="math inline">\(d\)</span>次分段多项式呢？事实上，可以用基模型(7.7)来表示回归样条。对于具有<span class="math inline">\(K\)</span>个结点的三次样条，只要适当选择基函数<span class="math inline">\(b_1,b_2,\ldots,b_{K+3}\)</span>，就可以将其建模为</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1b_1(x_i)+\beta_2b_2(x_i)+\cdots+\beta_{K+3}b_{K+3}(x_i)+\epsilon_i,
+\tag{7.9}
+\]</span></p>
+<p>然后用最小二乘法拟合模型(7.9)。</p>
+<p>正如多项式有多种表示方式一样，在式(7.9)中选用不同的基函数，也可以得到三次样条的许多等价表示。用式(7.9)表示三次样条最直接的方法，是先取三次多项式的基，即<span class="math inline">\(x\)</span>、<span class="math inline">\(x^2\)</span>和<span class="math inline">\(x^3\)</span>，然后为每个结点增加一个截断幂基（truncated power basis）函数。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-4.png" class="img-fluid figure-img"></p>
+<figcaption>图7.4：三次样条与自然三次样条的拟合及置信区间</figcaption>
+</figure>
+</div>
+<p><strong>图7.4</strong> 对Wage数据的一个子集拟合具有三个结点的三次样条和自然三次样条（natural cubic spline）。虚线表示结点位置。</p>
+<p>图内英文对照：Age＝年龄；Wage＝工资；Natural Cubic Spline＝自然三次样条；Cubic Spline＝三次样条。</p>
+<p>截断幂基函数定义为</p>
+<p><span class="math display">\[
+h(x,\xi)=(x-\xi)_+^3=\begin{cases}
+(x-\xi)^3 &amp; \text{若 }x&gt;\xi,\\
+0 &amp; \text{其他情况},
+\end{cases}
+\tag{7.10}
+\]</span></p>
+<p>其中<span class="math inline">\(\xi\)</span>是结点。可以证明，在三次多项式模型(7.8)中增加一个形如<span class="math inline">\(\beta_4h(x,\xi)\)</span>的项，只会使三阶导数在<span class="math inline">\(\xi\)</span>处不连续；函数本身及其一阶、二阶导数在每个结点处仍然连续。</p>
+<p>换句话说，要对一个数据集拟合具有<span class="math inline">\(K\)</span>个结点的三次样条，只需进行含一个截距和<span class="math inline">\(3+K\)</span>个预测变量的最小二乘回归。这些预测变量的形式为<span class="math inline">\(X,X^2,X^3,h(X,\xi_1),h(X,\xi_2),\ldots,h(X,\xi_K)\)</span>，其中<span class="math inline">\(\xi_1,\ldots,\xi_K\)</span>是结点。这相当于总共估计<span class="math inline">\(K+4\)</span>个回归系数；因此，拟合具有<span class="math inline">\(K\)</span>个结点的三次样条要使用<span class="math inline">\(K+4\)</span>个自由度。</p>
+<p>遗憾的是，样条在预测变量取值范围的两端可能具有很高的方差，也就是<span class="math inline">\(X\)</span>取很小或很大值的地方。图7.4展示了对Wage数据进行的三结点拟合。可以看到，边界区域的置信带波动相当大。自然样条（natural spline）是在回归样条的基础上施加额外边界约束得到的：要求函数在边界处为线性，即在<span class="math inline">\(X\)</span>小于最小结点或大于最大结点的区域中为线性。这一额外约束使自然样条在边界处通常能够产生更稳定的估计。图7.4还用红线画出了自然三次样条。注意，其对应的置信区间更窄。</p>
+</section>
+<section id="选择结点的数量和位置" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="选择结点的数量和位置">7.4.4 选择结点的数量和位置</h3>
+<p>拟合样条时，应把结点放在哪里呢？回归样条在结点较多的区域最灵活，因为在这些区域中，多项式的系数可以迅速变化。因此，一种办法是在我们认为函数可能变化最剧烈的地方多放一些结点，在看起来较稳定的地方少放一些。这种办法可以取得良好效果，不过实践中通常采用均匀的方式设置结点。具体做法之一是指定所需的自由度，再让软件自动在数据等间隔的分位数处放置相应数量的结点。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-5.png" class="img-fluid figure-img"></p>
+<figcaption>图7.5：Wage数据的自然三次样条回归及逻辑回归</figcaption>
+</figure>
+</div>
+<p><strong>图7.5</strong> 对Wage数据拟合具有四个自由度的自然三次样条函数。<strong>左：</strong>用样条拟合<code>wage</code>（单位为千美元）关于<code>age</code>的函数。<strong>右：</strong>用逻辑回归将二元事件<code>wage&gt;250</code>建模为<code>age</code>的函数。图中展示了工资超过250,000美元的拟合后验概率。虚线表示结点位置。</p>
+<p>图内英文对照：Natural Cubic Spline＝自然三次样条；Age＝年龄；Wage＝工资；Pr(Wage&gt;250 | Age)＝给定年龄时工资超过250千美元的概率。</p>
+<p>图7.5展示了Wage数据中的一个例子。与图7.4一样，这里拟合了具有三个结点的自然三次样条，不过这次软件自动将结点放在<code>age</code>的第25、第50和第75百分位数处。这是通过指定四个自由度来实现的。为什么四个自由度对应三个内部结点（interior knots），其论证涉及一些技术细节。<sup><a id="ch07-fnref4" href="#ch07-fn4">4</a></sup></p>
+<aside class="footnote" id="ch07-fn4">
+<a href="#ch07-fnref4">4</a> 实际上，算上两个边界结点（boundary knots），总共有五个结点。具有五个结点的三次样条有九个自由度。但自然三次样条在每个边界处都额外施加两个自然约束以保证线性，于是剩下<span class="math inline">\(9-4=5\)</span>个自由度。这里面包含一个常数，它被吸收到截距中，所以我们将其计为四个自由度。
+</aside>
+<p>应该使用多少个结点，或者等价地说，样条应该包含多少个自由度呢？一种办法是尝试不同的结点数，看看哪一种得到的曲线看起来最好。稍微客观一些的方法是使用第5章和第6章讨论的交叉验证。采用这种方法时，我们先移除一部分数据，例如10%，再对剩余数据拟合具有某个结点数的样条，然后用该样条预测留出的那部分数据。多次重复这一过程，直到每个观测都恰好被留出一次，再计算总体的交叉验证RSS。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-6.png" class="img-fluid figure-img"></p>
+<figcaption>图7.6：用十折交叉验证选择样条的自由度</figcaption>
+</figure>
+</div>
+<p><strong>图7.6</strong> 在对Wage数据拟合样条时，用于选择自由度的十折交叉验证均方误差。响应变量为<code>wage</code>，预测变量为<code>age</code>。<strong>左：</strong> 自然三次样条。<strong>右：</strong> 三次样条。</p>
+<p>图内英文对照：Mean Squared Error＝均方误差；Degrees of Freedom of Natural Spline＝自然样条的自由度；Degrees of Freedom of Cubic Spline＝三次样条的自由度。</p>
+<p>对不同的结点数<span class="math inline">\(K\)</span>都可以重复上述过程，然后选择使RSS最小的<span class="math inline">\(K\)</span>值。</p>
+<p>图7.6展示了用不同自由度的样条拟合Wage数据时得到的十折交叉验证均方误差。左图对应自然三次样条，右图对应三次样条。这两种方法产生的结果几乎相同，都清楚地表明一个自由度的拟合，也就是线性回归，并不充分。两条曲线都很快趋于平坦；看来，自然样条使用三个自由度、三次样条使用四个自由度，就已足够。</p>
+<p>在7.7节中，我们会同时对多个变量拟合加性样条模型。这可能需要为每个变量选择自由度。在这种情况下，通常采用更务实的做法：把所有项的自由度都设为某个固定值，例如四。</p>
+</section>
+<section id="与多项式回归的比较" class="level3">
+<h3 class="anchored" data-anchor-id="与多项式回归的比较">7.4.5 与多项式回归的比较</h3>
+<p>图7.7在Wage数据集上比较了具有15个自由度的自然三次样条和15次多项式。多项式增加的灵活性在边界处产生了不理想的结果，而自然三次样条仍能合理地拟合数据。回归样条的结果常常优于多项式回归。这是因为，多项式必须使用很高的次数，也就是最高次单项式中的指数，例如<span class="math inline">\(X^{15}\)</span>中的15，才能得到灵活的拟合；而样条通过增加结点数来提高灵活性，同时保持次数不变。通常，这种做法会得到更稳定的估计。样条还允许我们在函数<span class="math inline">\(f\)</span>似乎变化较快的区域多放一些结点，从而增加灵活性，而在<span class="math inline">\(f\)</span>似乎较稳定的区域少放一些结点。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-7.png" class="img-fluid figure-img"></p>
+<figcaption>图7.7：自然三次样条与高次多项式的比较</figcaption>
+</figure>
+</div>
+<p><strong>图7.7</strong> 在Wage数据集上，将具有15个自由度的自然三次样条与15次多项式进行比较。多项式可能出现剧烈波动，尤其是在取值范围的两端。</p>
+<p>图内英文对照：Age＝年龄；Wage＝工资；Natural Cubic Spline＝自然三次样条；Polynomial＝多项式。</p>
+</section>
+</section>
+<section id="平滑样条" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="平滑样条">7.5 平滑样条</h2>
+<p>上一节讨论了回归样条：先指定一组结点，生成一系列基函数，再用最小二乘法估计样条系数。下面介绍一种有所不同、但同样会产生样条的方法。</p>
+<section id="平滑样条概述" class="level3">
+<h3 class="anchored" data-anchor-id="平滑样条概述">7.5.1 平滑样条概述</h3>
+<p>对一组数据拟合平滑曲线时，我们真正希望找到的是某个能够很好地拟合观测数据的函数，比如<span class="math inline">\(g(x)\)</span>；也就是说，希望<span class="math inline">\(\operatorname{RSS}=\sum_{i=1}^n(y_i-g(x_i))^2\)</span>很小。不过，这样做有一个问题。如果不对<span class="math inline">\(g(x_i)\)</span>施加任何约束，只要选择一个对所有<span class="math inline">\(y_i\)</span>进行插值的<span class="math inline">\(g\)</span>，就总能让RSS等于零。这样的函数会严重过拟合数据，因为它太灵活了。我们真正想要的是一个既能使RSS较小、同时又平滑的函数<span class="math inline">\(g\)</span>。</p>
+<p>怎样保证<span class="math inline">\(g\)</span>平滑呢？有多种办法。一个自然的思路是寻找使下式最小的函数<span class="math inline">\(g\)</span>：</p>
+<p><span class="math display">\[
+\sum_{i=1}^n(y_i-g(x_i))^2+\lambda\int g''(t)^2\,dt,
+\tag{7.11}
+\]</span></p>
+<p>其中<span class="math inline">\(\lambda\)</span>是非负的调节参数。使式(7.11)最小的函数<span class="math inline">\(g\)</span>称为平滑样条。</p>
+<p>式(7.11)是什么意思呢？它采用了第6章讨论岭回归和套索法时遇到的“损失＋惩罚项”形式。其中，<span class="math inline">\(\sum_{i=1}^n(y_i-g(x_i))^2\)</span>是损失函数（loss function），促使<span class="math inline">\(g\)</span>较好地拟合数据；<span class="math inline">\(\lambda\int g''(t)^2\,dt\)</span>则是惩罚项，用来惩罚<span class="math inline">\(g\)</span>的波动。符号<span class="math inline">\(g''(t)\)</span>表示函数<span class="math inline">\(g\)</span>的二阶导数。一阶导数<span class="math inline">\(g'(t)\)</span>衡量函数在<span class="math inline">\(t\)</span>处的斜率，二阶导数则对应于斜率变化的程度。</p>
+<p>因此，大体上可以把函数的二阶导数看成对其粗糙程度（roughness）的度量：如果<span class="math inline">\(g(t)\)</span>在<span class="math inline">\(t\)</span>附近起伏剧烈，二阶导数的绝对值就很大；否则就接近零。（直线的二阶导数为零；注意，直线是完全平滑的。）符号<span class="math inline">\(\int\)</span>表示积分（integral），可以把它看成对<span class="math inline">\(t\)</span>的整个取值范围求和。换句话说，<span class="math inline">\(\int g''(t)^2\,dt\)</span>只是对函数<span class="math inline">\(g'(t)\)</span>在整个取值范围内总变化程度的一种度量。如果<span class="math inline">\(g\)</span>非常平滑，那么<span class="math inline">\(g'(t)\)</span>就近似为常数，<span class="math inline">\(\int g''(t)^2\,dt\)</span>也会很小。相反，如果<span class="math inline">\(g\)</span>起伏剧烈、变化不定，那么<span class="math inline">\(g'(t)\)</span>会有较大变化，<span class="math inline">\(\int g''(t)^2\,dt\)</span>也会很大。因此，式(7.11)中的<span class="math inline">\(\lambda\int g''(t)^2\,dt\)</span>促使<span class="math inline">\(g\)</span>保持平滑。<span class="math inline">\(\lambda\)</span>越大，<span class="math inline">\(g\)</span>就越平滑。</p>
+<p>当<span class="math inline">\(\lambda=0\)</span>时，式(7.11)中的惩罚项不起作用，函数<span class="math inline">\(g\)</span>便会起伏剧烈，并对训练观测进行精确插值。当<span class="math inline">\(\lambda\to\infty\)</span>时，<span class="math inline">\(g\)</span>会完全平滑，也就是一条尽可能贴近训练点的直线。实际上，此时<span class="math inline">\(g\)</span>就是线性最小二乘直线，因为式(7.11)的损失函数相当于最小化残差平方和。当<span class="math inline">\(\lambda\)</span>取中间值时，<span class="math inline">\(g\)</span>会近似训练观测，同时保有一定的平滑性。可见，<span class="math inline">\(\lambda\)</span>控制着平滑样条的偏差—方差权衡。</p>
+<p>可以证明，使式(7.11)最小的函数<span class="math inline">\(g(x)\)</span>具有一些特殊性质：它是一个分段三次多项式，在<span class="math inline">\(x_1,\ldots,x_n\)</span>的每个不同取值处设置结点，并且一阶、二阶导数在每个结点处连续。此外，在最外侧两个结点之外的区域中，它是线性的。换句话说，使式(7.11)最小的函数<span class="math inline">\(g(x)\)</span>是一个在<span class="math inline">\(x_1,\ldots,x_n\)</span>处设有结点的自然三次样条！不过，它并不等同于采用7.4.3节所述基函数方法、在<span class="math inline">\(x_1,\ldots,x_n\)</span>处设置结点后得到的自然三次样条，而是这种自然三次样条经过收缩后的版本；式(7.11)中调节参数<span class="math inline">\(\lambda\)</span>的取值控制着收缩程度。</p>
+</section>
+<section id="选择平滑参数smoothing-parameterlambda" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="选择平滑参数smoothing-parameterlambda">7.5.2 选择平滑参数（smoothing parameter）<span class="math inline">\(\lambda\)</span></h3>
+<p>我们已经看到，平滑样条就是在<span class="math inline">\(x_i\)</span>的每个不同取值处设置结点的自然三次样条。由于每个数据点处都有一个结点，会带来很大的灵活性，平滑样条的自由度似乎会过多。不过，调节参数<span class="math inline">\(\lambda\)</span>控制着平滑样条的粗糙程度，因此也控制着它的有效自由度（effective degrees of freedom）。可以证明，当<span class="math inline">\(\lambda\)</span>从0增大到<span class="math inline">\(\infty\)</span>时，记作<span class="math inline">\(df_\lambda\)</span>的有效自由度会从<span class="math inline">\(n\)</span>降到2。</p>
+<p>对于平滑样条，为什么讨论有效自由度，而不直接讨论自由度呢？通常，自由度指自由参数的个数，例如拟合多项式或三次样条时的系数个数。虽然平滑样条有<span class="math inline">\(n\)</span>个参数，因此名义上有<span class="math inline">\(n\)</span>个自由度，但这<span class="math inline">\(n\)</span>个参数受到了很强的约束或收缩。因此，<span class="math inline">\(df_\lambda\)</span>衡量的是平滑样条的灵活性：它越大，平滑样条就越灵活，偏差越低、方差越高。有效自由度的定义涉及一些技术细节。我们可以写成</p>
+<p><span class="math display">\[
+\hat{\mathbf g}_\lambda=\mathbf S_\lambda\mathbf y,
+\tag{7.12}
+\]</span></p>
+<p>其中，<span class="math inline">\(\hat{\mathbf g}_\lambda\)</span>是给定<span class="math inline">\(\lambda\)</span>取值时式(7.11)的解，也就是一个<span class="math inline">\(n\)</span>维向量，包含了平滑样条在训练点<span class="math inline">\(x_1,\ldots,x_n\)</span>处的拟合值。式(7.12)表明，对数据使用平滑样条得到的拟合值向量，可以写成一个<span class="math inline">\(n\times n\)</span>矩阵<span class="math inline">\(\mathbf S_\lambda\)</span>与响应向量<span class="math inline">\(\mathbf y\)</span>的乘积；<span class="math inline">\(\mathbf S_\lambda\)</span>有相应的计算公式。有效自由度则定义为</p>
+<p><span class="math display">\[
+df_\lambda=\sum_{i=1}^n\{\mathbf S_\lambda\}_{ii},
+\tag{7.13}
+\]</span></p>
+<p>即矩阵<span class="math inline">\(\mathbf S_\lambda\)</span>的对角元素之和。</p>
+<p>拟合平滑样条时，不需要选择结点的数量或位置，因为每个训练观测<span class="math inline">\(x_1,\ldots,x_n\)</span>处都会有一个结点。取而代之的是另一个问题：需要选择<span class="math inline">\(\lambda\)</span>的值。交叉验证可以解决这一问题，这一点应该并不令人意外。换句话说，可以寻找使交叉验证RSS尽可能小的<span class="math inline">\(\lambda\)</span>。事实上，对于平滑样条，利用下面的公式，就能够非常高效地计算留一交叉验证误差（LOOCV），计算成本基本上与拟合一次模型相同：</p>
+<p><span class="math display">\[
+\operatorname{RSS}_{cv}(\lambda)=\sum_{i=1}^n\left(y_i-\hat g_\lambda^{(-i)}(x_i)\right)^2
+=\sum_{i=1}^n\left[\frac{y_i-\hat g_\lambda(x_i)}{1-\{\mathbf S_\lambda\}_{ii}}\right]^2.
+\]</span></p>
+<p>符号<span class="math inline">\(\hat g_\lambda^{(-i)}(x_i)\)</span>表示平滑样条在<span class="math inline">\(x_i\)</span>处的拟合值，拟合时使用了除第<span class="math inline">\(i\)</span>个观测<span class="math inline">\((x_i,y_i)\)</span>以外的全部训练观测。相比之下，<span class="math inline">\(\hat g_\lambda(x_i)\)</span>表示用全部训练观测拟合的平滑样条函数在<span class="math inline">\(x_i\)</span>处的值。这个巧妙的公式表明，只需使用对全部数据拟合一次得到的<span class="math inline">\(\hat{\mathbf g}_\lambda\)</span>，就可以计算每一次留一拟合！<sup><a id="ch07-fnref5" href="#ch07-fn5">5</a></sup>第5章第205页的式(5.2)给出了最小二乘线性回归中一个十分相似的公式。利用式(5.2)，既可以对本章前面讨论的回归样条快速进行LOOCV，也可以对使用任意基函数的最小二乘回归快速进行LOOCV。</p>
+<aside class="footnote" id="ch07-fn5">
+<a href="#ch07-fnref5">5</a> 计算<span class="math inline">\(\hat g(x_i)\)</span>和<span class="math inline">\(\mathbf S_\lambda\)</span>的确切公式涉及很强的技术性；不过，已有高效算法可以计算这些量。
+</aside>
+<p>图7.8展示了对Wage数据拟合平滑样条的结果。红色曲线是在事先指定平滑样条具有16个有效自由度后得到的拟合。蓝色曲线则是用LOOCV选择<span class="math inline">\(\lambda\)</span>后得到的平滑样条；此时选出的<span class="math inline">\(\lambda\)</span>对应6.8个有效自由度，由式(7.13)计算得到。对于这组数据，除了16自由度的样条看起来起伏稍多之外，两条平滑样条几乎没有可辨别的差异。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-8.png" class="img-fluid figure-img"></p>
+<figcaption>图7.8：Wage数据的两种平滑样条拟合</figcaption>
+</figure>
+</div>
+<p><strong>图7.8</strong> 对Wage数据进行平滑样条拟合。红色曲线通过指定16个有效自由度得到。蓝色曲线的<span class="math inline">\(\lambda\)</span>由留一交叉验证自动确定，结果对应6.8个有效自由度。</p>
+<p>图内英文对照：Smoothing Spline＝平滑样条；Age＝年龄；Wage＝工资；16 Degrees of Freedom＝16个自由度；6.8 Degrees of Freedom (LOOCV)＝6.8个自由度（LOOCV）。</p>
+<p>由于两种拟合差别很小，使用6.8个自由度的平滑样条更合适，因为一般来说，除非数据提供了支持更复杂模型的证据，否则较简单的模型更好。</p>
+</section>
+</section>
+<section id="局部回归" class="level2">
+<h2 class="anchored" data-anchor-id="局部回归">7.6 局部回归</h2>
+<p>局部回归是拟合灵活的非线性函数的另一种方法：只利用目标点 <span class="math inline">\(x_0\)</span> 附近的训练观测，计算该点处的拟合值。图7.9用模拟数据说明了这一想法，其中一个目标点接近0.4，另一个位于边界附近的0.05处。图中的蓝线表示生成数据的函数 <span class="math inline">\(f(x)\)</span>，浅橙色线表示局部回归估计 <span class="math inline">\(\hat f(x)\)</span>。算法7.1描述了局部回归的过程。</p>
+<p>注意，在算法7.1的第3步中，对于不同的 <span class="math inline">\(x_0\)</span>，权重 <span class="math inline">\(K_{i0}\)</span> 都不同。换句话说，要得到一个新点处的局部回归拟合值，就需要针对一组新的权重，最小化式(7.14)，重新拟合一个加权最小二乘回归模型。局部回归有时称为<strong>基于记忆的过程（memory-based procedure）</strong>，因为与近邻方法一样，每次计算预测值都需要全部训练数据。这里不展开局部回归的技术细节；已有专门讨论这一主题的书籍。</p>
+<p>进行局部回归时，需要作出多种选择，例如如何定义权重函数 <span class="math inline">\(K\)</span>，以及在第3步中拟合线性、常数还是二次回归。（式(7.14)对应于线性回归。）虽然这些选择都会产生一定影响，但最重要的是选择<strong>跨度（span）</strong> <span class="math inline">\(s\)</span>。如算法第1步所定义的，它是在 <span class="math inline">\(x_0\)</span> 处计算局部回归时所用的数据点比例。跨度的作用类似于平滑样条中的调节参数 <span class="math inline">\(\lambda\)</span>：它控制非线性拟合的灵活性。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-9.png" class="img-fluid figure-img"></p>
+<figcaption>图7.9：局部回归的邻域、权重与目标点拟合</figcaption>
+</figure>
+</div>
+<p><strong>图7.9</strong> 用模拟数据说明局部回归。蓝色曲线表示生成数据的 <span class="math inline">\(f(x)\)</span>，浅橙色曲线对应局部回归估计 <span class="math inline">\(\hat f(x)\)</span>。橙色竖线表示目标点 <span class="math inline">\(x_0\)</span>，橙色数据点是位于该目标点附近的观测。叠加在图中的黄色钟形表示分配给各个点的权重；离目标点越远，权重越小，直到降为零。通过拟合加权线性回归（橙色线段），再将 <span class="math inline">\(x_0\)</span> 处的拟合值（橙色实心点）作为估计 <span class="math inline">\(\hat f(x_0)\)</span>，即可得到 <span class="math inline">\(x_0\)</span> 处的拟合。图内文字：Local Regression＝局部回归。</p>
+<p><span class="math inline">\(s\)</span> 越小，拟合就越局部，曲线起伏也越多；相反，<span class="math inline">\(s\)</span> 很大时，就会使用全部训练观测对数据进行全局拟合。我们仍可用交叉验证选择 <span class="math inline">\(s\)</span>，也可以直接指定。图7.10给出了在 <code>Wage</code> 数据上使用两个不同 <span class="math inline">\(s\)</span> 值（0.7和0.2）的局部线性回归拟合。正如预期，<span class="math inline">\(s=0.7\)</span> 得到的拟合比 <span class="math inline">\(s=0.2\)</span> 得到的拟合更平滑。</p>
+<p>局部回归的想法可以作多种推广。在有多个特征 <span class="math inline">\(X_1,X_2,\ldots,X_p\)</span> 的情形下，一种很有用的推广是拟合多元线性回归模型，使其对某些变量是全局的，而对另一个变量（如时间）是局部的。这类<strong>变系数模型（varying coefficient models）</strong>可以让模型适应最新采集的数据。若希望拟合的模型对一对变量 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 是局部的，而不是仅对一个变量局部，局部回归也能十分自然地推广：只需使用二维邻域，并利用二维空间中每个目标点附近的观测，拟合包含两个预测变量的线性回归模型。从理论上说，同样的方法可以推广到更高维，在 <span class="math inline">\(p\)</span> 维邻域中拟合线性回归。然而，当 <span class="math inline">\(p\)</span> 远大于大约3或4时，局部回归可能表现很差，因为 <span class="math inline">\(x_0\)</span> 附近通常只有很少的训练观测。第3章讨论的近邻回归在高维情形下也面临类似问题。</p>
+<div id="algorithm-7-1" class="algorithm">
+<p><strong>算法7.1　在 <span class="math inline">\(X=x_0\)</span> 处进行局部回归</strong></p>
+<ol type="1">
+<li><p>选取 <span class="math inline">\(x_i\)</span> 最接近 <span class="math inline">\(x_0\)</span> 的训练点，占全部训练点的比例为 <span class="math inline">\(s=k/n\)</span>。</p></li>
+<li><p>给这个邻域中的每个点分配权重 <span class="math inline">\(K_{i0}=K(x_i,x_0)\)</span>，使离 <span class="math inline">\(x_0\)</span> 最远的点权重为零，最近的点权重最高。这 <span class="math inline">\(k\)</span> 个最近邻之外的所有点，权重均为零。</p></li>
+<li><p>使用上述权重，对 <span class="math inline">\(y_i\)</span> 关于 <span class="math inline">\(x_i\)</span> 进行加权最小二乘回归，即求出使下式最小的 <span class="math inline">\(\hat\beta_0\)</span> 和 <span class="math inline">\(\hat\beta_1\)</span>：</p>
+<p><span class="math display">\[
+\sum_{i=1}^{n}K_{i0}(y_i-\beta_0-\beta_1x_i)^2. \tag{7.14}
+\]</span></p></li>
+<li><p><span class="math inline">\(x_0\)</span> 处的拟合值为 <span class="math inline">\(\hat f(x_0)=\hat\beta_0+\hat\beta_1x_0\)</span>。</p></li>
+</ol>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-10.png" class="img-fluid figure-img"></p>
+<figcaption>图7.10：不同跨度的Wage数据局部线性拟合</figcaption>
+</figure>
+</div>
+<p><strong>图7.10</strong> <code>Wage</code> 数据的局部线性拟合。跨度指定了在每个目标点处计算拟合时使用的数据比例。图内文字：Local Linear Regression＝局部线性回归；Span is 0.2 (16.4 Degrees of Freedom)＝跨度为0.2（16.4个自由度）；Span is 0.7 (5.3 Degrees of Freedom)＝跨度为0.7（5.3个自由度）；Age＝年龄；Wage＝工资。</p>
+</section>
+<section id="广义加性模型" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="广义加性模型">7.7 广义加性模型</h2>
+<p>第7.1—7.6节介绍了多种方法，根据单个预测变量 <span class="math inline">\(X\)</span> 灵活地预测响应 <span class="math inline">\(Y\)</span>。这些方法可以看作简单线性回归的扩展。这里考察根据多个预测变量 <span class="math inline">\(X_1,\ldots,X_p\)</span> 灵活预测 <span class="math inline">\(Y\)</span> 的问题，也就是对多元线性回归进行扩展。</p>
+<p>广义加性模型（GAM）提供了一个扩展标准线性模型的通用框架：在保持可加性的同时，允许每个变量通过非线性函数进入模型。与线性模型一样，GAM既适用于定量响应，也适用于定性响应。我们先在第7.7.1节考察定量响应的GAM，再在第7.7.2节考察定性响应的GAM。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-11.png" class="img-fluid figure-img"></p>
+<figcaption>图7.11：Wage数据的自然样条广义加性模型</figcaption>
+</figure>
+</div>
+<p><strong>图7.11</strong> 在 <code>Wage</code> 数据上拟合模型(7.16)后，各个特征与响应 <code>wage</code> 之间关系的图。每幅图都展示了拟合函数和逐点标准误。前两个函数分别是关于 <code>year</code> 和 <code>age</code> 的自然样条，自由度分别为4和5。第三个函数是对定性变量 <code>education</code> 拟合的阶梯函数。图内文字：year＝年份；age＝年龄；education＝教育水平；<span class="math inline">\(f_1(\mathrm{year})\)</span>、<span class="math inline">\(f_2(\mathrm{age})\)</span>、<span class="math inline">\(f_3(\mathrm{education})\)</span> 为对应的拟合函数，教育水平标签 <code>&lt;HS</code>、<code>HS</code>、<code>&lt;Coll</code>、<code>Coll</code>、<code>&gt;Coll</code> 保持原样。</p>
+<section id="回归问题中的gam" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="回归问题中的gam">7.7.1 回归问题中的GAM</h3>
+<p>为了允许各个特征与响应之间存在非线性关系，一种自然的做法是将多元线性回归模型</p>
+<p><span class="math display">\[
+y_i=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}+\epsilon_i
+\]</span></p>
+<p>中的每个线性分量 <span class="math inline">\(\beta_jx_{ij}\)</span>，替换为一个（平滑的）非线性函数 <span class="math inline">\(f_j(x_{ij})\)</span>。此时，模型可以写为</p>
+<p><span class="math display">\[
+\begin{aligned}
+y_i&amp;=\beta_0+\sum_{j=1}^{p}f_j(x_{ij})+\epsilon_i\\
+&amp;=\beta_0+f_1(x_{i1})+f_2(x_{i2})+\cdots+f_p(x_{ip})+\epsilon_i.
+\end{aligned} \tag{7.15}
+\]</span></p>
+<p>这就是一个GAM的例子。之所以称为加性模型，是因为我们针对每个 <span class="math inline">\(X_j\)</span> 分别计算一个 <span class="math inline">\(f_j\)</span>，然后将它们的贡献相加。</p>
+<p>第7.1—7.6节讨论了对单个变量拟合函数的多种方法。GAM的巧妙之处在于，可以把这些方法作为构件来拟合加性模型。事实上，对本章目前介绍的大多数方法来说，这很容易做到。以自然样条为例，考虑在 <code>Wage</code> 数据上拟合模型</p>
+<p><span class="math display">\[
+\mathrm{wage}=\beta_0+f_1(\mathrm{year})+f_2(\mathrm{age})+f_3(\mathrm{education})+\epsilon. \tag{7.16}
+\]</span></p>
+<p>这里，<code>year</code> 和 <code>age</code> 是定量变量，<code>education</code> 是具有五个水平的定性变量：<code>&lt;HS</code>、<code>HS</code>、<code>&lt;Coll</code>、<code>Coll</code>、<code>&gt;Coll</code>，表示个人完成高中或大学教育的程度。前两个函数用自然样条拟合。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-12.png" class="img-fluid figure-img"></p>
+<figcaption>图7.12：Wage数据的平滑样条广义加性模型</figcaption>
+</figure>
+</div>
+<p><strong>图7.12</strong> 细节与图7.11相同，但这里 <span class="math inline">\(f_1\)</span> 和 <span class="math inline">\(f_2\)</span> 分别是自由度为4和5的平滑样条。图内文字与函数、教育水平标签的含义同图7.11。</p>
+<p>第三个函数则采用第3.3.1节常用的虚拟变量方法，对每个水平分别拟合一个常数。</p>
+<p>图7.11给出了用最小二乘法拟合模型(7.16)的结果。这很容易实现，因为正如第7.4节所述，可以用适当选择的一组基函数构造自然样条。因此，整个模型只是对样条基变量和虚拟变量做一次大型回归，把这些变量一起放入一个大的回归矩阵中即可。</p>
+<p>图7.11很容易解释。左图表明，在 <code>age</code> 和 <code>education</code> 保持不变时，<code>wage</code> 往往会随 <code>year</code> 略有增加，这可能是通货膨胀所致。中图表明，在 <code>education</code> 和 <code>year</code> 保持不变时，<code>wage</code> 在年龄居中的人群中往往最高，而在非常年轻和非常年长的人群中最低。右图表明，在 <code>year</code> 和 <code>age</code> 保持不变时，<code>wage</code> 往往随 <code>education</code> 提高而增加：受教育程度越高，平均工资也越高。这些结果都符合直觉。</p>
+<p>图7.12给出了类似的一组三幅图，但这次 <span class="math inline">\(f_1\)</span> 和 <span class="math inline">\(f_2\)</span> 分别是自由度为4和5的平滑样条。使用平滑样条拟合GAM，不像使用自然样条那样简单，因为对于平滑样条，不能使用最小二乘法。不过，Python包 <code>pygam</code> 等标准软件可以通过一种称为<strong>回拟合（backfitting）</strong>的方法，用平滑样条拟合GAM。这种方法依次更新各个预测变量的拟合，在每次更新时保持其余部分不变，反复进行，从而拟合包含多个预测变量的模型。它的巧妙之处在于：每次更新一个函数时，只需把该变量的拟合方法应用于一个<strong>部分残差（partial residual）</strong>。<sup><a href="#ch07-fn6" id="ch07-fnref6">6</a></sup></p>
+<aside class="footnote" id="ch07-fn6">
+<a href="#ch07-fnref6">6</a> 例如，<span class="math inline">\(X_3\)</span> 的部分残差形式为 <span class="math inline">\(r_i=y_i-f_1(x_{i1})-f_2(x_{i2})\)</span>。如果已知 <span class="math inline">\(f_1\)</span> 和 <span class="math inline">\(f_2\)</span>，就可以把这个残差当作响应，对 <span class="math inline">\(X_3\)</span> 进行非线性回归，从而拟合 <span class="math inline">\(f_3\)</span>。
+</aside>
+<p>图7.11与图7.12中的拟合函数看起来十分相似。在大多数情形下，用平滑样条与用自然样条得到的GAM差别都不大。</p>
+<p>构造GAM时，并不一定要用样条作为构件；也可以使用局部回归、多项式回归，或把本章前面介绍的方法任意组合起来。章末实验将进一步讨论GAM。</p>
+<section id="gam的优点与局限" class="level4">
+<h4 class="anchored" data-anchor-id="gam的优点与局限">GAM的优点与局限</h4>
+<p>继续往下之前，先归纳GAM的优点与局限。</p>
+<div class="gam-pros-cons">
+<ul>
+<li><span style="color:#00c516" aria-label="优点">▲</span> GAM允许对每个 <span class="math inline">\(X_j\)</span> 拟合一个非线性函数 <span class="math inline">\(f_j\)</span>，从而自动建模标准线性回归无法捕捉的非线性关系。这意味着，我们不必对每个变量逐一手动尝试许多不同的变换。</li>
+<li><span style="color:#00c516" aria-label="优点">▲</span> 非线性拟合有可能更准确地预测响应 <span class="math inline">\(Y\)</span>。</li>
+<li><span style="color:#00c516" aria-label="优点">▲</span> 由于模型具有可加性，可以在其他所有变量保持不变的条件下，单独考察每个 <span class="math inline">\(X_j\)</span> 对 <span class="math inline">\(Y\)</span> 的影响。</li>
+<li><span style="color:#00c516" aria-label="优点">▲</span> 变量 <span class="math inline">\(X_j\)</span> 对应函数 <span class="math inline">\(f_j\)</span> 的平滑程度，可以通过自由度来概括。</li>
+<li><span style="color:#e4a900" aria-label="局限">◆</span> GAM的主要局限是模型受到可加性的约束。变量很多时，可能遗漏重要的交互作用。不过，与线性回归一样，可以手动向GAM加入形如 <span class="math inline">\(X_j\times X_k\)</span> 的额外预测变量，从而添加交互项。此外，还可以向模型加入形如 <span class="math inline">\(f_{jk}(X_j,X_k)\)</span> 的低维交互函数；这类项可以用局部回归等二维平滑方法，或二维样条来拟合（本书不讨论二维样条）。</li>
+</ul>
+</div>
+<p>对于完全一般的模型，就需要寻找更加灵活的方法，例如第8章介绍的随机森林和提升法。GAM在线性模型与完全非参数模型之间提供了一种有用的折中。</p>
+</section>
+</section>
+<section id="分类问题中的gam" class="level3">
+<h3 class="anchored" data-anchor-id="分类问题中的gam">7.7.2 分类问题中的GAM</h3>
+<p>GAM也可以用于 <span class="math inline">\(Y\)</span> 为定性变量的情形。为简单起见，这里假设 <span class="math inline">\(Y\)</span> 的取值为0或1，并令 <span class="math inline">\(p(X)=\Pr(Y=1\mid X)\)</span> 表示给定预测变量时，响应等于1的条件概率。回顾逻辑回归模型(4.6)：</p>
+<p><span class="math display">\[
+\log\left(\frac{p(X)}{1-p(X)}\right)=\beta_0+\beta_1X_1+\beta_2X_2+\cdots+\beta_pX_p. \tag{7.17}
+\]</span></p>
+<p>左边是 <span class="math inline">\(P(Y=1\mid X)\)</span> 相对于 <span class="math inline">\(P(Y=0\mid X)\)</span> 的几率的对数；式(7.17)将它表示为预测变量的线性函数。为了允许非线性关系，一种自然的扩展是使用模型</p>
+<p><span class="math display">\[
+\log\left(\frac{p(X)}{1-p(X)}\right)=\beta_0+f_1(X_1)+f_2(X_2)+\cdots+f_p(X_p). \tag{7.18}
+\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-13.png" class="img-fluid figure-img"></p>
+<figcaption>图7.13：包含全部教育水平的逻辑回归GAM</figcaption>
+</figure>
+</div>
+<p><strong>图7.13</strong> 在 <code>Wage</code> 数据上，将式(7.19)给出的逻辑回归GAM拟合于二元响应 <span class="math inline">\(I(\mathrm{wage}&gt;250)\)</span>。每幅图都展示了拟合函数和逐点标准误。第一个函数关于 <code>year</code> 是线性的，第二个函数是关于 <code>age</code>、自由度为5的平滑样条，第三个是关于 <code>education</code> 的阶梯函数。<code>education</code> 的第一个水平 <code>&lt;HS</code> 对应的标准误非常大。图内文字：year＝年份；age＝年龄；education＝教育水平；<span class="math inline">\(f_1(\mathrm{year})\)</span>、<span class="math inline">\(f_2(\mathrm{age})\)</span>、<span class="math inline">\(f_3(\mathrm{education})\)</span> 为对应的拟合函数，教育水平标签 <code>&lt;HS</code>、<code>HS</code>、<code>&lt;Coll</code>、<code>Coll</code>、<code>&gt;Coll</code> 保持原样。</p>
+<p>式(7.18)是一个逻辑回归GAM。上一节针对定量响应讨论的所有优点与局限，也同样适用于它。</p>
+<p>我们对 <code>Wage</code> 数据拟合一个GAM，以预测个人年收入超过250,000美元的概率。所拟合的GAM形式为</p>
+<p><span class="math display">\[
+\log\left(\frac{p(X)}{1-p(X)}\right)=\beta_0+\beta_1\times\mathrm{year}+f_2(\mathrm{age})+f_3(\mathrm{education}), \tag{7.19}
+\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[
+p(X)=\Pr(\mathrm{wage}&gt;250\mid\mathrm{year},\mathrm{age},\mathrm{education}).
+\]</span></p>
+<p>这里仍使用自由度为5的平滑样条拟合 <span class="math inline">\(f_2\)</span>，并为 <code>education</code> 的各个水平建立虚拟变量，用阶梯函数拟合 <span class="math inline">\(f_3\)</span>。得到的拟合见图7.13。最后一个面板看起来有些可疑，<code>&lt;HS</code> 水平的置信区间非常宽。事实上，这个类别中没有任何响应值等于1：没有高中以下学历的个人年收入超过250,000美元。因此，我们排除高中以下学历的个人，重新拟合GAM。得到的模型见图7.14。与图7.11和图7.12一样，三个面板的纵轴刻度范围相近，这使我们能够直观地评估各个变量的相对贡献。可以看到，<code>age</code> 和 <code>education</code> 对成为高收入者概率的影响远大于 <code>year</code>。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-7-14.png" class="img-fluid figure-img"></p>
+<figcaption>图7.14：排除高中以下学历观测后的逻辑回归GAM</figcaption>
+</figure>
+</div>
+<p><strong>图7.14</strong> 拟合与图7.13相同的模型，但这次排除 <code>education</code> 为 <code>&lt;HS</code> 的观测。现在可以看到，较高的教育水平往往与较高的工资相关联。图内文字与函数标签的含义同图7.13；教育水平标签仅保留 <code>HS</code>、<code>&lt;Coll</code>、<code>Coll</code>、<code>&gt;Coll</code>。</p>
+</section>
+</section>
+<section id="实验非线性建模" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="实验非线性建模">7.8 实验：非线性建模</h2>
+<p>本实验演示本章讨论的部分非线性模型。我们以 Wage 数据集为贯穿全节的例子，展示如何用 Python 轻松实现前面讨论的许多复杂非线性拟合方法。</p>
+<p>和往常一样，我们先导入一些常用工具。</p>
+<p>In[1]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np, pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.pyplot <span class="im">import</span> subplots</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP <span class="im">import</span> load_data</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.models <span class="im">import</span> (summarize,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                         poly,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                         ModelSpec <span class="im">as</span> MS)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.stats.anova <span class="im">import</span> anova_lm</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>下面集中导入本实验需要的新工具。其中许多是专门为 <code>ISLP</code> 包开发的。</p>
+<p>In[2]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pygam <span class="im">import</span> (s <span class="im">as</span> s_gam,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                   l <span class="im">as</span> l_gam,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                   f <span class="im">as</span> f_gam,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                   LinearGAM,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                   LogisticGAM)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.transforms <span class="im">import</span> (BSpline,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                             NaturalSpline)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.models <span class="im">import</span> bs, ns</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.pygam <span class="im">import</span> (approx_lam ,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                        degrees_of_freedom ,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                        plot <span class="im">as</span> plot_gam,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                        anova <span class="im">as</span> anova_gam)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="多项式回归与阶梯函数" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="多项式回归与阶梯函数">7.8.1 多项式回归与阶梯函数</h3>
+<p>我们先演示如何重现图7.1。首先载入数据。</p>
+<p>In[3]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Wage <span class="op">=</span> load_data(<span class="st">'Wage'</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> Wage[<span class="st">'wage'</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>age <span class="op">=</span> Wage[<span class="st">'age'</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>本实验大部分内容的响应变量都是 <code>Wage['wage']</code>，上面已将其存为 <code>y</code>。和3.6.6节一样，我们将用 <code>poly()</code> 函数创建设计矩阵，以拟合 <code>age</code> 的四次多项式。</p>
+<p>In[4]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>poly_age <span class="op">=</span> MS([poly(<span class="st">'age'</span>, degree<span class="op">=</span><span class="dv">4</span>)]).fit(Wage)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> sm.OLS(y, poly_age.transform(Wage)).fit()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>summarize(M)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[4]:</p>
+<pre class="text"><code>                             coef std err        t  P&gt;|t|
+              intercept  111.7036    0.729  153.283  0.000
+ poly(age, degree=4)[0]  447.0679   39.915   11.201  0.000
+ poly(age, degree=4)[1] -478.3158   39.915  -11.983  0.000
+ poly(age, degree=4)[2]  125.5217   39.915    3.145  0.002
+ poly(age, degree=4)[3]  -77.9112   39.915   -1.952  0.051</code></pre>
+<p>这个多项式由 <code>poly()</code> 函数构造。该函数创建一个专门的变换器（transformer）<code>Poly()</code>，从而便于在新的数据点上计算多项式的值。这里使用了 <code>sklearn</code> 对特征变换的术语，类似的例子是6.5.3节介绍的 <code>PCA()</code>。这里的 <code>poly()</code> 称为辅助函数（helper function），负责设定变换；实际承担变换计算的是 <code>Poly()</code>。关于变换，也可参见第118页的讨论。</p>
+<p>上面代码的第一行对数据框 <code>Wage</code> 执行 <code>fit()</code> 方法。这会在训练数据上重新计算 <code>Poly()</code> 所需的所有参数，并将其存为属性；以后每次调用 <code>transform()</code> 方法时都会使用这些参数。例如，第二行以及下面将编写的绘图函数都使用了它们。</p>
+<p>现在创建一个 <code>age</code> 值的网格，以便在这些位置进行预测。</p>
+<p>In[5]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>age_grid <span class="op">=</span> np.linspace(age.<span class="bu">min</span>(),</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                       age.<span class="bu">max</span>(),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                       <span class="dv">100</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>age_df <span class="op">=</span> pd.DataFrame({<span class="st">'age'</span>: age_grid})</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>最后，我们希望画出数据，并添加四次多项式的拟合曲线。由于下面还要绘制多幅类似的图，因此先编写一个函数，完成所需的各项计算并作图。这个函数接收模型设定（此处是由变换指定的一组基）和年龄值网格，生成拟合曲线及95%置信带。通过为 <code>basis</code> 提供不同的参数，我们可以生成并绘制多种变换的结果，例如稍后将介绍的样条。</p>
+<p>In[6]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_wage_fit(age_df,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                  basis,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                  title):</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> basis.transform(Wage)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    Xnew <span class="op">=</span> basis.transform(age_df)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> sm.OLS(y, X).fit()</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    preds <span class="op">=</span> M.get_prediction(Xnew)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    bands <span class="op">=</span> preds.conf_int(alpha<span class="op">=</span><span class="fl">0.05</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    ax.scatter(age,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>               y,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>               facecolor<span class="op">=</span><span class="st">'gray'</span>,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>               alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> val, ls <span class="kw">in</span> <span class="bu">zip</span>([preds.predicted_mean ,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>                      bands[:,<span class="dv">0</span>],</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>                      bands[:,<span class="dv">1</span>]],</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>                     [<span class="st">'b'</span>,<span class="st">'r--'</span>,<span class="st">'r--'</span>]):</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        ax.plot(age_df.values, val, ls, linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    ax.set_title(title, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(<span class="st">'Age'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">'Wage'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ax</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>我们为 <code>ax.scatter()</code> 添加 <code>alpha</code> 参数，使点具有一定透明度，从而直观地显示数据密度。请注意上面 <code>for</code> 循环中 <code>zip()</code> 函数的用法（参见2.3.8节）。我们要画三条线，它们分别使用不同的颜色和线型。这里的 <code>zip()</code> 可以方便地将这些内容组合起来，作为循环中的迭代器（iterator）。<sup id="ch07-fnref7"><a href="#ch07-fn7">7</a></sup></p>
+<aside class="footnote" id="ch07-fn7">
+<p>
+<sup>7</sup> 在 Python 的术语中，“迭代器”是含有有限个值的对象，可以对其进行迭代，例如在循环中逐一访问。 <a href="#ch07-fnref7" class="footnote-back">↩︎</a>
+</p>
+</aside>
+<p>现在用这个函数绘制四次多项式的拟合结果。</p>
+<p>In[7]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>plot_wage_fit(age_df,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>              poly_age,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>              <span class="st">'Degree-4 Polynomial'</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>使用多项式回归时，必须决定多项式的次数。有时我们会凭经验决定采用二次或三次多项式，只是为了得到一个非线性拟合。但也可以用更系统的方法作出选择，其中一种就是这里将演示的假设检验。我们拟合从线性（一次）到五次多项式的一系列模型，希望找出足以解释 <code>wage</code> 与 <code>age</code> 之间关系的最简单模型。我们使用 <code>anova_lm()</code> 函数进行一系列 ANOVA 检验。方差分析（analysis of variance，ANOVA）检验的原假设是模型 <span class="math inline">\(\mathcal{M}_1\)</span> 已足以解释数据，备择假设则是需要更复杂的模型 <span class="math inline">\(\mathcal{M}_2\)</span>。判断基于 F 检验。要进行该检验，模型 <span class="math inline">\(\mathcal{M}_1\)</span> 和 <span class="math inline">\(\mathcal{M}_2\)</span> 必须嵌套：<span class="math inline">\(\mathcal{M}_1\)</span> 中预测变量张成的空间，必须是 <span class="math inline">\(\mathcal{M}_2\)</span> 中预测变量张成空间的子空间。在这个例子中，我们拟合五个不同次数的多项式模型，依次比较较简单模型和较复杂模型。</p>
+<p>In[8]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> [MS([poly(<span class="st">'age'</span>, degree<span class="op">=</span>d)])</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>          <span class="cf">for</span> d <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>)]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>Xs <span class="op">=</span> [model.fit_transform(Wage) <span class="cf">for</span> model <span class="kw">in</span> models]</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>anova_lm(<span class="op">*</span>[sm.OLS(y, X_).fit()</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>           <span class="cf">for</span> X_ <span class="kw">in</span> Xs])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[8]:</p>
+<pre class="text"><code>    df_resid       ssr   df_diff     ss_diff       F     Pr(&gt;F)
+0     2998.0  5.022e+06     0.0         NaN      NaN        NaN
+1     2997.0  4.793e+06     1.0   228786.010  143.593  2.364e-32
+2     2996.0  4.778e+06     1.0    15755.694    9.889  1.679e-03
+3     2995.0  4.772e+06     1.0     6070.152    3.810  5.105e-02
+4     2994.0  4.770e+06     1.0     1282.563    0.805  3.697e-01</code></pre>
+<p>请注意上面 <code>anova_lm()</code> 那一行中的 <code>*</code>。该函数可以接收数量不定的非关键字参数，这里传入的是拟合后的模型。当这些模型以列表形式提供时（这里就是如此），必须在列表前加上 <code>*</code>。</p>
+<p>比较线性模型 <code>models[0]</code> 和二次模型 <code>models[1]</code> 的 p 值基本为零，表明线性拟合并不充分。<sup id="ch07-fnref8"><a href="#ch07-fn8">8</a></sup> 同样，比较二次模型 <code>models[1]</code> 和三次模型 <code>models[2]</code> 的 p 值也很低（0.0017），因此二次拟合仍不充分。比较三次和四次多项式 <code>models[2]</code>、<code>models[3]</code> 的 p 值约为5%；五次多项式 <code>models[4]</code> 的 p 值为0.37，似乎没有必要使用。因此，三次或四次多项式似乎都能合理地拟合数据，而更低次或更高次的模型则缺乏依据。</p>
+<aside class="footnote" id="ch07-fn8">
+<p>
+<sup>8</sup> 在这个多项式次数的例子中，从零开始的索引容易令人混淆，因为 <code>models[1]</code> 是二次模型，而不是线性模型！ <a href="#ch07-fnref8" class="footnote-back">↩︎</a>
+</p>
+</aside>
+<p>在这个例子中，我们也可以利用 <code>poly()</code> 构造正交多项式这一性质，更简洁地得到这些 p 值，而不必使用 <code>anova()</code> 函数。</p>
+<p>In[9]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>summarize(M)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[9]:</p>
+<pre class="text"><code>                            coef std err        t  P&gt;|t|
+ intercept               111.7036    0.729  153.283  0.000
+ poly(age, degree=4)[0]  447.0679   39.915   11.201  0.000
+ poly(age, degree=4)[1] -478.3158   39.915  -11.983  0.000
+ poly(age, degree=4)[2]  125.5217   39.915    3.145  0.002
+ poly(age, degree=4)[3]  -77.9112   39.915   -1.952  0.051</code></pre>
+<p>请注意，这里的 p 值相同；实际上，t 统计量的平方等于 <code>anova_lm()</code> 函数给出的 F 统计量。例如：</p>
+<p>In[10]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>(<span class="op">-</span><span class="fl">11.983</span>)<span class="op">**</span><span class="dv">2</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[10]:</p>
+<pre class="text"><code>143.59228</code></pre>
+<p>不过，只要模型嵌套，无论是否使用正交多项式，ANOVA 方法都适用。例如，可以用 <code>anova_lm()</code> 比较下面三个模型：它们都包含 <code>education</code> 的线性项，以及不同次数的 <code>age</code> 多项式。</p>
+<p>In[11]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>models <span class="op">=</span> [MS([<span class="st">'education'</span>, poly(<span class="st">'age'</span>, degree<span class="op">=</span>d)])</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>          <span class="cf">for</span> d <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">4</span>)]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>XEs <span class="op">=</span> [model.fit_transform(Wage)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>       <span class="cf">for</span> model <span class="kw">in</span> models]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>anova_lm(<span class="op">*</span>[sm.OLS(y, X_).fit() <span class="cf">for</span> X_ <span class="kw">in</span> XEs])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[11]:</p>
+<pre class="text"><code>    df_resid       ssr   df_diff     ss_diff       F      Pr(&gt;F)
+0     2997.0  3.902e+06     0.0         NaN      NaN         NaN
+1     2996.0  3.759e+06     1.0   142862.701  113.992   3.838e-26
+2     2995.0  3.754e+06     1.0     5926.207    4.729   2.974e-02</code></pre>
+<p>除了假设检验和 ANOVA，也可以用第5章讨论的交叉验证来选择多项式次数。</p>
+<p>接下来考虑预测一个人的年收入是否超过250,000美元。做法和前面基本相同，只是先创建适当的响应向量，再使用二项分布族调用 <code>glm()</code> 函数，拟合多项式逻辑回归模型。</p>
+<p>In[12]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> poly_age.transform(Wage)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>high_earn <span class="op">=</span> Wage[<span class="st">'high_earn'</span>] <span class="op">=</span> y <span class="op">&gt;</span> <span class="dv">250</span> <span class="co"># shorthand</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>glm <span class="op">=</span> sm.GLM(y <span class="op">&gt;</span> <span class="dv">250</span>,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>             X,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>             family<span class="op">=</span>sm.families.Binomial())</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> glm.fit()</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>summarize(B)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[12]:</p>
+<pre class="text"><code>                            coef std err       z  P&gt;|z|
+              intercept  -4.3012    0.345 -12.457  0.000
+ poly(age, degree=4)[0]  71.9642   26.133   2.754  0.006
+ poly(age, degree=4)[1] -85.7729   35.929  -2.387  0.017
+ poly(age, degree=4)[2]  34.1626   19.697   1.734  0.083
+ poly(age, degree=4)[3] -47.4008   24.105  -1.966  0.049</code></pre>
+<p>我们仍用 <code>get_prediction()</code> 方法进行预测。</p>
+<p>In[13]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>newX <span class="op">=</span> poly_age.transform(age_df)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> B.get_prediction(newX)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>bands <span class="op">=</span> preds.conf_int(alpha<span class="op">=</span><span class="fl">0.05</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在画出估计的关系。</p>
+<p>In[14]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">0</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>ax.scatter(age <span class="op">+</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>           <span class="fl">0.2</span> <span class="op">*</span> rng.uniform(size<span class="op">=</span>y.shape[<span class="dv">0</span>]),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>           np.where(high_earn, <span class="fl">0.198</span>, <span class="fl">0.002</span>),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>           fc<span class="op">=</span><span class="st">'gray'</span>,</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>           marker<span class="op">=</span><span class="st">'|'</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> val, ls <span class="kw">in</span> <span class="bu">zip</span>([preds.predicted_mean ,</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>                  bands[:,<span class="dv">0</span>],</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>                  bands[:,<span class="dv">1</span>]],</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>                 [<span class="st">'b'</span>,<span class="st">'r--'</span>,<span class="st">'r--'</span>]):</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    ax.plot(age_df.values, val, ls, linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Degree -4Polynomial'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Age'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>ax.set_ylim([<span class="dv">0</span>,<span class="fl">0.2</span>])</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'P(Wage &gt; 250)'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>对于 <code>wage</code> 大于250的观测，我们将对应的 <code>age</code> 值画成图上方的灰色短线；对于 <code>wage</code> 小于250的观测，则将其画在图的下方。我们添加少量噪声，使年龄值略有抖动，避免相同年龄的观测相互遮挡。这种图通常称为地毯图（rug plot）。</p>
+<p>为了拟合7.2节讨论的阶梯函数，我们先用 <code>pd.qcut()</code> 根据分位数将 <code>age</code> 离散化，再用 <code>pd.get_dummies()</code> 为这个类别型变量创建模型矩阵的各列。</p>
+<p>请注意，对于给定的类别型变量，该函数会包含<strong>所有</strong>列，而不是按通常做法删去其中一个水平。</p>
+<p>In[15]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>cut_age <span class="op">=</span> pd.qcut(age, <span class="dv">4</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>summarize(sm.OLS(y, pd.get_dummies(cut_age)).fit())</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[15]:</p>
+<pre class="text"><code>                      coef std err       t  P&gt;|t|
+(17.999, 33.75]    94.1584    1.478  63.692   0.0
+ (33.75,  42.0]   116.6608    1.470  79.385   0.0
+  (42.0,  51.0]   119.1887    1.416  84.147   0.0
+  (51.0,  80.0]   116.5717    1.559  74.751   0.0</code></pre>
+<p>这里的 <code>pd.qcut()</code> 自动根据25%、50%和75%分位数选择切分点，从而形成四个区间。我们也可以直接指定所需的分位数，而不用参数 <code>4</code>。如果切分不以分位数为依据，则应使用 <code>pd.cut()</code> 函数。<code>pd.qcut()</code> 和 <code>pd.cut()</code> 都返回有序类别型变量，回归模型随后创建一组用于回归的虚拟变量。由于模型中只有 <code>age</code> 一个变量，94,158.40美元就是年龄低于33.75岁者的平均工资，其余系数则是其他年龄组的平均工资。我们可以像多项式拟合时一样生成预测并作图。</p>
+</section>
+<section id="样条" class="level3">
+<h3 class="anchored" data-anchor-id="样条">7.8.2 样条</h3>
+<p>拟合回归样条时，我们使用 <code>ISLP</code> 包提供的变换。实际计算样条值的函数来自 <code>scipy.interpolate</code> 包；我们只是将它们封装成类似 <code>Poly()</code> 和 <code>PCA()</code> 的变换。</p>
+<p>7.4节介绍了如何通过构造适当的基函数矩阵来拟合回归样条。<code>BSpline()</code> 函数为给定的一组结点生成完整的样条基函数矩阵。默认生成的是三次 B 样条（B-spline）；若要改变次数，可使用 <code>degree</code> 参数。</p>
+<p>In[16]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>bs_ <span class="op">=</span> BSpline(internal_knots<span class="op">=</span>[<span class="dv">25</span>,<span class="dv">40</span>,<span class="dv">60</span>], intercept<span class="op">=</span><span class="va">True</span>).fit(age)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>bs_age <span class="op">=</span> bs_.transform(age)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>bs_age.shape</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[16]:</p>
+<pre class="text"><code>(3000,7)</code></pre>
+<p>结果是一个七列矩阵，符合有3个内部结点的三次样条基应有的列数。也可以用 <code>bs()</code> 对象生成同样的矩阵，这样便于将其加入7.8.1节介绍的模型矩阵构造器；这类似于 <code>poly()</code> 和实际执行计算的 <code>Poly()</code> 之间的关系。</p>
+<p>现在对 Wage 数据拟合一个三次样条模型。</p>
+<p>In[17]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>bs_age <span class="op">=</span> MS([bs(<span class="st">'age'</span>, internal_knots<span class="op">=</span>[<span class="dv">25</span>,<span class="dv">40</span>,<span class="dv">60</span>])])</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>Xbs <span class="op">=</span> bs_age.fit_transform(Wage)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> sm.OLS(y, Xbs).fit()</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>summarize(M)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[17]:</p>
+<pre class="text"><code>                                           coef std err  ...
+                              intercept  60.494    9.460 ...
+bs(age, internal_knots=[25,40,  60])[0]   3.980   12.538 ...
+bs(age, internal_knots=[25,40,  60])[1]  44.631    9.626 ...
+bs(age, internal_knots=[25,40,  60])[2]  62.839   10.755 ...
+bs(age, internal_knots=[25,40,  60])[3]  55.991   10.706 ...
+bs(age, internal_knots=[25,40,  60])[4]  50.688   14.402 ...
+bs(age, internal_knots=[25,40,  60])[5]  16.606   19.126 ...</code></pre>
+<p>列名有些冗长，因此我们截短了打印的汇总结果。构造时可以像下面这样用 <code>name</code> 参数设定列名。</p>
+<p>In[18]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>bs_age <span class="op">=</span> MS([bs(<span class="st">'age'</span>,</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                internal_knots<span class="op">=</span>[<span class="dv">25</span>,<span class="dv">40</span>,<span class="dv">60</span>],</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                name<span class="op">=</span><span class="st">'bs(age)'</span>)])</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>Xbs <span class="op">=</span> bs_age.fit_transform(Wage)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> sm.OLS(y, Xbs).fit()</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>summarize(M)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[18]:</p>
+<pre class="text"><code>                          coefstd err      t   P&gt;|t|
+        intercept       60.494   9.460  6.394   0.000
+bs(age, knots)[0]        3.981  12.538  0.317   0.751
+bs(age, knots)[1]       44.631   9.626  4.636   0.000
+bs(age, knots)[2]       62.839  10.755  5.843   0.000
+bs(age, knots)[3]       55.991  10.706  5.230   0.000
+bs(age, knots)[4]       50.688  14.402  3.520   0.000
+bs(age, knots)[5]       16.606  19.126  0.868   0.385</code></pre>
+<p>请注意，样条系数有6个，而不是7个。这是因为模型通常已包含一个整体截距，所以 <code>bs()</code> 默认采用 <code>intercept=False</code>。它先按照给定的结点生成样条基，再丢弃一个基函数，以计入截距的影响。</p>
+<p>我们也可以用 <code>df</code>（自由度）选项指定样条的复杂程度。上面的例子有3个结点，样条基有6列，即6个自由度。如果指定 <code>df=6</code> 而不直接指定结点，<code>bs()</code> 会在训练数据的等间隔分位数处选取3个结点，生成相应样条。直接使用 <code>Bspline()</code>，最容易看清所选的结点：</p>
+<p>In[19]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>BSpline(df<span class="op">=</span><span class="dv">6</span>).fit(age).internal_knots_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[19]:</p>
+<pre class="text"><code>array([33.75,42.0,  51.0])</code></pre>
+<p>当要求六个自由度时，该变换选取的结点是年龄33.75、42.0和51.0，分别对应 <code>age</code> 的第25、第50和第75百分位数。</p>
+<p>使用 B 样条时，不必局限于三次多项式（即 <code>degree=3</code>）。例如，<code>degree=0</code> 会产生分段常数函数，就像上面使用 <code>pd.qcut()</code> 的例子一样。</p>
+<p>In[20]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>bs_age0 <span class="op">=</span> MS([bs(<span class="st">'age'</span>,</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>                 df<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>                 degree<span class="op">=</span><span class="dv">0</span>)]).fit(Wage)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>Xbs0 <span class="op">=</span> bs_age0.transform(Wage)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>summarize(sm.OLS(y, Xbs0).fit())</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[20]:</p>
+<pre class="text"><code>                                  coef std err        t   P&gt;|t|
+                 intercept      94.158    1.478   63.687    0.0
+bs(age,df=3,  degree=0)[0]      22.349    2.152   10.388    0.0
+bs(age,df=3,  degree=0)[1]      24.808    2.044   12.137    0.0
+bs(age,df=3,  degree=0)[2]      22.781    2.087   10.917    0.0</code></pre>
+<p>应将这个拟合结果与单元格[15]作比较：那里用 <code>qcut()</code> 在 <code>age</code> 的25%、50%和75%分位数处切分，得到四个分箱区间。这里为零次样条指定 <code>df=3</code>，因此结点也位于相同的三个分位数处。虽然系数看起来不同，但这是编码方式不同造成的。例如，两种情形下的第一个系数相同，都是第一个区间中的响应均值。对于第二个系数，有 <span class="math inline">\(94.158+22.349=116.507\approx116.611\)</span>，后者是单元格[15]中第二个区间的均值。这里截距由一列全为1的数编码，因此第二、第三和第四个系数是相应区间的增量。为什么加起来并不完全相同？原因是确定观测属于哪个区间时，<code>qcut()</code> 使用 <span class="math inline">\(\leq\)</span>，而 <code>bs()</code> 使用 <span class="math inline">\(&lt;\)</span>。</p>
+<p>要拟合自然样条，我们使用 <code>NaturalSpline()</code> 变换及相应的辅助函数 <code>ns()</code>。下面拟合一个具有五个自由度（不含截距）的自然样条，并画出结果。</p>
+<p>In[21]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>ns_age <span class="op">=</span> MS([ns(<span class="st">'age'</span>, df<span class="op">=</span><span class="dv">5</span>)]).fit(Wage)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>M_ns <span class="op">=</span> sm.OLS(y, ns_age.transform(Wage)).fit()</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>summarize(M_ns)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[21]:</p>
+<pre class="text"><code>                      coef std err         t   P&gt;|t|
+       intercept    60.475    4.708    12.844   0.000
+ns(age,df=5)[0]     61.527    4.709    13.065   0.000
+ns(age,df=5)[1]     55.691    5.717     9.741   0.000
+ns(age,df=5)[2]     46.818    4.948     9.463   0.000
+ns(age,df=5)[3]     83.204   11.918     6.982   0.000
+ns(age,df=5)[4]      6.877    9.484     0.725   0.468</code></pre>
+<p>现在用我们的绘图函数画出自然样条。</p>
+<p>In[22]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>plot_wage_fit(age_df,</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>              ns_age,</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>              <span class="st">'Natural spline, df=5'</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="平滑样条与gam" class="level3">
+<h3 class="anchored" data-anchor-id="平滑样条与gam">7.8.3 平滑样条与GAM</h3>
+<p>平滑样条是只有一个特征、采用平方误差损失的 GAM 特例。我们用 <code>pygam</code> 包在 Python 中拟合 GAM；可通过 <code>pip install pygam</code> 安装该包。估计器 <code>LinearGAM()</code> 使用平方误差损失。指定 GAM 时，需要将模型矩阵的每一列与一种特定的平滑操作关联起来：<code>s</code> 表示平滑样条，<code>l</code> 表示线性项，<code>f</code> 表示因子或类别型变量。下面传给 <code>s</code> 的参数 <code>0</code> 表示，该平滑器作用于特征矩阵的第一列。这里传入只有一列的矩阵 <code>X_age</code>。参数 <code>lam</code> 就是7.5.2节讨论的惩罚参数 <span class="math inline">\(\lambda\)</span>。</p>
+<p>In[23]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>X_age <span class="op">=</span> np.asarray(age).reshape((<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>gam <span class="op">=</span> LinearGAM(s_gam(<span class="dv">0</span>, lam<span class="op">=</span><span class="fl">0.6</span>))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>gam.fit(X_age, y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[23]:</p>
+<pre class="text"><code>LinearGAM(callbacks=[Deviance(), Diffs()], fit_intercept=True,
+    max_iter=100, scale=None, terms=s(0)+  intercept,tol=0.0001,
+    verbose=False)</code></pre>
+<p><code>pygam</code> 库通常要求输入特征矩阵，因此我们将 <code>age</code> 从向量（一维数组）重塑为矩阵（二维数组）。调用 <code>reshape()</code> 方法时使用 <code>-1</code>，是告诉 <code>numpy</code> 根据形状元组中的其余值推算这一维的大小。</p>
+<p>下面考察拟合结果如何随平滑参数 <code>lam</code> 改变。函数 <code>np.logspace()</code> 类似于 <code>np.linspace()</code>，但生成的点在对数刻度上等间隔。下面让 <code>lam</code> 从 <span class="math inline">\(10^{-2}\)</span> 变化到 <span class="math inline">\(10^6\)</span>。</p>
+<p>In[24]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>ax.scatter(age, y, facecolor<span class="op">=</span><span class="st">'gray'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lam <span class="kw">in</span> np.logspace(<span class="op">-</span><span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">5</span>):</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    gam <span class="op">=</span> LinearGAM(s_gam(<span class="dv">0</span>, lam<span class="op">=</span>lam)).fit(X_age, y)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    ax.plot(age_grid,</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>            gam.predict(age_grid),</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>            label<span class="op">=</span><span class="st">'</span><span class="sc">{:.1e}</span><span class="st">'</span>.<span class="bu">format</span>(lam),</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>            linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Age'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Wage'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">'$</span><span class="er">\</span><span class="st">lambda$'</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>pygam</code> 包可以搜索最优平滑参数。</p>
+<p>In[25]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>gam_opt <span class="op">=</span> gam.gridsearch(X_age, y)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>ax.plot(age_grid,</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>        gam_opt.predict(age_grid),</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">'Grid search'</span>,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>        linewidth<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>fig</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>另一种做法是使用 <code>ISLP.pygam</code> 包中的函数，固定平滑样条的自由度。下面寻找一个 <span class="math inline">\(\lambda\)</span> 值，使自由度大约为4。需要注意，这里的自由度包含平滑样条中未受惩罚的截距和线性项，因此至少有两个自由度。</p>
+<p>In[26]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>age_term <span class="op">=</span> gam.terms[<span class="dv">0</span>]</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>lam_4 <span class="op">=</span> approx_lam(X_age, age_term, <span class="dv">4</span>)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>age_term.lam <span class="op">=</span> lam_4</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>degrees_of_freedom(X_age, age_term)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[26]:</p>
+<pre class="text"><code>4.000000100004728</code></pre>
+<p>下面画一幅与前面类似的图，改变其中的自由度。由于这些平滑样条始终包含截距项，我们将实际使用的自由度设为所需自由度加1。因此，<code>df</code> 为1时就是线性拟合。</p>
+<p>In[27]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>ax.scatter(X_age,</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>           y,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>           facecolor<span class="op">=</span><span class="st">'gray'</span>,</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>           alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> df <span class="kw">in</span> [<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">8</span>,<span class="dv">15</span>]:</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    lam <span class="op">=</span> approx_lam(X_age, age_term, df<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>    age_term.lam <span class="op">=</span> lam</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>    gam.fit(X_age, y)</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>    ax.plot(age_grid,</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>            gam.predict(age_grid),</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>            label<span class="op">=</span><span class="st">'</span><span class="sc">{:d}</span><span class="st">'</span>.<span class="bu">format</span>(df),</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>            linewidth<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Age'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Wage'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">'Degrees of freedom'</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="包含多个项的加性模型" class="level4">
+<h4 class="anchored" data-anchor-id="包含多个项的加性模型">包含多个项的加性模型</h4>
+<p>广义加性模型的优势在于：它可以拟合比线性模型更灵活的多元回归模型。下面演示两种方法：第一种采用较为手动的方式，使用自然样条和分段常数函数；第二种使用 <code>pygam</code> 包和平滑样条。</p>
+<p>我们先手动拟合一个 GAM，用 <code>year</code> 和 <code>age</code> 的自然样条函数预测 <code>wage</code>，并像式(7.16)一样将 <code>education</code> 视为定性预测变量。由于这只是选用适当基函数的大型线性回归模型，因此可以直接使用 <code>sm.OLS()</code> 函数。</p>
+<p>这里将以较为手动的方式构造模型矩阵，因为在构建部分依赖图（partial dependence plot）时，我们希望分别访问矩阵的各个组成部分。</p>
+<p>In[28]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>ns_age <span class="op">=</span> NaturalSpline(df<span class="op">=</span><span class="dv">4</span>).fit(age)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>ns_year <span class="op">=</span> NaturalSpline(df<span class="op">=</span><span class="dv">5</span>).fit(Wage[<span class="st">'year'</span>])</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>Xs <span class="op">=</span> [ns_age.transform(age),</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>      ns_year.transform(Wage[<span class="st">'year'</span>]),</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>      pd.get_dummies(Wage[<span class="st">'education'</span>]).values]</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>X_bh <span class="op">=</span> np.hstack(Xs)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>gam_bh <span class="op">=</span> sm.OLS(y, X_bh).fit()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>这里的 <code>NaturalSpline()</code> 函数是辅助函数 <code>ns()</code> 背后实际执行计算的工具。对于类别型变量 <code>education</code>，我们选用了指示变量矩阵的所有列，因此不再需要截距。最后，将三个组成矩阵横向拼接，构成模型矩阵 <code>X_bh</code>。</p>
+<p>下面演示如何为这个简单 GAM 的各项构造部分依赖图。给定 <code>age</code> 和 <code>year</code> 的网格后，可以手动完成这项工作：每次只让一个特征变化，将其余特征固定，然后用新的 <span class="math inline">\(X\)</span> 矩阵进行预测。</p>
+<p>In[29]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>age_grid <span class="op">=</span> np.linspace(age.<span class="bu">min</span>(),</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>                       age.<span class="bu">max</span>(),</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>                       <span class="dv">100</span>)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>X_age_bh <span class="op">=</span> X_bh.copy()[:<span class="dv">100</span>]</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>X_age_bh[:] <span class="op">=</span> X_bh[:].mean(<span class="dv">0</span>)[<span class="va">None</span>,:]</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>X_age_bh[:,:<span class="dv">4</span>] <span class="op">=</span> ns_age.transform(age_grid)</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> gam_bh.get_prediction(X_age_bh)</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>bounds_age <span class="op">=</span> preds.conf_int(alpha<span class="op">=</span><span class="fl">0.05</span>)</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>partial_age <span class="op">=</span> preds.predicted_mean</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>center <span class="op">=</span> partial_age.mean()</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>partial_age <span class="op">-=</span> center</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>bounds_age <span class="op">-=</span> center</span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>ax.plot(age_grid, partial_age ,<span class="st">'b'</span>, linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>ax.plot(age_grid, bounds_age[:,<span class="dv">0</span>], <span class="st">'r--'</span>, linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>ax.plot(age_grid, bounds_age[:,<span class="dv">1</span>], <span class="st">'r--'</span>, linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Age'</span>)</span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of age on wage'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>下面更详细地解释刚才的操作。思路是创建一个新的预测矩阵：除属于 <code>age</code> 的列以外，其他列都保持常数（设为其训练数据均值）；属于 <code>age</code> 的四列，则填入自然样条基在 <code>age_grid</code> 的100个值处的取值。</p>
+<ol type="1">
+<li>创建长度为100的 <code>age</code> 网格，并创建矩阵 <code>X_age_bh</code>；该矩阵有100行，列数与 <code>X_bh</code> 相同。</li>
+<li>将这个矩阵的每一行替换为原矩阵的各列均值。</li>
+<li>只将代表 <code>age</code> 的前四列替换为在 <code>age_grid</code> 各值处计算得到的自然样条基。</li>
+</ol>
+<p>其余步骤到这里应该已经很熟悉了。</p>
+<p>我们也考察 <code>year</code> 对 <code>wage</code> 的影响；过程相同。</p>
+<p>In[30]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>year_grid <span class="op">=</span> np.linspace(<span class="dv">2003</span>, <span class="dv">2009</span>, <span class="dv">100</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>year_grid <span class="op">=</span> np.linspace(Wage[<span class="st">'year'</span>].<span class="bu">min</span>(),</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>                        Wage[<span class="st">'year'</span>].<span class="bu">max</span>(),</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>                        <span class="dv">100</span>)</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>X_year_bh <span class="op">=</span> X_bh.copy()[:<span class="dv">100</span>]</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>X_year_bh[:] <span class="op">=</span> X_bh[:].mean(<span class="dv">0</span>)[<span class="va">None</span>,:]</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>X_year_bh[:,<span class="dv">4</span>:<span class="dv">9</span>] <span class="op">=</span> ns_year.transform(year_grid)</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>preds <span class="op">=</span> gam_bh.get_prediction(X_year_bh)</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>bounds_year <span class="op">=</span> preds.conf_int(alpha<span class="op">=</span><span class="fl">0.05</span>)</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>partial_year <span class="op">=</span> preds.predicted_mean</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>center <span class="op">=</span> partial_year.mean()</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>partial_year <span class="op">-=</span> center</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>bounds_year <span class="op">-=</span> center</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>ax.plot(year_grid, partial_year ,<span class="st">'b'</span>, linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>ax.plot(year_grid, bounds_year[:,<span class="dv">0</span>], <span class="st">'r--'</span>, linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a>ax.plot(year_grid, bounds_year[:,<span class="dv">1</span>], <span class="st">'r--'</span>, linewidth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Year'</span>)</span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of year on wage'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在使用平滑样条来拟合模型(7.16)，替代自然样条。式(7.16)中的所有项同时拟合，在解释响应时相互考虑彼此的作用。<code>pygam</code> 包只接受矩阵，因此必须将类别型序列 <code>education</code> 转换为数组表示；可以通过 <code>education</code> 的 <code>cat.codes</code> 属性取得该表示。由于 <code>year</code> 只有7个不同取值，因此只为它使用七个基函数。</p>
+<p>In[31]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>gam_full <span class="op">=</span> LinearGAM(s_gam(<span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>                     s_gam(<span class="dv">1</span>, n_splines<span class="op">=</span><span class="dv">7</span>) <span class="op">+</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>                     f_gam(<span class="dv">2</span>, lam<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>Xgam <span class="op">=</span> np.column_stack([age,</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>                        Wage[<span class="st">'year'</span>],</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>                        Wage[<span class="st">'education'</span>].cat.codes])</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>gam_full <span class="op">=</span> gam_full.fit(Xgam, y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>两个 <code>s_gam()</code> 项产生平滑样条拟合，并采用默认的 <span class="math inline">\(\lambda\)</span> 值（<code>lam=0.6</code>），这个取值有一定任意性。对于用 <code>f_gam()</code> 指定的类别型项 <code>education</code>，我们设定 <code>lam=0</code>，以避免任何收缩。下面绘制 <code>age</code> 的部分依赖图，观察这些选择的影响。</p>
+<p>图中所需的值由 <code>pygam</code> 包生成。我们在 <code>ISLP.pygam</code> 中提供了绘制部分依赖图的 <code>plot_gam()</code> 函数；与刚才使用自然样条的例子相比，它使这项工作更方便。</p>
+<p>In[32]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>plot_gam(gam_full, <span class="dv">0</span>, ax<span class="op">=</span>ax)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Age'</span>)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of age on wage - default lam=0.6'</span>,</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>     fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以看到，函数有些曲折起伏。与指定 <code>lam</code> 值相比，指定 <code>df</code> 更自然。我们重新拟合 GAM，分别为 <code>age</code> 和 <code>year</code> 使用四个自由度。回顾一下，下面加1是为了计入平滑样条的截距。</p>
+<p>In[33]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>age_term <span class="op">=</span> gam_full.terms[<span class="dv">0</span>]</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>age_term.lam <span class="op">=</span> approx_lam(Xgam, age_term, df<span class="op">=</span><span class="dv">4</span><span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>year_term <span class="op">=</span> gam_full.terms[<span class="dv">1</span>]</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>year_term.lam <span class="op">=</span> approx_lam(Xgam, year_term, df<span class="op">=</span><span class="dv">4</span><span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>gam_full <span class="op">=</span> gam_full.fit(Xgam, y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>请注意，上面更新 <code>age_term.lam</code> 时，<code>gam_full.terms[0]</code> 中的对应值也会更新！<code>year_term.lam</code> 也是如此。</p>
+<p>再次绘制 <code>age</code> 的图，可以看到它平滑了许多。我们也为 <code>year</code> 作图。</p>
+<p>In[34]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>plot_gam(gam_full,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>         <span class="dv">1</span>,</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Year'</span>)</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of year on wage'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>最后，为类别型变量 <code>education</code> 作图。这里的部分依赖图有所不同，更适于展示该变量各个水平所拟合的常数。</p>
+<p>In[35]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plot_gam(gam_full, <span class="dv">2</span>)</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Education'</span>)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of wage on education'</span>,</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>             fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels(Wage[<span class="st">'education'</span>].cat.categories, fontsize<span class="op">=</span><span class="dv">8</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="加性模型的anova检验" class="level4">
+<h4 class="anchored" data-anchor-id="加性模型的anova检验">加性模型的ANOVA检验</h4>
+<p>在所有模型中，<code>year</code> 的函数看起来都相当接近线性。我们可以进行一系列 ANOVA 检验，判断以下三个模型中哪个最好：不包含 <code>year</code> 的 GAM（<span class="math inline">\(\mathcal{M}_1\)</span>）、使用 <code>year</code> 线性函数的 GAM（<span class="math inline">\(\mathcal{M}_2\)</span>），以及使用 <code>year</code> 样条函数的 GAM（<span class="math inline">\(\mathcal{M}_3\)</span>）。</p>
+<p>In[36]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>gam_0 <span class="op">=</span> LinearGAM(age_term <span class="op">+</span> f_gam(<span class="dv">2</span>, lam<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>gam_0.fit(Xgam, y)</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>gam_linear <span class="op">=</span> LinearGAM(age_term <span class="op">+</span></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>                       l_gam(<span class="dv">1</span>, lam<span class="op">=</span><span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>                       f_gam(<span class="dv">2</span>, lam<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>gam_linear.fit(Xgam, y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[36]:</p>
+<pre class="text"><code>LinearGAM(callbacks=[Deviance(), Diffs()], fit_intercept=True,
+   max_iter=100, scale=None, terms=s(0)+ l(1) + f(2) +  intercept,
+  tol=0.0001,  verbose=False)</code></pre>
+<p>请注意，上面的表达式使用了 <code>age_term</code>。这是因为前面已经为这一项设定了 <code>lam</code> 的值，使它具有四个自由度。</p>
+<p>为了直接评估 <code>year</code> 的作用，我们对上面拟合的三个模型进行 ANOVA。</p>
+<p>In[37]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>anova_gam(gam_0, gam_linear, gam_full)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[37]:</p>
+<pre class="text"><code>       deviance       df  deviance_diff  df_diff      F   pvalue
+0   3714362.366  2991.004          NaN      NaN     NaN     NaN
+1   3696745.823  2990.005     17616.543    0.999  14.265   0.002
+2   3693142.930  2987.007      3602.894    2.998   0.972   0.436</code></pre>
+<p>结果提供了有力证据，表明包含 <code>year</code> 线性函数的 GAM 优于完全不含 <code>year</code> 的 GAM（p 值=0.002）。不过，没有证据表明需要使用 <code>year</code> 的非线性函数（p 值=0.435）。换言之，根据这次 ANOVA 的结果，应优先选择 <span class="math inline">\(\mathcal{M}_2\)</span>。</p>
+<p>也可以对 <code>age</code> 重复相同的过程。可以看到，有非常明确的证据表明 <code>age</code> 需要非线性项。</p>
+<p>In[38]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>gam_0 <span class="op">=</span> LinearGAM(year_term <span class="op">+</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>                  f_gam(<span class="dv">2</span>, lam<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>gam_linear <span class="op">=</span> LinearGAM(l_gam(<span class="dv">0</span>, lam<span class="op">=</span><span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>                       year_term <span class="op">+</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>                       f_gam(<span class="dv">2</span>, lam<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>gam_0.fit(Xgam, y)</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>gam_linear.fit(Xgam, y)</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>anova_gam(gam_0, gam_linear, gam_full)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[38]:</p>
+<pre class="text"><code>        deviance       df  deviance_diff  df_diff       F   pvalue
+0   3975443.045  2991.001           NaN      NaN      NaN     NaN
+1   3850246.908  2990.001     125196.137    1.000  101.270   0.000
+2   3693142.930  2987.007     157103.978    2.993   42.448   0.000</code></pre>
+<p>GAM 拟合结果提供了一个输出详细的 <code>summary()</code> 方法。（这里不展示其输出。）</p>
+<p>In[39]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>gam_full.summary()</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以像对 <code>lm</code> 对象一样，通过 <code>gam</code> 类的 <code>predict()</code> 方法，使用 <code>gam</code> 对象进行预测。这里对训练集作预测。</p>
+<p>In[40]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>Yhat <span class="op">=</span> gam_full.predict(Xgam)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>要拟合逻辑回归 GAM，使用 <code>pygam</code> 中的 <code>LogisticGAM()</code>。</p>
+<p>In[41]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>gam_logit <span class="op">=</span> LogisticGAM(age_term <span class="op">+</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>                        l_gam(<span class="dv">1</span>, lam<span class="op">=</span><span class="dv">0</span>) <span class="op">+</span></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>                        f_gam(<span class="dv">2</span>, lam<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>gam_logit.fit(Xgam, high_earn)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[41]:</p>
+<pre class="text"><code>LogisticGAM(callbacks=[Deviance(), Diffs(), Accuracy()],
+    fit_intercept=True, max_iter=100,
+    terms=s(0)+ l(1) + f(2) +  intercept,tol=0.0001,  verbose=False)</code></pre>
+<p>In[42]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plot_gam(gam_logit, <span class="dv">2</span>)</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Education'</span>)</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of wage on education'</span>,</span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>             fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels(Wage[<span class="st">'education'</span>].cat.categories, fontsize<span class="op">=</span><span class="dv">8</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>模型看起来很平坦，尤其是第一个类别的误差条非常大。我们再仔细看看数据。</p>
+<p>In[43]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>pd.crosstab(Wage[<span class="st">'high_earn'</span>], Wage[<span class="st">'education'</span>])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以看到，<code>education</code> 的第一个类别中没有高收入者，这意味着模型很难拟合。我们将排除属于这一类别的所有观测，再拟合逻辑回归 GAM。这样可以得到更合理的结果。</p>
+<p>为此，可以选取模型矩阵的一个子集，不过这并不会从 <code>Xgam</code> 中删除相应的列。虽然可以推断哪一列对应这个特征，但为了保证可复现性，我们还是用这个较小的数据子集重新构造模型矩阵。</p>
+<p>In[44]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>only_hs <span class="op">=</span> Wage[<span class="st">'education'</span>] <span class="op">==</span> <span class="st">'1. &lt; HS Grad'</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>Wage_ <span class="op">=</span> Wage.loc[<span class="op">~</span>only_hs]</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>Xgam_ <span class="op">=</span> np.column_stack([Wage_[<span class="st">'age'</span>],</span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>                         Wage_[<span class="st">'year'</span>],</span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>                         Wage_[<span class="st">'education'</span>].cat.codes <span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>high_earn_ <span class="op">=</span> Wage_[<span class="st">'high_earn'</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>上面倒数第二行将类别编码减1，是为了处理 <code>pygam</code> 中的一个程序缺陷。这只是重新标记 <code>education</code> 的取值，因此不会影响拟合结果。</p>
+<p>现在拟合模型。</p>
+<p>In[45]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>gam_logit_ <span class="op">=</span> LogisticGAM(age_term <span class="op">+</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>                         year_term <span class="op">+</span></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>                         f_gam(<span class="dv">2</span>, lam<span class="op">=</span><span class="dv">0</span>))</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>gam_logit_.fit(Xgam_, high_earn_)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[45]:</p>
+<pre class="text"><code>LogisticGAM(callbacks=[Deviance(), Diffs(), Accuracy()],
+  fit_intercept=True, max_iter=100,
+  terms=s(0)+ s(1) + f(2) +  intercept,tol=0.0001,  verbose=False)</code></pre>
+<p>排除这些观测后，我们再考察 <code>education</code>、<code>year</code> 和 <code>age</code> 对是否属于高收入者的影响。</p>
+<p>In[46]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plot_gam(gam_logit_, <span class="dv">2</span>)</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Education'</span>)</span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of high earner status on education</span></span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a><span class="er">    ', fontsize=20);</span></span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels(Wage[<span class="st">'education'</span>].cat.categories[<span class="dv">1</span>:],</span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>                   fontsize<span class="op">=</span><span class="dv">8</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>In[47]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plot_gam(gam_logit_, <span class="dv">1</span>)</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Year'</span>)</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of high earner status on year'</span>,</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>             fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>In[48]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">8</span>))</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> plot_gam(gam_logit_, <span class="dv">0</span>)</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Age'</span>)</span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Effect on wage'</span>)</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Partial dependence of high earner status on age'</span>,</span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>    fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="局部回归-1" class="level3">
+<h3 class="anchored" data-anchor-id="局部回归-1">7.8.4 局部回归</h3>
+<p>我们用 <code>sm.nonparametric</code> 中的 <code>lowess()</code> 函数演示局部回归。一些 GAM 实现允许模型项采用局部回归算子，但 <code>pygam</code> 不支持这种做法。</p>
+<p>这里使用0.2和0.5的跨度拟合局部线性回归模型，也就是说，每个邻域分别包含20%或50%的观测。正如预期，跨度为0.5时的拟合比0.2时更平滑。</p>
+<p>In[49]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>lowess <span class="op">=</span> sm.nonparametric.lowess</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>ax.scatter(age, y, facecolor<span class="op">=</span><span class="st">'gray'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> span <span class="kw">in</span> [<span class="fl">0.2</span>, <span class="fl">0.5</span>]:</span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>    fitted <span class="op">=</span> lowess(y,</span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>                    age,</span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>                    frac<span class="op">=</span>span,</span>
+<span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a>                    xvals<span class="op">=</span>age_grid)</span>
+<span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a>    ax.plot(age_grid,</span>
+<span id="cb69-10"><a href="#cb69-10" aria-hidden="true" tabindex="-1"></a>            fitted,</span>
+<span id="cb69-11"><a href="#cb69-11" aria-hidden="true" tabindex="-1"></a>            label<span class="op">=</span><span class="st">'</span><span class="sc">{:.1f}</span><span class="st">'</span>.<span class="bu">format</span>(span),</span>
+<span id="cb69-12"><a href="#cb69-12" aria-hidden="true" tabindex="-1"></a>            linewidth<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb69-13"><a href="#cb69-13" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Age'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)</span>
+<span id="cb69-14"><a href="#cb69-14" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Wage'</span>, fontsize<span class="op">=</span><span class="dv">20</span>)<span class="op">;</span></span>
+<span id="cb69-15"><a href="#cb69-15" aria-hidden="true" tabindex="-1"></a>ax.legend(title<span class="op">=</span><span class="st">'span'</span>, fontsize<span class="op">=</span><span class="dv">15</span>)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="习题" class="level2">
+<h2 class="anchored" data-anchor-id="习题">7.9 习题</h2>
+<section id="概念题" class="level3">
+<h3 class="anchored" data-anchor-id="概念题">概念题</h3>
+<p><strong>1.</strong> <img src="../assets/display-crops/exercise-marker.png" alt="原书习题标记" style="width:36px;display:inline-block;vertical-align:middle"> 本章曾提到，在 <span class="math inline">\(\xi\)</span> 处有一个结点的三次回归样条，可以用形如 <span class="math inline">\(x\)</span>、<span class="math inline">\(x^2\)</span>、<span class="math inline">\(x^3\)</span>、<span class="math inline">\((x-\xi)^3_+\)</span> 的基来构造，其中，当 <span class="math inline">\(x&gt;\xi\)</span> 时，<span class="math inline">\((x-\xi)^3_+=(x-\xi)^3\)</span>，否则等于0。下面证明，无论 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span>、<span class="math inline">\(\beta_2\)</span>、<span class="math inline">\(\beta_3\)</span>、<span class="math inline">\(\beta_4\)</span> 取何值，形如</p>
+<p><span class="math display">\[
+f(x)=\beta_0+\beta_1x+\beta_2x^2+\beta_3x^3+\beta_4(x-\xi)^3_+
+\]</span></p>
+<p>的函数确实是三次回归样条。</p>
+<p><strong>(a)</strong> 求一个三次多项式</p>
+<p><span class="math display">\[
+f_1(x)=a_1+b_1x+c_1x^2+d_1x^3,
+\]</span></p>
+<p>使得对所有 <span class="math inline">\(x\leq\xi\)</span>，都有 <span class="math inline">\(f(x)=f_1(x)\)</span>。用 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span>、<span class="math inline">\(\beta_2\)</span>、<span class="math inline">\(\beta_3\)</span>、<span class="math inline">\(\beta_4\)</span> 表示 <span class="math inline">\(a_1\)</span>、<span class="math inline">\(b_1\)</span>、<span class="math inline">\(c_1\)</span>、<span class="math inline">\(d_1\)</span>。</p>
+<p><strong>(b)</strong> 求一个三次多项式</p>
+<p><span class="math display">\[
+f_2(x)=a_2+b_2x+c_2x^2+d_2x^3,
+\]</span></p>
+<p>使得对所有 <span class="math inline">\(x&gt;\xi\)</span>，都有 <span class="math inline">\(f(x)=f_2(x)\)</span>。用 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span>、<span class="math inline">\(\beta_2\)</span>、<span class="math inline">\(\beta_3\)</span>、<span class="math inline">\(\beta_4\)</span> 表示 <span class="math inline">\(a_2\)</span>、<span class="math inline">\(b_2\)</span>、<span class="math inline">\(c_2\)</span>、<span class="math inline">\(d_2\)</span>。这样，我们便证明了 <span class="math inline">\(f(x)\)</span> 是分段多项式。</p>
+<p><strong>(c)</strong> 证明 <span class="math inline">\(f_1(\xi)=f_2(\xi)\)</span>。也就是说，<span class="math inline">\(f(x)\)</span> 在 <span class="math inline">\(\xi\)</span> 处连续。</p>
+<p><strong>(d)</strong> 证明 <span class="math inline">\(f'_1(\xi)=f'_2(\xi)\)</span>。也就是说，<span class="math inline">\(f'(x)\)</span> 在 <span class="math inline">\(\xi\)</span> 处连续。</p>
+<p><strong>(e)</strong> 证明 <span class="math inline">\(f''_1(\xi)=f''_2(\xi)\)</span>。也就是说，<span class="math inline">\(f''(x)\)</span> 在 <span class="math inline">\(\xi\)</span> 处连续。</p>
+<p>因此，<span class="math inline">\(f(x)\)</span> 确实是三次样条。</p>
+<p><em>提示：本题的(d)和(e)需要一元微积分知识。回顾一下，给定三次多项式</em></p>
+<p><span class="math display">\[
+f_1(x)=a_1+b_1x+c_1x^2+d_1x^3,
+\]</span></p>
+<p><em>其一阶导数为</em></p>
+<p><span class="math display">\[
+f'_1(x)=b_1+2c_1x+3d_1x^2,
+\]</span></p>
+<p><em>二阶导数为</em></p>
+<p><span class="math display">\[
+f''_1(x)=2c_1+6d_1x.
+\]</span></p>
+<p><strong>2.</strong> 假设用下式计算曲线 <span class="math inline">\(\hat g\)</span>，以平滑地拟合一组 <span class="math inline">\(n\)</span> 个点：</p>
+<p><span class="math display">\[
+\hat g=\arg\min_g\left(\sum_{i=1}^{n}(y_i-g(x_i))^2+\lambda\int\left[g^{(m)}(x)\right]^2\,dx\right),
+\]</span></p>
+<p>其中 <span class="math inline">\(g^{(m)}\)</span> 表示 <span class="math inline">\(g\)</span> 的 <span class="math inline">\(m\)</span> 阶导数（且 <span class="math inline">\(g^{(0)}=g\)</span>）。针对下列各情形，画出 <span class="math inline">\(\hat g\)</span> 的示例草图。</p>
+<p><strong>(a)</strong> <span class="math inline">\(\lambda=\infty\)</span>，<span class="math inline">\(m=0\)</span>。</p>
+<p><strong>(b)</strong> <span class="math inline">\(\lambda=\infty\)</span>，<span class="math inline">\(m=1\)</span>。</p>
+<p><strong>(c)</strong> <span class="math inline">\(\lambda=\infty\)</span>，<span class="math inline">\(m=2\)</span>。</p>
+<p><strong>(d)</strong> <span class="math inline">\(\lambda=\infty\)</span>，<span class="math inline">\(m=3\)</span>。</p>
+<p><strong>(e)</strong> <span class="math inline">\(\lambda=0\)</span>，<span class="math inline">\(m=3\)</span>。</p>
+<p><strong>3.</strong> 假设用基函数 <span class="math inline">\(b_1(X)=X\)</span>、<span class="math inline">\(b_2(X)=(X-1)^2I(X\geq1)\)</span> 拟合一条曲线。（注意，当 <span class="math inline">\(X\geq1\)</span> 时，<span class="math inline">\(I(X\geq1)\)</span> 等于1，否则等于0。）拟合线性回归模型</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1b_1(X)+\beta_2b_2(X)+\epsilon,
+\]</span></p>
+<p>得到系数估计值 <span class="math inline">\(\hat\beta_0=1\)</span>、<span class="math inline">\(\hat\beta_1=1\)</span>、<span class="math inline">\(\hat\beta_2=-2\)</span>。画出 <span class="math inline">\(X=-2\)</span> 到 <span class="math inline">\(X=2\)</span> 之间的估计曲线草图。标出截距、斜率及其他相关信息。</p>
+<p><strong>4.</strong> 假设用基函数 <span class="math inline">\(b_1(X)=I(0\leq X\leq2)-(X-1)I(1\leq X\leq2)\)</span>、<span class="math inline">\(b_2(X)=(X-3)I(3\leq X\leq4)+I(4&lt;X\leq5)\)</span> 拟合一条曲线。拟合线性回归模型</p>
+<p><span class="math display">\[
+Y=\beta_0+\beta_1b_1(X)+\beta_2b_2(X)+\epsilon,
+\]</span></p>
+<p>得到系数估计值 <span class="math inline">\(\hat\beta_0=1\)</span>、<span class="math inline">\(\hat\beta_1=1\)</span>、<span class="math inline">\(\hat\beta_2=3\)</span>。画出 <span class="math inline">\(X=-2\)</span> 到 <span class="math inline">\(X=6\)</span> 之间的估计曲线草图。标出截距、斜率及其他相关信息。</p>
+<p><strong>5.</strong> 考虑由下式定义的两条曲线 <span class="math inline">\(\hat g_1\)</span> 和 <span class="math inline">\(\hat g_2\)</span>：</p>
+<p><span class="math display">\[
+\hat g_1=\arg\min_g\left(\sum_{i=1}^{n}(y_i-g(x_i))^2+\lambda\int\left[g^{(3)}(x)\right]^2\,dx\right),
+\]</span></p>
+<p><span class="math display">\[
+\hat g_2=\arg\min_g\left(\sum_{i=1}^{n}(y_i-g(x_i))^2+\lambda\int\left[g^{(4)}(x)\right]^2\,dx\right),
+\]</span></p>
+<p>其中 <span class="math inline">\(g^{(m)}\)</span> 表示 <span class="math inline">\(g\)</span> 的 <span class="math inline">\(m\)</span> 阶导数。</p>
+<p><strong>(a)</strong> 当 <span class="math inline">\(\lambda\to\infty\)</span> 时，<span class="math inline">\(\hat g_1\)</span> 和 <span class="math inline">\(\hat g_2\)</span> 哪一个的训练RSS更小？</p>
+<p><strong>(b)</strong> 当 <span class="math inline">\(\lambda\to\infty\)</span> 时，<span class="math inline">\(\hat g_1\)</span> 和 <span class="math inline">\(\hat g_2\)</span> 哪一个的测试RSS更小？</p>
+<p><strong>(c)</strong> 当 <span class="math inline">\(\lambda=0\)</span> 时，<span class="math inline">\(\hat g_1\)</span> 和 <span class="math inline">\(\hat g_2\)</span> 哪一个的训练RSS和测试RSS更小？</p>
+</section>
+<section id="应用题" class="level3">
+<h3 class="anchored" data-anchor-id="应用题">应用题</h3>
+<p><strong>6.</strong> 本题将进一步分析本章多次使用的 <code>Wage</code> 数据集。</p>
+<p><strong>(a)</strong> 进行多项式回归，用 <code>age</code> 预测 <code>wage</code>。用交叉验证选择多项式的最优次数 <span class="math inline">\(d\)</span>。选中了几次多项式？与使用ANOVA进行假设检验的结果相比如何？绘制所得多项式对数据的拟合图。</p>
+<p><strong>(b)</strong> 拟合阶梯函数，用 <code>age</code> 预测 <code>wage</code>，并用交叉验证选择最优的切分点个数。绘制所得拟合图。</p>
+<p><strong>7.</strong> <code>Wage</code> 数据集还包含本章未曾探讨的许多其他特征，如婚姻状况（<code>maritl</code>）、工作类别（<code>jobclass</code>）等。探索其中一些预测变量与 <code>wage</code> 的关系，并运用非线性拟合方法，为数据拟合灵活的模型。绘制所得结果，并对你的发现作出总结。</p>
+<p><strong>8.</strong> 对 <code>Auto</code> 数据集拟合本章研究过的一些非线性模型。该数据集中是否存在非线性关系的证据？绘制能够说明问题的图，为你的回答提供依据。</p>
+<p><strong>9.</strong> 本题使用 <code>Boston</code> 数据中的变量 <code>dis</code>（到波士顿五个就业中心的距离的加权平均值）和 <code>nox</code>（氮氧化物浓度，单位为每千万份中的份数）。把 <code>dis</code> 作为预测变量，把 <code>nox</code> 作为响应。</p>
+<p><strong>(a)</strong> 使用 <code>ISLP.models</code> 模块中的 <code>poly()</code> 函数拟合三次多项式回归，用 <code>dis</code> 预测 <code>nox</code>。报告回归输出，并绘制数据及多项式拟合曲线。</p>
+<p><strong>(b)</strong> 针对一系列不同的多项式次数（例如从1到10），绘制多项式拟合曲线，并报告对应的残差平方和。</p>
+<p><strong>(c)</strong> 用交叉验证或其他方法选择多项式的最优次数，并解释结果。</p>
+<p><strong>(d)</strong> 使用 <code>ISLP.models</code> 模块中的 <code>bs()</code> 函数拟合回归样条，用 <code>dis</code> 预测 <code>nox</code>。报告使用4个自由度进行拟合的输出。你如何选择结点？绘制所得拟合曲线。</p>
+<p><strong>(e)</strong> 现在，针对一系列自由度拟合回归样条，绘制所得拟合曲线，并报告相应的RSS。描述所得结果。</p>
+<p><strong>(f)</strong> 用交叉验证或其他方法，为该数据上的回归样条选择最优自由度。描述你的结果。</p>
+<p><strong>10.</strong> 本题与 <code>College</code> 数据集有关。</p>
+<p><strong>(a)</strong> 将数据划分为训练集和测试集。把州外学生学费作为响应，其他变量作为预测变量，在训练集上进行前向逐步选择，找出一个仅使用部分预测变量且令人满意的模型。</p>
+<p><strong>(b)</strong> 在训练数据上拟合GAM，以州外学生学费作为响应，以上一步选中的特征作为预测变量。绘制结果，并解释你的发现。</p>
+<p><strong>(c)</strong> 在测试集上评估所得模型，并解释结果。</p>
+<p><strong>(d)</strong> 对于哪些变量，存在它们与响应之间具有非线性关系的证据？也可能没有这样的变量。</p>
+<p><strong>11.</strong> 第7.7节曾提到，GAM通常用回拟合方法拟合。回拟合背后的想法其实很简单。下面在多元线性回归的背景下考察回拟合。</p>
+<p>假设我们希望进行多元线性回归，却没有相应的软件，只能使用进行简单线性回归的软件。因此，采用如下迭代方法：反复将某一个系数以外的所有系数估计值固定为当前值，只用简单线性回归更新这一个系数的估计值。持续这一过程，直到收敛（convergence），也就是系数估计值不再变化。下面用一个简单示例来尝试这一方法。</p>
+<p><strong>(a)</strong> 生成一个响应 <span class="math inline">\(Y\)</span> 和两个预测变量 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span>，其中 <span class="math inline">\(n=100\)</span>。</p>
+<p><strong>(b)</strong> 编写一个函数 <code>simple_reg()</code>，接受两个参数 <code>outcome</code> 和 <code>feature</code>，用这一响应和特征拟合简单线性回归模型，并返回估计的截距和斜率。</p>
+<p><strong>(c)</strong> 为 <code>beta1</code> 指定一个初始值。你选什么值都没有关系。</p>
+<p><strong>(d)</strong> 固定 <code>beta1</code>，用函数 <code>simple_reg()</code> 拟合模型：</p>
+<p><span class="math display">\[
+Y-\mathtt{beta1}\cdot X_1=\beta_0+\beta_2X_2+\epsilon.
+\]</span></p>
+<p>将所得值保存为 <code>beta0</code> 和 <code>beta2</code>。</p>
+<p><strong>(e)</strong> 固定 <code>beta2</code>，拟合模型</p>
+<p><span class="math display">\[
+Y-\mathtt{beta2}\cdot X_2=\beta_0+\beta_1X_1+\epsilon.
+\]</span></p>
+<p>将结果保存为 <code>beta0</code> 和 <code>beta1</code>（覆盖先前的值）。</p>
+<p><strong>(f)</strong> 编写一个 <code>for</code> 循环，将(c)和(d)重复1,000次。报告 <code>for</code> 循环每次迭代中 <code>beta0</code>、<code>beta1</code> 和 <code>beta2</code> 的估计值。绘图展示这些值，包括 <code>beta0</code>、<code>beta1</code> 和 <code>beta2</code>。</p>
+<p><strong>(g)</strong> 将你在(e)中的答案与直接进行多元线性回归、用 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 预测 <span class="math inline">\(Y\)</span> 的结果比较。用 <code>axline()</code> 方法，将这些多元线性回归系数的估计值叠加到(e)得到的图中。</p>
+<p><strong>(h)</strong> 在这个数据集上，需要多少次回拟合迭代，才能对多元回归系数的估计值给出一个“良好”的近似？</p>
+<p><strong>12.</strong> 本题是上一题的延续。在一个 <span class="math inline">\(p=100\)</span> 的简单示例中，说明通过在回拟合过程中反复进行简单线性回归，可以近似得到多元线性回归系数的估计值。需要多少次回拟合迭代，才能对多元回归系数的估计值给出一个“良好”的近似？绘图为你的回答提供依据。</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "已复制");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "已复制");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"可滚动的代码","output":"可滚动的输出"};
+  </script>
+<nav class="page-navigation" aria-label="页面">
+  <div class="nav-page nav-page-previous">
+      <a href="../dist/chapter6.html" class="pagination-link" aria-label="第六章　线性模型选择与正则化">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">第六章　线性模型选择与正则化</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../dist/chapter8.html" class="pagination-link" aria-label="第八章　基于树的方法">
+        <span class="nav-page-text"><span class="chapter-title">第八章　基于树的方法</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>An Introduction to Statistical Learning: with Applications in Python<br> Authors: Gareth James et al.<br> Translator: Yuechen Qi</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

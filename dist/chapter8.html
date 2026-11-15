@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>第八章　基于树的方法 – 统计学习导论：Python 应用 · 中文译本</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../dist/chapter7.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-fc3b36746e1955fb88c77d3f07db1d35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "没有结果",
+    "search-matching-documents-text": "匹配的文档",
+    "search-copy-link-title": "复制搜索链接",
+    "search-hide-matches-text": "隐藏其它匹配结果",
+    "search-more-match-text": "更多匹配结果",
+    "search-more-matches-text": "更多匹配结果",
+    "search-clear-button-title": "清除",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "取消",
+    "search-submit-button-title": "提交",
+    "search-label": "搜索"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">跳至主要内容</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="工具栏">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="展开或折叠侧边栏导航" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter8.html"><span class="chapter-title">第八章　基于树的方法</span></a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="搜索" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto" aria-label="网站">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">统计学习导论：Python 应用 · 中文译本</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/fromYuechenimportQi/Chinese_version_ISLP" title="源代码" class="quarto-navigation-tool px-1" aria-label="源代码"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="搜索"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">译者序</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter3.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第三章　线性回归</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter4.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第四章　分类</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter5.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第五章　重抽样方法</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter6.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第六章　线性模型选择与正则化</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter7.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第七章　超越线性</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter8.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第八章　基于树的方法</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">目录</h2>
+   
+  <ul>
+  <li><a href="#决策树基础" id="toc-决策树基础" class="nav-link active" data-scroll-target="#决策树基础">8.1 决策树基础</a>
+  <ul class="collapse">
+  <li><a href="#回归树regression-trees" id="toc-回归树regression-trees" class="nav-link" data-scroll-target="#回归树regression-trees">8.1.1 回归树（Regression Trees）</a></li>
+  <li><a href="#分类树classification-trees" id="toc-分类树classification-trees" class="nav-link" data-scroll-target="#分类树classification-trees">8.1.2 分类树（Classification Trees）</a></li>
+  <li><a href="#树与线性模型" id="toc-树与线性模型" class="nav-link" data-scroll-target="#树与线性模型">8.1.3 树与线性模型</a></li>
+  <li><a href="#树的优点与缺点" id="toc-树的优点与缺点" class="nav-link" data-scroll-target="#树的优点与缺点">8.1.4 树的优点与缺点</a></li>
+  </ul></li>
+  <li><a href="#装袋法随机森林提升法与贝叶斯加性回归树" id="toc-装袋法随机森林提升法与贝叶斯加性回归树" class="nav-link" data-scroll-target="#装袋法随机森林提升法与贝叶斯加性回归树">8.2 装袋法、随机森林、提升法与贝叶斯加性回归树</a>
+  <ul class="collapse">
+  <li><a href="#装袋法bagging" id="toc-装袋法bagging" class="nav-link" data-scroll-target="#装袋法bagging">8.2.1 装袋法（Bagging）</a></li>
+  <li><a href="#随机森林" id="toc-随机森林" class="nav-link" data-scroll-target="#随机森林">8.2.2 随机森林</a></li>
+  <li><a href="#提升法" id="toc-提升法" class="nav-link" data-scroll-target="#提升法">8.2.3 提升法</a></li>
+  <li><a href="#贝叶斯加性回归树" id="toc-贝叶斯加性回归树" class="nav-link" data-scroll-target="#贝叶斯加性回归树">8.2.4 贝叶斯加性回归树</a></li>
+  <li><a href="#树集成方法小结" id="toc-树集成方法小结" class="nav-link" data-scroll-target="#树集成方法小结">8.2.5 树集成方法小结</a></li>
+  </ul></li>
+  <li><a href="#实验基于树的方法" id="toc-实验基于树的方法" class="nav-link" data-scroll-target="#实验基于树的方法">8.3 实验：基于树的方法</a>
+  <ul class="collapse">
+  <li><a href="#拟合分类树" id="toc-拟合分类树" class="nav-link" data-scroll-target="#拟合分类树">8.3.1 拟合分类树</a></li>
+  <li><a href="#拟合回归树" id="toc-拟合回归树" class="nav-link" data-scroll-target="#拟合回归树">8.3.2 拟合回归树</a></li>
+  <li><a href="#装袋法与随机森林" id="toc-装袋法与随机森林" class="nav-link" data-scroll-target="#装袋法与随机森林">8.3.3 装袋法与随机森林</a></li>
+  <li><a href="#提升法-1" id="toc-提升法-1" class="nav-link" data-scroll-target="#提升法-1">8.3.4 提升法</a></li>
+  <li><a href="#贝叶斯加性回归树-1" id="toc-贝叶斯加性回归树-1" class="nav-link" data-scroll-target="#贝叶斯加性回归树-1">8.3.5 贝叶斯加性回归树</a></li>
+  </ul></li>
+  <li><a href="#习题" id="toc-习题" class="nav-link" data-scroll-target="#习题">8.4 习题</a>
+  <ul class="collapse">
+  <li><a href="#概念题" id="toc-概念题" class="nav-link" data-scroll-target="#概念题">概念题</a></li>
+  <li><a href="#应用题" id="toc-应用题" class="nav-link" data-scroll-target="#应用题">应用题</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">第八章　基于树的方法</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>本章介绍用于回归和分类的基于树的方法。这些方法把<strong>预测变量空间（predictor space）</strong> 分层或分割为若干简单区域。对一个给定观测进行预测时，通常使用其所属区域内训练观测的响应均值或众数。由于分割预测变量空间所用的一组切分规则可以概括为一棵树，这类方法也称为<strong>决策树（decision tree）</strong> 方法。</p>
+<p>基于树的方法简单、易于解释。不过，在预测准确性方面，它们通常无法与表现最好的监督学习方法竞争，例如第6章和第7章介绍的方法。因此，本章还介绍 <strong>装袋法（bagging)</strong> 、 <strong>随机森林 (random forest)</strong> 、 <strong>提升法 （boosting）</strong> 和 <strong>贝叶斯加性回归树（Bayesian additive regression trees）</strong>。这些方法都先生成多棵树，再把它们组合起来，得到一个综合的预测结果。我们将看到，组合大量的树，往往能大幅提高预测准确性，代价是损失一部分可解释性。</p>
+<section id="决策树基础" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="决策树基础">8.1 决策树基础</h2>
+<p>决策树既可用于回归，也可用于分类。我们先考察回归问题，再转向分类。</p>
+<section id="回归树regression-trees" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="回归树regression-trees">8.1.1 回归树（Regression Trees）</h3>
+<p>为了引出回归树，我们先看一个简单的例子。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-1.png" class="img-fluid figure-img"></p>
+<figcaption>图8.1：利用Years与Hits预测球员对数薪资的回归树</figcaption>
+</figure>
+</div>
+<p><strong>图8.1</strong> 对于 <code>Hitters</code> 数据，利用棒球运动员在大联盟效力的年数和前一年击出安打的次数，预测其对数薪资的回归树。在给定的<strong>内部结点（internal node）</strong> 处，形如 <span class="math inline">\(X_j&lt;t_k\)</span> 的标签表示从该切分处伸出的左<strong>分支（branch）</strong>，右分支则对应 <span class="math inline">\(X_j\ge t_k\)</span>。例如，树顶的切分产生两个大分支：左分支对应 <code>Years&lt;4.5</code>，右分支对应 <code>Years&gt;=4.5</code>。这棵树有两个内部结点和三个<strong>终端结点（terminal nodes）</strong>，也称为<strong>叶结点（leaves）</strong>。每个叶结点中的数值，是落入该结点的观测的响应均值。图内变量名 <code>Years</code>（效力年数）、<code>Hits</code>（安打次数）、切分条件及叶结点数值保持原样。</p>
+<section id="用回归树预测棒球运动员的薪资" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="用回归树预测棒球运动员的薪资">用回归树预测棒球运动员的薪资</h4>
+<p>我们使用 <code>Hitters</code> 数据集，根据 <code>Years</code>（在大联盟效力的年数）和 <code>Hits</code>（前一年的<a href="https://zh.wikipedia.org/wiki/%E5%AE%89%E6%89%93">安打</a>次数）预测棒球运动员的 <code>Salary</code>。首先删除 <code>Salary</code> 缺失的观测，再对 <code>Salary</code> 取对数，使其分布更接近典型的钟形。（回顾一下，<code>Salary</code> 的单位是千美元。）</p>
+<p>图8.1展示了对这些数据拟合得到的一棵回归树。它由一系列切分规则组成，从树顶开始。最上方的切分把 <code>Years&lt;4.5</code> 的观测分配到左分支。<sup><a href="#ch08-fn1" id="ch08-fnref1">1</a></sup> 这些球员的预测薪资，由数据集中 <code>Years&lt;4.5</code> 的球员的响应均值给出。这些球员的平均对数薪资为5.107，因此对他们预测的薪资为 <span class="math inline">\(e^{5.107}\)</span> 千美元，即165,174美元。<code>Years&gt;=4.5</code> 的球员被分配到右分支，再按 <code>Hits</code> 进一步分组。总体上，这棵树把球员分到预测变量空间的三个区域：效力不超过4年的球员；效力至少5年、且上一年安打少于118次的球员；效力至少5年、且上一年至少有118次安打的球员。这三个区域可写为 <span class="math inline">\(R_1=\{X\mid\mathrm{Years}&lt;4.5\}\)</span>，<span class="math inline">\(R_2=\{X\mid\mathrm{Years}\ge4.5,\mathrm{Hits}&lt;117.5\}\)</span>，以及 <span class="math inline">\(R_3=\{X\mid\mathrm{Years}\ge4.5,\mathrm{Hits}\ge117.5\}\)</span>。图8.2展示了这些区域如何由 <code>Years</code> 和 <code>Hits</code> 确定。</p>
+<aside class="footnote" id="ch08-fn1">
+<a href="#ch08-fnref1">1</a> 这些数据中的 <code>Years</code> 和 <code>Hits</code> 都是整数；拟合这棵树所用的函数，把切分位置标记在两个相邻取值的中点。
+</aside>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-2.png" class="img-fluid figure-img"></p>
+<figcaption>图8.2：Hitters数据的三个预测变量区域</figcaption>
+</figure>
+</div>
+<p><strong>图8.2</strong> 图8.1的回归树对 <code>Hitters</code> 数据集给出的三区域划分。图内文字：Years＝效力年数；Hits＝安打次数；区域标签 <span class="math inline">\(R_1,R_2,R_3\)</span> 及切分数值保持原样。</p>
+<p>这三组的预测薪资分别为 <span class="math inline">\(1{,}000\times e^{5.107}=165{,}174\)</span> 美元、<span class="math inline">\(1{,}000\times e^{5.999}=402{,}834\)</span> 美元，以及 <span class="math inline">\(1{,}000\times e^{6.740}=845{,}346\)</span> 美元。</p>
+<p>沿用树的比喻，区域 <span class="math inline">\(R_1\)</span>、<span class="math inline">\(R_2\)</span> 和 <span class="math inline">\(R_3\)</span> 称为树的终端结点或叶结点。决策树通常像图8.1那样倒着画，也就是说，叶结点位于树的底部。树中对预测变量空间进行切分的位置，称为内部结点。在图8.1中，两个内部结点分别用 <code>Years&lt;4.5</code> 和 <code>Hits&lt;117.5</code> 标示。树中连接各结点的线段称为分支。</p>
+<p>可以这样解释图8.1中的回归树：<code>Years</code> 是决定 <code>Salary</code> 的最重要因素，经验较少的球员薪资低于经验较丰富的球员。对于经验较少的球员，前一年的安打次数似乎对其薪资作用不大；但在大联盟效力至少5年的球员中，前一年的安打次数确实会影响薪资，上一年安打较多的球员往往有更高的薪资。图8.1的回归树，很可能过度简化了 <code>Hits</code>、<code>Years</code> 与 <code>Salary</code> 之间的真实关系。不过，相比第3章和第6章介绍的其他回归模型，它更容易解释，也具有清晰的图形表示。</p>
+</section>
+<section id="通过对特征空间分层进行预测" class="level4">
+<h4 class="anchored" data-anchor-id="通过对特征空间分层进行预测">通过对特征空间分层进行预测</h4>
+<p>下面讨论构建回归树的过程。大体上分为两步。</p>
+<ol type="1">
+<li><p>将预测变量空间，即 <span class="math inline">\(X_1,X_2,\ldots,X_p\)</span> 所有可能取值构成的集合，划分成 <span class="math inline">\(J\)</span> 个互不重叠的区域 <span class="math inline">\(R_1,R_2,\ldots,R_J\)</span>。</p></li>
+<li><p>对于落入区域 <span class="math inline">\(R_j\)</span> 的每个观测，都作出相同的预测：<span class="math inline">\(R_j\)</span> 内训练观测的响应均值。</p></li>
+</ol>
+<p>例如，假设第1步得到两个区域 <span class="math inline">\(R_1\)</span> 和 <span class="math inline">\(R_2\)</span>，第一个区域内训练观测的响应均值是10，第二个区域内的响应均值是20。那么，对于给定观测 <span class="math inline">\(X=x\)</span>，若 <span class="math inline">\(x\in R_1\)</span>，就预测为10；若 <span class="math inline">\(x\in R_2\)</span>，就预测为20。</p>
+<p>现在详细考察第1步：如何构造区域 <span class="math inline">\(R_1,\ldots,R_J\)</span>？理论上，这些区域可以是任意形状。不过，为了简便，也为了便于解释得到的预测模型，我们将预测变量空间划分为高维矩形，也称为盒子。目标是找到使下面的残差平方和(RSS)最小的盒子 <span class="math inline">\(R_1,\ldots,R_J\)</span>：</p>
+<p><span class="math display">\[
+\sum_{j=1}^{J}\sum_{i\in R_j}(y_i-\hat y_{R_j})^2, \tag{8.1}
+\]</span></p>
+<p>其中，<span class="math inline">\(\hat y_{R_j}\)</span> 是第 <span class="math inline">\(j\)</span> 个盒子内训练观测的响应均值。遗憾的是，考虑将特征空间划分成 <span class="math inline">\(J\)</span> 个盒子的所有可能方式，在计算上不可行。因此，我们采用一种自上而下的贪心方法，称为<strong>递归二元切分（recursive binary splitting）</strong>。它是自上而下的，因为从树顶开始，此时所有观测都属于同一个区域，然后依次切分预测变量空间；每次切分都由树中更下方的两个新分支表示。它是贪心的，因为构建树时，每一步只选择当前这一步最好的切分，而不向前考虑哪种切分能在后续步骤中得到更好的树。</p>
+<p>进行递归二元切分时，首先选择预测变量 <span class="math inline">\(X_j\)</span> 和切分点 <span class="math inline">\(s\)</span>，使得将预测变量空间划分为 <span class="math inline">\(\{X\mid X_j&lt;s\}\)</span> 和 <span class="math inline">\(\{X\mid X_j\ge s\}\)</span> 两个区域后，RSS的下降尽可能大。（<span class="math inline">\(\{X\mid X_j&lt;s\}\)</span> 表示预测变量空间中 <span class="math inline">\(X_j\)</span> 取值小于 <span class="math inline">\(s\)</span> 的区域。）也就是说，考察全部预测变量 <span class="math inline">\(X_1,\ldots,X_p\)</span>，以及每个预测变量的所有可能切分点 <span class="math inline">\(s\)</span>，再选择能使所得树的RSS最小的预测变量和切分点。更具体地说，对于任意 <span class="math inline">\(j\)</span> 和 <span class="math inline">\(s\)</span>，定义一对半平面</p>
+<p><span class="math display">\[
+R_1(j,s)=\{X\mid X_j&lt;s\}\quad\text{和}\quad R_2(j,s)=\{X\mid X_j\ge s\}, \tag{8.2}
+\]</span></p>
+<p>再寻找使下式最小的 <span class="math inline">\(j\)</span> 和 <span class="math inline">\(s\)</span>：</p>
+<p><span class="math display">\[
+\sum_{i:\,x_i\in R_1(j,s)}(y_i-\hat y_{R_1})^2+\sum_{i:\,x_i\in R_2(j,s)}(y_i-\hat y_{R_2})^2, \tag{8.3}
+\]</span></p>
+<p>其中，<span class="math inline">\(\hat y_{R_1}\)</span> 是 <span class="math inline">\(R_1(j,s)\)</span> 中训练观测的响应均值，<span class="math inline">\(\hat y_{R_2}\)</span> 是 <span class="math inline">\(R_2(j,s)\)</span> 中训练观测的响应均值。找出使式(8.3)最小的 <span class="math inline">\(j\)</span> 和 <span class="math inline">\(s\)</span> 可以很快完成，特别是在特征数 <span class="math inline">\(p\)</span> 不太大时。</p>
+<p>接下来，重复这一过程，寻找最佳预测变量和最佳切分点，进一步划分数据，使所得各区域内的RSS最小。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-3.png" class="img-fluid figure-img"></p>
+<figcaption>图8.3：二维递归二元切分、对应树与预测曲面</figcaption>
+</figure>
+</div>
+<p><strong>图8.3</strong> 左上：一种无法通过递归二元切分得到的二维特征空间划分。右上：在一个二维例子中，递归二元切分得到的结果。左下：与右上图划分对应的树。右下：该树对应的预测曲面的透视图。图内数学符号 <span class="math inline">\(X_1,X_2\)</span>、阈值 <span class="math inline">\(t_1,\ldots,t_4\)</span>、区域 <span class="math inline">\(R_1,\ldots,R_5\)</span> 和切分条件保持原样。</p>
+<p>不过，这次并不切分整个预测变量空间，而是切分之前得到的两个区域之一。现在就有了三个区域。然后再进一步切分这三个区域中的一个，使RSS最小。这个过程持续进行，直到达到停止准则；例如，可以继续切分，直到没有任何区域包含超过5个观测。</p>
+<p>一旦构造好区域 <span class="math inline">\(R_1,\ldots,R_J\)</span>，就用给定测试观测所在区域内训练观测的响应均值，来预测这个测试观测的响应。</p>
+<p>图8.3给出了这种方法产生的五区域例子。</p>
+</section>
+<section id="树的剪枝" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="树的剪枝">树的剪枝</h4>
+<p>上述过程可能在训练集上得到良好的预测，但也很可能过拟合数据，导致测试集表现不佳，因为得到的树可能过于复杂。切分更少、也就是区域 <span class="math inline">\(R_1,\ldots,R_J\)</span> 更少的小树，可能以少量偏差为代价，换取更低的方差和更好的可解释性。</p>
+<p>一种可能的替代做法是，只有在每次切分使RSS下降的幅度超过某个较高阈值时，才继续生长树。这会产生更小的树，但也过于短视，因为早期一个看似毫无价值的切分，后面可能跟着一个非常好的切分，也就是在后续使RSS大幅下降的切分。</p>
+<p>因此，更好的策略是先长出一棵很大的树 <span class="math inline">\(T_0\)</span>，再对它进行<strong>剪枝（pruning）</strong>，得到一棵<strong>子树（subtree）</strong>。怎样确定最佳剪枝方式？直观上，我们希望选出的子树有最低的测试错误率。给定一棵子树，可以用交叉验证或验证集法估计其测试误差。但可能的子树数量极大，为每棵子树估计交叉验证误差，会过于繁琐。因此，我们需要一种方法，选出少量子树作为候选。</p>
+<p><strong>代价复杂度剪枝（cost complexity pruning）</strong>，也称为<strong>最弱环节剪枝（weakest link pruning）</strong>，就提供了这样一种方法。我们不考虑所有可能的子树，而只考虑一个由非负调节参数 <span class="math inline">\(\alpha\)</span> 索引的树序列。每个 <span class="math inline">\(\alpha\)</span> 都对应一棵子树 <span class="math inline">\(T\subset T_0\)</span>，使下式尽可能小：</p>
+<p><span class="math display">\[
+\sum_{m=1}^{|T|}\sum_{i:\,x_i\in R_m}(y_i-\hat y_{R_m})^2+\alpha|T|. \tag{8.4}
+\]</span></p>
+<p>这里，<span class="math inline">\(|T|\)</span> 表示树 <span class="math inline">\(T\)</span> 的终端结点数，<span class="math inline">\(R_m\)</span> 是第 <span class="math inline">\(m\)</span> 个终端结点对应的矩形，也就是预测变量空间的一个子集；<span class="math inline">\(\hat y_{R_m}\)</span> 是与 <span class="math inline">\(R_m\)</span> 对应的预测响应，即 <span class="math inline">\(R_m\)</span> 中训练观测的响应均值。调节参数 <span class="math inline">\(\alpha\)</span> 控制子树复杂度与其对训练数据拟合程度之间的权衡。当 <span class="math inline">\(\alpha=0\)</span> 时，子树 <span class="math inline">\(T\)</span> 就等于 <span class="math inline">\(T_0\)</span>，因为此时式(8.4)只度量训练误差。随着 <span class="math inline">\(\alpha\)</span> 增大，拥有较多终端结点的树就需要付出代价，因此较小的子树往往能使式(8.4)最小。这让人联想到第6章的套索法(6.7)：那里也用类似的形式来控制线性模型的复杂度。</p>
+<p>事实上，在式(8.4)中让 <span class="math inline">\(\alpha\)</span> 从零开始增大时，树的分支会以一种嵌套且可预测的方式被剪去，因此很容易得到随 <span class="math inline">\(\alpha\)</span> 变化的完整子树序列。可以用验证集或交叉验证选择 <span class="math inline">\(\alpha\)</span>，再回到完整数据集，得到与该 <span class="math inline">\(\alpha\)</span> 对应的子树。算法8.1概括了这一过程。</p>
+<p>图8.4和图8.5展示了使用 <code>Hitters</code> 数据中的9个特征，拟合回归树并进行剪枝的结果。首先，将数据集随机分成两半，得到包含132个观测的训练集和包含131个观测的测试集。然后，在训练数据上长出一棵大的回归树，通过改变式(8.4)中的 <span class="math inline">\(\alpha\)</span>，得到终端结点数不同的子树。最后，进行6折交叉验证，估计这些树随 <span class="math inline">\(\alpha\)</span> 变化的交叉验证MSE。</p>
+<div id="algorithm-8-1" class="algorithm">
+<p><strong>算法8.1　构建回归树</strong></p>
+<ol type="1">
+<li><p>在训练数据上用递归二元切分长出一棵大树，只有当每个终端结点的观测数都少于某个最小数量时才停止。</p></li>
+<li><p>对这棵大树进行代价复杂度剪枝，得到随 <span class="math inline">\(\alpha\)</span> 变化的一系列最佳子树。</p></li>
+<li><p>用 <span class="math inline">\(K\)</span> 折交叉验证选择 <span class="math inline">\(\alpha\)</span>。具体来说，将训练观测分成 <span class="math inline">\(K\)</span> 折。对于每个 <span class="math inline">\(k=1,\ldots,K\)</span>：</p>
+<p><strong>(a)</strong> 用除第 <span class="math inline">\(k\)</span> 折之外的所有训练数据，重复第1步和第2步。</p>
+<p><strong>(b)</strong> 在留出的第 <span class="math inline">\(k\)</span> 折数据上，评价随 <span class="math inline">\(\alpha\)</span> 变化的均方预测误差。</p>
+<p>对每个 <span class="math inline">\(\alpha\)</span> 的结果取平均，并选择使平均误差最小的 <span class="math inline">\(\alpha\)</span>。</p></li>
+<li><p>返回第2步中与选定 <span class="math inline">\(\alpha\)</span> 对应的子树。</p></li>
+</ol>
+</div>
+<p>之所以采用6折交叉验证，是因为132恰好是6的整数倍。未经剪枝的回归树见图8.4。图8.5中的绿色曲线表示交叉验证误差随叶结点数的变化，<sup><a href="#ch08-fn2" id="ch08-fnref2">2</a></sup> 橙色曲线表示测试误差。图中还给出了估计误差周围的标准误差条。作为参照，训练误差曲线用黑色表示。交叉验证误差合理地近似了测试误差：它在三个结点的树处达到最小，测试误差在三个结点的树处也有所下降，尽管测试误差的最低值出现在十个结点的树处。剪枝后具有三个终端结点的树见图8.1。</p>
+<aside class="footnote" id="ch08-fn2">
+<a href="#ch08-fnref2">2</a> 虽然交叉验证误差是作为 <span class="math inline">\(\alpha\)</span> 的函数计算的，但将结果绘成叶结点数 <span class="math inline">\(|T|\)</span> 的函数更方便。这是根据用全部训练数据长出的原始树中 <span class="math inline">\(\alpha\)</span> 与 <span class="math inline">\(|T|\)</span> 之间的关系得到的。
+</aside>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-4.png" class="img-fluid figure-img"></p>
+<figcaption>图8.4：Hitters数据未经剪枝的回归树</figcaption>
+</figure>
+</div>
+<p><strong>图8.4</strong> <code>Hitters</code> 数据的回归树分析。图中展示了在训练数据上通过自上而下的贪心切分得到的未经剪枝的树。图内变量名、切分条件和叶结点数值均保持原样；Years＝效力年数，Hits＝安打次数，RBI＝打点数，Putouts＝刺杀出局次数，Walks＝保送次数，Runs＝得分。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-5.png" class="img-fluid figure-img"></p>
+<figcaption>图8.5：回归树大小与训练、交叉验证及测试MSE</figcaption>
+</figure>
+</div>
+<p><strong>图8.5</strong> <code>Hitters</code> 数据的回归树分析。图中展示了训练、交叉验证和测试MSE随剪枝后树的终端结点数的变化，并给出了标准误差带。最小交叉验证误差出现在大小为3的树处。图内文字：Tree Size＝树的大小；Mean Squared Error＝均方误差；Training＝训练；Cross-Validation＝交叉验证；Test＝测试。</p>
+</section>
+</section>
+<section id="分类树classification-trees" class="level3">
+<h3 class="anchored" data-anchor-id="分类树classification-trees">8.1.2 分类树（Classification Trees）</h3>
+<p>分类树与回归树非常相似，区别在于它预测的是定性响应，而不是定量响应。回想一下，对于回归树，一个观测的响应预测值，是与它属于同一终端结点的训练观测的响应均值。对于分类树，我们则把每个观测预测为：它所在区域中训练观测出现最多的类别。在解释分类树结果时，我们关心的往往不仅是某个终端结点区域所对应的类别预测，还包括落入该区域的训练观测中各类别所占的比例。</p>
+<p>生长分类树的任务与生长回归树十分相似。与回归情形一样，我们使用递归二元切分来生长分类树。</p>
+<p>不过，在分类情形下，不能用RSS作为二元切分的准则。一个自然的替代准则是分类错误率。由于我们要把某一区域中的观测判为该区域训练观测中出现最多的类别，分类错误率就是该区域训练观测中不属于这一多数类别的比例：</p>
+<p><span class="math display">\[
+E=1-\max_k(\hat{p}_{mk}). \tag{8.5}
+\]</span></p>
+<p>这里，<span class="math inline">\(\hat{p}_{mk}\)</span> 表示第 <span class="math inline">\(m\)</span> 个区域的训练观测中，属于第 <span class="math inline">\(k\)</span> 类的比例。不过，分类错误率对树的生长不够敏感，因此实际中更倾向于使用另外两种度量。</p>
+<p><strong>基尼指数（Gini index）</strong> 定义为</p>
+<p><span class="math display">\[
+G=\sum_{k=1}^{K}\hat{p}_{mk}(1-\hat{p}_{mk}), \tag{8.6}
+\]</span></p>
+<p>它衡量 <span class="math inline">\(K\)</span> 个类别的总方差。不难看出，当所有 <span class="math inline">\(\hat{p}_{mk}\)</span> 都接近0或1时，基尼指数就很小。因此，基尼指数被称为衡量结点纯度的指标——值越小，说明结点中的观测主要来自同一个类别。</p>
+<p>基尼指数的一种替代指标是<strong>熵（entropy）</strong>，其定义为</p>
+<p><span class="math display">\[
+D=-\sum_{k=1}^{K}\hat{p}_{mk}\log\hat{p}_{mk}. \tag{8.7}
+\]</span></p>
+<p>因为 <span class="math inline">\(0\leq\hat{p}_{mk}\leq1\)</span>，所以 <span class="math inline">\(0\leq-\hat{p}_{mk}\log\hat{p}_{mk}\)</span>。可以证明，如果所有 <span class="math inline">\(\hat{p}_{mk}\)</span> 都接近0或1，熵就接近0。因此，与基尼指数一样，第 <span class="math inline">\(m\)</span> 个结点越纯，熵就越小。事实上，基尼指数和熵在数值上十分相近。</p>
+<p>构建分类树时，通常用基尼指数或熵来评价某次切分的好坏，因为这两种方法比分类错误率对结点纯度更敏感。剪枝时，这三种方法都可以使用；不过，如果目标是最终剪枝树的预测准确率，那么分类错误率更为合适。</p>
+<p>图8.6给出了 <code>Heart</code> 数据集上的一个例子。这些数据包含303名因胸痛就诊的患者，其结局变量 <code>HD</code> 为二元变量。取值 <code>Yes</code> 表示血管造影检查发现有心脏病，<code>No</code> 表示没有心脏病。共有13个预测变量，包括 <code>Age</code>、<code>Sex</code>、<code>Chol</code>（胆固醇测量值），以及其他心肺功能测量值。通过交叉验证，得到了一棵具有六个终端结点的树。</p>
+<p>到目前为止，我们一直假定预测变量取连续值。不过，即使存在定性预测变量，也可以构建决策树。例如，在 <code>Heart</code> 数据中，<code>Sex</code>、<code>Thal</code>（铊负荷试验）和 <code>ChestPain</code> 等预测变量都是定性的。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-6.png" class="img-fluid figure-img"></p>
+<figcaption>图8.6：Heart数据的分类树与误差曲线</figcaption>
+</figure>
+</div>
+<p><strong>图8.6</strong> <code>Heart</code> 数据。上图：未剪枝的树。左下图：不同剪枝树大小所对应的交叉验证误差、训练误差和测试误差。右下图：交叉验证误差最小时所对应的剪枝树。图内文字：Tree Size＝树的大小；Error＝误差；Training＝训练；Cross-Validation＝交叉验证；Test＝测试；Yes／No＝有／无心脏病。变量名保持原样：Age＝年龄，Sex＝性别，Chol＝胆固醇，Thal＝铊负荷试验，Ca＝主要血管数，MaxHR＝最大心率，RestBP＝静息血压，ChestPain＝胸痛类型，Slope＝运动峰值ST段斜率，Oldpeak＝运动相对于静息所致的ST段压低，RestECG＝静息心电图结果；切分阈值及类别代码保留。</p>
+<p>因此，对这类变量进行切分，就是把其中一些定性取值分配到一个分支，其余取值分配到另一个分支。在图8.6中，有些内部结点对应于定性变量的切分。例如，最上方的内部结点对应于 <code>Thal</code> 的切分。<code>Thal:a</code> 表示从这个结点出发的左分支包含 <code>Thal</code> 变量取第一个值（正常）的观测，右侧结点则包含其余观测（固定性或可逆性缺损）。沿树的左侧向下两次切分后出现的 <code>ChestPain:bc</code>，表示从该结点出发的左分支包含 <code>ChestPain</code> 变量取第二个和第三个值的观测。该变量的所有可能取值依次为典型心绞痛、不典型心绞痛、非心绞痛性胸痛和无症状。</p>
+<p>图8.6有一个令人意外的特点：有些切分产生的两个终端结点具有相同的预测值。例如，考虑未剪枝树右下方附近的切分 <code>RestECG&lt;1</code>。无论 <code>RestECG</code> 取何值，这些观测的响应都被预测为 <code>Yes</code>。</p>
+<p>既然如此，为什么还要进行这次切分呢？因为它提高了结点纯度。具体来说，右侧叶结点对应的9个观测，其响应值全都是 <code>Yes</code>；而左侧叶结点对应的观测中，响应值为 <code>Yes</code> 的比例是 <span class="math inline">\(7/11\)</span>。为什么结点纯度很重要？假设有一个测试观测落入右侧叶结点对应的区域，我们就可以相当确定，它的响应值是 <code>Yes</code>。相反，如果测试观测落入左侧叶结点对应的区域，它的响应值很可能也是 <code>Yes</code>，但我们的把握要小得多。尽管切分 <code>RestECG&lt;1</code> 没有降低分类错误率，但它改善了对结点纯度更敏感的基尼指数和熵。</p>
+</section>
+<section id="树与线性模型" class="level3">
+<h3 class="anchored" data-anchor-id="树与线性模型">8.1.3 树与线性模型</h3>
+<p>回归树和分类树与第3章、第4章介绍的较为经典的回归和分类方法有很大不同。具体来说，线性回归假定模型具有如下形式：</p>
+<p><span class="math display">\[
+f(X)=\beta_0+\sum_{j=1}^{p}X_j\beta_j, \tag{8.8}
+\]</span></p>
+<p>而回归树假定模型具有如下形式：</p>
+<p><span class="math display">\[
+f(X)=\sum_{m=1}^{M}c_m\cdot1_{(X\in R_m)} \tag{8.9}
+\]</span></p>
+<p>其中，<span class="math inline">\(R_1,\ldots,R_M\)</span> 表示对特征空间的一个划分，如图8.3所示。</p>
+<p>哪一种模型更好，取决于具体问题。如果特征与响应之间的关系可以由式(8.8)这样的线性模型很好地近似，那么线性回归一类方法很可能表现良好，并且会优于回归树这类不利用线性结构的方法。如果特征与响应之间存在高度非线性且复杂的关系，如模型(8.9)所示，那么决策树可能优于经典方法。图8.7给出了一个说明性的例子。可以使用交叉验证或验证集方法（第5章）估计测试误差，从而比较基于树的方法与经典方法的表现。</p>
+<p>当然，在选择统计学习方法时，除了测试误差，还可能需要考虑其他因素。例如，在某些情形下，出于可解释性和可视化的考虑，人们可能更愿意使用树进行预测。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-7.png" class="img-fluid figure-img"></p>
+<figcaption>图8.7：线性模型与决策树的决策边界比较</figcaption>
+</figure>
+</div>
+<p><strong>图8.7</strong> 上排：一个二维分类例子，真实决策边界为线性边界，由着色区域表示。假定线性边界的经典方法（左）会优于沿平行于坐标轴的方向进行切分的决策树（右）。下排：这里的真实决策边界是非线性的。线性模型无法捕捉真实决策边界（左），而决策树可以成功做到（右）。图内 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 分别表示两个预测变量，刻度保持原样。</p>
+</section>
+<section id="树的优点与缺点" class="level3">
+<h3 class="anchored" data-anchor-id="树的优点与缺点">8.1.4 树的优点与缺点</h3>
+<p>用于回归和分类的决策树，相对于第3章和第4章介绍的较为经典的方法，具有以下优点：</p>
+<ul>
+<li><span style="color:#00ff00" aria-label="优点">▲</span> 树非常容易向他人解释。事实上，它甚至比线性回归还容易解释！</li>
+<li><span style="color:#00ff00" aria-label="优点">▲</span> 有人认为，与前面各章介绍的回归和分类方法相比，决策树更接近人类的决策过程。</li>
+<li><span style="color:#00ff00" aria-label="优点">▲</span> 树可以用图形展示，即使是非专业人士也很容易理解，尤其是在树较小的时候。</li>
+<li><span style="color:#00ff00" aria-label="优点">▲</span> 树可以轻松处理定性预测变量，无须创建虚拟变量。</li>
+<li><span style="color:#ff0000" aria-label="缺点">▼</span> 遗憾的是，树的预测准确率通常不及本书介绍的其他一些回归和分类方法。</li>
+<li><span style="color:#ff0000" aria-label="缺点">▼</span> 此外，树可能很不稳健。换句话说，数据的微小变化可能导致最终估计得到的树发生很大变化。</li>
+</ul>
+<p>不过，通过装袋法、随机森林和提升法等方法聚合许多棵决策树，可以大幅改善树的预测表现。下一节将介绍这些概念。</p>
+</section>
+</section>
+<section id="装袋法随机森林提升法与贝叶斯加性回归树" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="装袋法随机森林提升法与贝叶斯加性回归树">8.2 装袋法、随机森林、提升法与贝叶斯加性回归树</h2>
+<p><strong>集成（ensemble）方法</strong>将许多简单的“构件”模型组合起来，得到一个可能十分强大的模型。这些简单的构件模型有时称为<strong>弱学习器（weak learners）</strong>，因为它们单独使用时，预测表现可能平平。</p>
+<p>下面讨论装袋法、随机森林、提升法和贝叶斯加性回归树。这些都是以回归树或分类树作为简单构件的集成方法。</p>
+<section id="装袋法bagging" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="装袋法bagging">8.2.1 装袋法（Bagging）</h3>
+<p>第5章介绍的自助法是一个极其强大的思想。在许多情形下，我们很难甚至根本无法直接计算某个所关心的量的标准差，自助法便能派上用场。这里将看到，自助法还可以用于一个完全不同的场景，改进决策树等统计学习方法。</p>
+<p>第8.1节讨论的决策树存在<strong>方差较高</strong>的问题。这意味着，如果把训练数据随机分成两半，并在每一半上各拟合一棵决策树，得到的结果可能很不一样。相比之下，方差较低的方法在不同数据集上反复应用时，会得到相似的结果；当 <span class="math inline">\(n\)</span> 与 <span class="math inline">\(p\)</span> 的比值较大时，线性回归的方差往往较低。<strong>自助聚合（bootstrap aggregation）</strong>，也称为<strong>装袋法</strong>，是一种降低统计学习方法方差的通用方法。这里介绍它，是因为它在决策树中尤其有用，也经常使用。</p>
+<p>回顾一下，给定 <span class="math inline">\(n\)</span> 个相互独立的观测 <span class="math inline">\(Z_1,\ldots,Z_n\)</span>，若每个观测的方差都是 <span class="math inline">\(\sigma^2\)</span>，那么观测均值 <span class="math inline">\(\bar Z\)</span> 的方差为 <span class="math inline">\(\sigma^2/n\)</span>。换句话说，<em>对一组观测取平均能够降低方差</em>。因此，要降低统计学习方法的方差并提高其在测试集上的准确性，一个自然的办法是从总体中取得许多训练集，在每个训练集上分别构建一个预测模型，再对得到的预测取平均。也就是说，可以使用 <span class="math inline">\(B\)</span> 个不同的训练集，计算 <span class="math inline">\(\hat f^1(x),\hat f^2(x),\ldots,\hat f^B(x)\)</span>，然后取平均，得到一个方差较低的统计学习模型：</p>
+<p><span class="math display">\[
+\hat f_{\mathrm{avg}}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat f^b(x).
+\]</span></p>
+<p>当然，这种做法并不现实，因为我们通常无法取得多个训练集。不过，我们可以使用自助法，从这个唯一的训练数据集中反复抽样。具体来说，先生成 <span class="math inline">\(B\)</span> 个不同的自助训练数据集，再在第 <span class="math inline">\(b\)</span> 个自助训练集上训练所用方法，得到 <span class="math inline">\(\hat f^{*b}(x)\)</span>，最后对所有预测取平均，得到</p>
+<p><span class="math display">\[
+\hat f_{\mathrm{bag}}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat f^{*b}(x).
+\]</span></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-8.png" class="img-fluid figure-img"></p>
+<figcaption>图8.8：Heart数据上的装袋法与随机森林</figcaption>
+</figure>
+</div>
+<p><strong>图8.8</strong> <code>Heart</code> 数据上的装袋法与随机森林结果。图中给出了测试误差（黑色和橙色）随所用自助训练集数量 <span class="math inline">\(B\)</span> 的变化。随机森林取 <span class="math inline">\(m=\sqrt p\)</span>。虚线表示单棵分类树的测试误差。绿色和蓝色曲线表示袋外误差；在这个例子中，袋外误差碰巧明显更低。图内文字：Number of Trees＝树的数量；Error＝误差；Test: Bagging＝测试：装袋法；Test: RandomForest＝测试：随机森林；OOB: Bagging＝袋外：装袋法；OOB: RandomForest＝袋外：随机森林。</p>
+<p>这就称为装袋法。</p>
+<p>装袋法可以改进许多回归方法的预测，对决策树尤其有用。将装袋法用于回归树时，只需使用 <span class="math inline">\(B\)</span> 个自助训练集构建 <span class="math inline">\(B\)</span> 棵回归树，然后对得到的预测取平均。这些树生长得很深，而且不做剪枝。因此，每棵树的方差都很高，但偏差很低。对这 <span class="math inline">\(B\)</span> 棵树取平均可以降低方差。已有结果表明，将数百棵甚至数千棵树组合成一种方法，装袋法能够使准确性得到可观的提升。</p>
+<p>到目前为止，我们是在回归问题中介绍装袋法，用它来预测定量结果 <span class="math inline">\(Y\)</span>。那么，如何将装袋法扩展到 <span class="math inline">\(Y\)</span> 为定性变量的分类问题呢？有几种可行的办法，其中最简单的一种如下。对于给定的测试观测，记录 <span class="math inline">\(B\)</span> 棵树各自预测的类别，然后进行<strong>多数投票（majority vote）</strong>：以这 <span class="math inline">\(B\)</span> 个预测中出现次数最多的类别作为总体预测。</p>
+<p>图8.8给出了在 <code>Heart</code> 数据上使用装袋树的结果。图中展示了测试错误率随树的数量 <span class="math inline">\(B\)</span> 的变化，这些树分别使用自助训练数据集构建。可以看到，在这个例子中，装袋法的测试错误率略低于单棵树的测试错误率。树的数量 <span class="math inline">\(B\)</span> 并不是装袋法中一个关键的参数；即使 <span class="math inline">\(B\)</span> 很大，也不会导致过拟合。</p>
+<p>实践中，我们使用足够大的 <span class="math inline">\(B\)</span>，使误差趋于稳定。在本例中，取 <span class="math inline">\(B=100\)</span> 就足以获得良好的表现。</p>
+<section id="袋外误差估计" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="袋外误差估计">袋外误差估计</h4>
+<p>实际上，有一种非常直接的办法，可以估计装袋模型的测试误差，而无须进行交叉验证或使用验证集法。回顾一下，装袋法的关键是反复在观测的自助抽样子集上拟合树。可以证明，平均而言，每棵装袋树会用到约三分之二的观测。<sup><a href="#ch08-fn3" id="ch08-fnref3">3</a></sup> 对于一棵给定的装袋树，剩下约三分之一未用于拟合它的观测称为<strong>袋外（out-of-bag，OOB）观测</strong>。对于第 <span class="math inline">\(i\)</span> 个观测，我们可以使用所有以它为袋外观测的树，来预测其响应。这会为第 <span class="math inline">\(i\)</span> 个观测产生大约 <span class="math inline">\(B/3\)</span> 个预测。要得到第 <span class="math inline">\(i\)</span> 个观测的单个预测，可以对这些响应预测取平均（回归问题），也可以进行多数投票（分类问题）。这样就得到了第 <span class="math inline">\(i\)</span> 个观测的一个袋外预测。对 <span class="math inline">\(n\)</span> 个观测中的每一个，都可以用这种方式得到袋外预测，再据此计算总体袋外MSE（回归问题）或分类错误率（分类问题）。由于每个观测的响应都只使用未以该观测拟合的树来预测，所得袋外误差是装袋模型测试误差的有效估计。图8.8展示了 <code>Heart</code> 数据上的袋外误差。可以证明，当 <span class="math inline">\(B\)</span> 足够大时，袋外误差与留一交叉验证误差实际上相当。对大型数据集使用装袋法时，交叉验证可能需要很大的计算量，此时用袋外方法估计测试误差尤其方便。</p>
+<aside class="footnote" id="ch08-fn3">
+<a href="#ch08-fnref3">3</a> 这与第5章习题2有关。
+</aside>
+</section>
+<section id="变量重要性度量" class="level4">
+<h4 class="anchored" data-anchor-id="变量重要性度量">变量重要性度量</h4>
+<p>如前所述，与使用单棵树预测相比，装袋法通常能提高准确性。不过，得到的模型可能较难解释。回顾一下，决策树的一个优点是可以画成直观、易于解释的图，如图8.1所示。然而，对大量树进行装袋后，就无法再用单棵树来表示所得统计学习方法，也不再容易看出哪些变量对该方法最重要。因此，装袋法以可解释性为代价，提高了预测准确性。</p>
+<p>虽然一组装袋树远比单棵树难以解释，但仍可以利用RSS（回归树装袋）或基尼指数（分类树装袋），对每个预测变量的重要性作总体概括。对于回归树装袋，可以记录按某个给定预测变量进行分裂所带来的RSS (8.1)下降总量，再对全部 <span class="math inline">\(B\)</span> 棵树取平均。这个数值越大，表明该预测变量越重要。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-9.png" class="img-fluid figure-img"></p>
+<figcaption>图8.9：Heart数据的变量重要性</figcaption>
+</figure>
+</div>
+<p><strong>图8.9</strong> <code>Heart</code> 数据的变量重要性图。变量重要性根据基尼指数的平均下降量计算，并表示为相对于最大值的数值。图内文字：Variable Importance＝变量重要性；变量标识符 <code>Thal</code>、<code>Ca</code>、<code>ChestPain</code>、<code>Oldpeak</code>、<code>MaxHR</code>、<code>RestBP</code>、<code>Age</code>、<code>Chol</code>、<code>Slope</code>、<code>Sex</code>、<code>ExAng</code>、<code>RestECG</code>、<code>Fbs</code> 保持原样。</p>
+<p>类似地，对于分类树装袋，可以将按某个给定预测变量进行分裂所带来的基尼指数(8.6)下降量相加，再对全部 <span class="math inline">\(B\)</span> 棵树取平均。</p>
+<p>图8.9以图形展示了 <code>Heart</code> 数据中各变量的<strong>变量重要性（variable importance）</strong>。图中给出了各变量的基尼指数平均下降量相对于最大值的数值。基尼指数平均下降量最大的变量是 <code>Thal</code>、<code>Ca</code> 和 <code>ChestPain</code>。</p>
+</section>
+</section>
+<section id="随机森林" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="随机森林">8.2.2 随机森林</h3>
+<p>随机森林通过一个小小的调整，降低各棵树之间的相关性，从而改进装袋树。与装袋法一样，我们先在自助训练样本上构建多棵决策树。不过，在构建这些决策树时，每当考虑进行一次分裂，都从全部 <span class="math inline">\(p\)</span> 个预测变量中随机抽取 <span class="math inline">\(m\)</span> 个，作为分裂的候选变量。这次分裂只能使用这 <span class="math inline">\(m\)</span> 个预测变量中的一个。每次分裂都重新抽取 <span class="math inline">\(m\)</span> 个预测变量，通常选择 <span class="math inline">\(m\approx\sqrt p\)</span>，也就是说，每次分裂所考虑的预测变量数量约等于预测变量总数的平方根（对于 <code>Heart</code> 数据，即13个变量中的4个）。</p>
+<p>换句话说，在构建随机森林时，每次分裂甚至都不允许算法考虑大部分可用的预测变量。这听起来或许有些疯狂，却有一个巧妙的道理。假设数据集中有一个预测能力很强的变量，以及若干预测能力中等的变量。那么，在一组装袋树中，大部分乃至全部树都会在最顶层的分裂中使用这个很强的预测变量。因此，这些装袋树看起来都会十分相似。</p>
+<p>于是，装袋树给出的预测会高度相关。遗憾的是，对许多高度相关的量取平均，所能降低的方差不如对许多不相关的量取平均那么多。具体而言，在这种情形下，与单棵树相比，装袋法无法大幅降低方差。</p>
+<p>随机森林强制每次分裂只考虑预测变量的一个子集，从而克服这一问题。因此，平均有 <span class="math inline">\((p-m)/p\)</span> 的分裂根本不会考虑那个很强的预测变量，其他预测变量也就有了更多机会。可以把这个过程理解为降低各棵树之间的相关性，使所得各棵树的平均预测变异更小，因而更加可靠。</p>
+<p>装袋法与随机森林的主要区别在于预测变量子集大小 <span class="math inline">\(m\)</span> 的选择。例如，如果构建随机森林时使用 <span class="math inline">\(m=p\)</span>，那就相当于装袋法。对于 <code>Heart</code> 数据，与装袋法相比，取 <span class="math inline">\(m=\sqrt p\)</span> 的随机森林同时降低了测试误差和袋外误差（图8.8）。</p>
+<p>当存在大量彼此相关的预测变量时，构建随机森林时采用较小的 <span class="math inline">\(m\)</span> 通常会有帮助。我们将随机森林用于一个高维生物学数据集，其中包含349名患者组织样本上4,718个基因的表达测量值。人类约有20,000个基因，在特定的细胞、组织和生物学条件下，不同基因具有不同的活性水平，也就是表达水平。在这个数据集中，每个患者样本都有一个定性标签，共有15个不同水平：正常，或14种不同癌症类型中的一种。我们的目标是根据训练集中方差最大的500个基因，使用随机森林预测癌症类型。我们将观测随机划分为训练集和测试集，并在训练集上分别采用三种不同的分裂变量数量 <span class="math inline">\(m\)</span> 来拟合随机森林。结果如图8.10所示。单棵树的错误率为45.7%，空模型错误率为75.4%。<sup><a href="#ch08-fn4" id="ch08-fnref4">4</a></sup> 可以看到，使用400棵树就足以获得良好的表现；在本例中，选择 <span class="math inline">\(m=\sqrt p\)</span> 时，测试误差比装袋法（<span class="math inline">\(m=p\)</span>）略有改善。与装袋法一样，增加 <span class="math inline">\(B\)</span> 不会使随机森林过拟合，因此，实践中会使用足够大的 <span class="math inline">\(B\)</span>，使错误率趋于稳定。</p>
+<aside class="footnote" id="ch08-fn4">
+<a href="#ch08-fnref4">4</a> 空模型错误率是将每个观测都归入总体中占优势的类别所得到的错误率；在本例中，该类别为正常类。
+</aside>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-10.png" class="img-fluid figure-img"></p>
+<figcaption>图8.10：15类别基因表达数据上的随机森林</figcaption>
+</figure>
+</div>
+<p><strong>图8.10</strong> 对具有 <span class="math inline">\(p=500\)</span> 个预测变量的15类别基因表达数据集应用随机森林的结果。图中给出了测试误差随树的数量的变化。每条彩色曲线对应一个不同的 <span class="math inline">\(m\)</span> 值，即树的每个内部结点可供分裂选择的预测变量数量。随机森林（<span class="math inline">\(m&lt;p\)</span>）比装袋法（<span class="math inline">\(m=p\)</span>）略有改善。单棵分类树的错误率为45.7%。图内文字：Number of Trees＝树的数量；Test Classification Error＝测试分类错误率；图例 <span class="math inline">\(m=p\)</span>、<span class="math inline">\(m=p/2\)</span>、<span class="math inline">\(m=\sqrt p\)</span> 保留原样。</p>
+</section>
+<section id="提升法" class="level3">
+<h3 class="anchored" data-anchor-id="提升法">8.2.3 提升法</h3>
+<p>下面讨论提升法，这是另一种改进决策树预测的方法。与装袋法一样，提升法也是一种通用方法，可以用于许多回归或分类的统计学习方法。这里仅讨论决策树中的提升法。</p>
+<p>回顾一下，装袋法先使用自助法，从原始训练数据集生成多个副本，在每个副本上分别拟合一棵决策树，再将所有树组合成一个预测模型。</p>
+<p>特别要注意的是，每棵树都在一个自助数据集上构建，并且独立于其他树。提升法的工作方式与此类似，不过，树是<em>依次生长</em>的：每棵树都会利用先前已生长的树所提供的信息。提升法不使用自助抽样，而是在原始数据集经过修改的版本上拟合每棵树。</p>
+<p>先考虑回归问题。与装袋法一样，提升法也将大量决策树 <span class="math inline">\(\hat f^1,\ldots,\hat f^B\)</span> 组合起来。算法8.2描述了提升法。</p>
+<p>这一过程背后的思想是什么？在数据上拟合单棵大型决策树，相当于着力拟合数据，可能造成过拟合；提升法则是<em>缓慢学习</em>。给定当前模型，先对该模型的残差拟合一棵决策树。也就是说，拟合树时将当前残差作为响应，而不是把结果 <span class="math inline">\(Y\)</span> 作为响应。然后，将这棵新的决策树加入拟合函数，并更新残差。每棵树都可以很小，只有几个终端结点，其数量由算法中的参数 <span class="math inline">\(d\)</span> 决定。通过对残差拟合小树，我们逐渐改进 <span class="math inline">\(\hat f\)</span> 表现不佳的部分。收缩参数 <span class="math inline">\(\lambda\)</span> 会进一步放慢这一过程，让更多形状各异的树来处理残差。一般而言，<em>学习较慢</em>的统计学习方法往往表现良好。注意，与装袋法不同，在提升法中，每棵树的构建都强烈依赖于已经生长的树。</p>
+<p>以上描述的是回归树的提升过程。分类树的提升过程与此类似，但稍微复杂一些，这里省略其细节。</p>
+<div id="algorithm-8-2" class="algorithm">
+<p><strong>算法8.2 回归树的提升法</strong></p>
+<ol type="1">
+<li><p>令 <span class="math inline">\(\hat f(x)=0\)</span>，并对训练集中所有 <span class="math inline">\(i\)</span>，令 <span class="math inline">\(r_i=y_i\)</span>。</p></li>
+<li><p>对 <span class="math inline">\(b=1,2,\ldots,B\)</span>，重复以下步骤：</p>
+<ol type="a">
+<li><p>对训练数据 <span class="math inline">\((X,r)\)</span> 拟合一棵具有 <span class="math inline">\(d\)</span> 次分裂（<span class="math inline">\(d+1\)</span> 个终端结点）的树 <span class="math inline">\(\hat f^b\)</span>。</p></li>
+<li><p>将新树收缩后加入 <span class="math inline">\(\hat f\)</span>，对其进行更新：</p></li>
+</ol>
+<p><span class="math display">\[
+\hat f(x)\leftarrow\hat f(x)+\lambda\hat f^b(x). \tag{8.10}
+\]</span></p>
+<ol start="3" type="a">
+<li>更新残差：</li>
+</ol>
+<p><span class="math display">\[
+r_i\leftarrow r_i-\lambda\hat f^b(x_i). \tag{8.11}
+\]</span></p></li>
+<li><p>输出提升后的模型：</p>
+<p><span class="math display">\[
+\hat f(x)=\sum_{b=1}^{B}\lambda\hat f^b(x). \tag{8.12}
+\]</span></p></li>
+</ol>
+</div>
+<p>提升法有三个调节参数：</p>
+<ol type="1">
+<li>树的数量 <span class="math inline">\(B\)</span>。与装袋法和随机森林不同，若 <span class="math inline">\(B\)</span> 过大，提升法可能会过拟合；不过，即使出现过拟合，这一过程往往也很缓慢。我们使用交叉验证选择 <span class="math inline">\(B\)</span>。</li>
+<li>收缩参数 <span class="math inline">\(\lambda\)</span>，是一个较小的正数。它控制提升法的学习速度。典型取值为0.01或0.001，合适的选择可能因问题而异。当 <span class="math inline">\(\lambda\)</span> 非常小时，可能需要使用非常大的 <span class="math inline">\(B\)</span> 才能取得良好表现。</li>
+<li>每棵树的分裂次数 <span class="math inline">\(d\)</span>，它控制提升集成模型的复杂程度。<span class="math inline">\(d=1\)</span> 往往就能取得良好的表现，此时每棵树都是只含一次分裂的<strong>树桩（stump）</strong>。在这种情形下，由于每一项仅涉及单个变量，提升集成拟合的是一个加性模型。更一般地，<span class="math inline">\(d\)</span> 是<strong>交互深度（interaction depth）</strong>，控制提升模型的交互阶数，因为 <span class="math inline">\(d\)</span> 次分裂至多涉及 <span class="math inline">\(d\)</span> 个变量。</li>
+</ol>
+<p>在图8.11中，我们将提升法用于15类别癌症基因表达数据集，构建一个能够将正常类与14个癌症类别区分开的分类器。图中展示了测试误差随树的总数和交互深度 <span class="math inline">\(d\)</span> 的变化。可以看到，只要数量足够多，交互深度为1的简单树桩就能取得良好的表现。这个模型优于深度为2的模型，而两者又都优于随机森林。这突出了提升法与随机森林的一点区别：在提升法中，一棵树生长时会考虑先前已经生长的其他树，因此，较小的树通常就足够了。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-11.png" class="img-fluid figure-img"></p>
+<figcaption>图8.11：基因表达数据上的提升法与随机森林</figcaption>
+</figure>
+</div>
+<p><strong>图8.11</strong> 在15类别基因表达数据集上使用提升法和随机森林，以预测癌症与正常的结果。图中给出了测试误差随树的数量的变化。两个提升模型都取 <span class="math inline">\(\lambda=0.01\)</span>。深度为1的树略优于深度为2的树，且两者都优于随机森林；不过，标准误约为0.02，因此这些差异均不显著。单棵树的测试错误率为24%。图内文字：Number of Trees＝树的数量；Test Classification Error＝测试分类错误率；Boosting: depth=1＝提升法：深度=1；Boosting: depth=2＝提升法：深度=2；RandomForest: <span class="math inline">\(m=\sqrt p\)</span>＝随机森林：<span class="math inline">\(m=\sqrt p\)</span>。</p>
+<p>使用较小的树也有助于解释模型；例如，使用树桩会得到加性模型。</p>
+</section>
+<section id="贝叶斯加性回归树" class="level3">
+<h3 class="anchored" data-anchor-id="贝叶斯加性回归树">8.2.4 贝叶斯加性回归树</h3>
+<p>最后讨论<strong>贝叶斯加性回归树（Bayesian additive regression trees，BART）</strong>，这是另一种以决策树为构件的集成方法。为简单起见，这里介绍用于回归而非分类的BART。</p>
+<p>回顾一下，装袋法和随机森林对回归树取平均来进行预测，每棵树都使用随机抽取的数据和／或预测变量构建。各棵树彼此独立地构建。相比之下，提升法使用树的加权和，每棵树都是对当前拟合的残差进行拟合而构建的。因此，每棵新树都试图捕捉当前这组树尚未解释的信号。BART与这两类方法都有联系：与装袋法和随机森林一样，每棵树都以随机方式构建；与提升法一样，每棵树都试图捕捉当前模型尚未解释的信号。BART的主要创新在于生成新树的方式。</p>
+<p>在介绍BART算法之前，先定义一些记号。用 <span class="math inline">\(K\)</span> 表示回归树的数量，用 <span class="math inline">\(B\)</span> 表示BART算法运行的迭代次数。记号 <span class="math inline">\(\hat f_k^b(x)\)</span> 表示第 <span class="math inline">\(b\)</span> 次迭代中所用的第 <span class="math inline">\(k\)</span> 棵回归树在 <span class="math inline">\(x\)</span> 处的预测。在每次迭代结束时，将该次迭代的 <span class="math inline">\(K\)</span> 棵树相加，即对 <span class="math inline">\(b=1,\ldots,B\)</span>，有 <span class="math inline">\(\hat f^b(x)=\sum_{k=1}^{K}\hat f_k^b(x)\)</span>。</p>
+<p>在BART算法的第一次迭代中，所有树都被初始化为仅有一个根结点，并令 <span class="math inline">\(\hat f_k^1(x)=\frac{1}{nK}\sum_{i=1}^{n}y_i\)</span>，即将响应值的均值除以树的总数。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-12.png" class="img-fluid figure-img"></p>
+<figcaption>图8.12：BART算法中树的扰动</figcaption>
+</figure>
+</div>
+<p><strong>图8.12</strong> BART算法中经扰动的树的示意图。(a)：第 <span class="math inline">\(b-1\)</span> 次迭代中的第 <span class="math inline">\(k\)</span> 棵树 <span class="math inline">\(\hat f_k^{b-1}(X)\)</span>。给定 <span class="math inline">\(\hat f_k^{b-1}(X)\)</span> 的形式，(b)—(d)展示了 <span class="math inline">\(\hat f_k^b(X)\)</span> 的众多可能结果中的三种。(b)：一种可能是 <span class="math inline">\(\hat f_k^b(X)\)</span> 与 <span class="math inline">\(\hat f_k^{b-1}(X)\)</span> 结构相同，但终端结点的预测不同。(c)：另一种可能是对 <span class="math inline">\(\hat f_k^{b-1}(X)\)</span> 剪枝，得到 <span class="math inline">\(\hat f_k^b(X)\)</span>。(d)：还可能使 <span class="math inline">\(\hat f_k^b(X)\)</span> 比 <span class="math inline">\(\hat f_k^{b-1}(X)\)</span> 具有更多终端结点。图内文字：Possibility #1， #2， #3 for <span class="math inline">\(\hat f_k^b(X)\)</span>＝<span class="math inline">\(\hat f_k^b(X)\)</span> 的第1／2／3种可能结果；分裂条件、预测数值及函数记号均保持原样。</p>
+<p>因此，<span class="math inline">\(\hat f^1(x)=\sum_{k=1}^{K}\hat f_k^1(x)=\frac{1}{n}\sum_{i=1}^{n}y_i\)</span>。</p>
+<p>在后续迭代中，BART逐一更新这 <span class="math inline">\(K\)</span> 棵树。在第 <span class="math inline">\(b\)</span> 次迭代中，更新第 <span class="math inline">\(k\)</span> 棵树时，从每个响应值中减去除第 <span class="math inline">\(k\)</span> 棵树以外的所有树的预测，得到第 <span class="math inline">\(i\)</span> 个观测（<span class="math inline">\(i=1,\ldots,n\)</span>）的部分残差</p>
+<p><span class="math display">\[
+r_i=y_i-\sum_{k'&lt;k}\hat f_{k'}^b(x_i)-\sum_{k'&gt;k}\hat f_{k'}^{b-1}(x_i).
+\]</span></p>
+<p>BART并不对这个部分残差重新拟合一棵全新的树，而是从一组可能的扰动中，随机选择一种，对上次迭代的树（<span class="math inline">\(\hat f_k^{b-1}\)</span>）进行扰动，并偏向选择能够改善部分残差拟合的扰动。这种扰动包含两个方面：</p>
+<ol type="1">
+<li>可以通过增加分支或剪枝来改变树的结构。</li>
+<li>可以改变树中每个终端结点的预测值。</li>
+</ol>
+<p>图8.12给出了对一棵树进行扰动的一些可能示例。</p>
+<p>BART输出的是一组预测模型：</p>
+<p><span class="math display">\[
+\hat f^b(x)=\sum_{k=1}^{K}\hat f_k^b(x),\quad b=1,2,\ldots,B.
+\]</span></p>
+<div id="algorithm-8-3" class="algorithm">
+<p><strong>算法8.3 贝叶斯加性回归树</strong></p>
+<ol type="1">
+<li><p>令 <span class="math inline">\(\hat f_1^1(x)=\hat f_2^1(x)=\cdots=\hat f_K^1(x)=\frac{1}{nK}\sum_{i=1}^{n}y_i\)</span>。</p></li>
+<li><p>计算 <span class="math inline">\(\hat f^1(x)=\sum_{k=1}^{K}\hat f_k^1(x)=\frac{1}{n}\sum_{i=1}^{n}y_i\)</span>。</p></li>
+<li><p>对 <span class="math inline">\(b=2,\ldots,B\)</span>：</p>
+<ol type="a">
+<li><p>对 <span class="math inline">\(k=1,2,\ldots,K\)</span>：</p>
+<ol type="i">
+<li><p>对 <span class="math inline">\(i=1,\ldots,n\)</span>，计算当前部分残差</p>
+<p><span class="math display">\[
+r_i=y_i-\sum_{k'&lt;k}\hat f_{k'}^b(x_i)-\sum_{k'&gt;k}\hat f_{k'}^{b-1}(x_i).
+    \]</span></p></li>
+<li><p>通过随机扰动上次迭代的第 <span class="math inline">\(k\)</span> 棵树 <span class="math inline">\(\hat f_k^{b-1}(x)\)</span>，对 <span class="math inline">\(r_i\)</span> 拟合一棵新树 <span class="math inline">\(\hat f_k^b(x)\)</span>。更倾向于选择能够改善拟合的扰动。</p></li>
+</ol></li>
+<li><p>计算 <span class="math inline">\(\hat f^b(x)=\sum_{k=1}^{K}\hat f_k^b(x)\)</span>。</p></li>
+</ol></li>
+<li><p>舍去 <span class="math inline">\(L\)</span> 个预热样本后计算均值：</p>
+<p><span class="math display">\[
+\hat f(x)=\frac{1}{B-L}\sum_{b=L+1}^{B}\hat f^b(x).
+\]</span></p></li>
+</ol>
+</div>
+<p>通常会丢弃最初的几个预测模型，因为在较早的迭代阶段，也就是<strong>预热期（burn-in period）</strong>，得到的模型往往无法提供很好的结果。可以用 <span class="math inline">\(L\)</span> 表示预热迭代的次数，例如取 <span class="math inline">\(L=200\)</span>。然后，要得到单个预测，只需对预热迭代之后的结果取平均，即 <span class="math inline">\(\hat f(x)=\frac{1}{B-L}\sum_{b=L+1}^{B}\hat f^b(x)\)</span>。不过，也可以计算均值以外的其他量：例如，<span class="math inline">\(\hat f^{L+1}(x),\ldots,\hat f^B(x)\)</span> 的百分位数可以度量最终预测的不确定性。算法8.3概括了整个BART过程。</p>
+<p>BART方法的一个关键之处在于：在步骤3(a)ii中，并不对当前部分残差拟合一棵全新的树，而是通过略微修改上次迭代得到的树，来改善对当前部分残差的拟合（见图8.12）。粗略地说，这限制了每次迭代中对数据拟合的强度，从而有助于防止过拟合。此外，单棵树通常都很小。我们限制树的大小，是为了避免对数据过拟合；如果树长得很大，就更容易出现过拟合。</p>
+<p>图8.13给出了在 <code>Heart</code> 数据上使用 <span class="math inline">\(K=200\)</span> 棵树，并将迭代次数增加至10,000时，BART的结果。在最初的迭代中，测试误差和训练误差都有一些波动。度过最初的预热期后，错误率趋于稳定。可以看到，训练误差与测试误差之间的差距很小，表明对树进行扰动的过程在很大程度上避免了过拟合。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-13.png" class="img-fluid figure-img"></p>
+<figcaption>图8.13：Heart数据上的BART与提升法</figcaption>
+</figure>
+</div>
+<p><strong>图8.13</strong> <code>Heart</code> 数据上的BART与提升法结果。图中同时展示了训练误差和测试误差。经过100次迭代的预热期（灰色区域）后，BART的错误率趋于稳定。提升法在数百次迭代后开始过拟合。图内文字：Number of Iterations＝迭代次数；Error＝误差；BART Training Error＝BART训练误差；BART Test Error＝BART测试误差；Boosting Training Error＝提升法训练误差；Boosting Test Error＝提升法测试误差。</p>
+<p>图8.13还展示了提升法的训练误差和测试误差。可以看到，提升法的测试误差先接近BART的测试误差，随后随着迭代次数增加而开始上升。与此同时，提升法的训练误差随着迭代次数增加而下降，表明提升法对数据发生了过拟合。</p>
+<p>虽然细节超出了本书范围，但BART方法可以看作拟合树集成模型的一种贝叶斯方法：每次为了拟合残差而对树进行随机扰动时，实际上都是在从后验分布中抽取一棵新树。（当然，这种与贝叶斯方法的联系也正是BART名称的由来。）此外，算法8.3可以看作一种用于拟合BART模型的<strong>马尔可夫链蒙特卡洛（Markov chain Monte Carlo）</strong>算法。</p>
+<p>应用BART时，必须选择树的数量 <span class="math inline">\(K\)</span>、迭代次数 <span class="math inline">\(B\)</span> 和预热迭代次数 <span class="math inline">\(L\)</span>。通常会为 <span class="math inline">\(B\)</span> 和 <span class="math inline">\(K\)</span> 选择较大的值，为 <span class="math inline">\(L\)</span> 选择适中的值；例如，<span class="math inline">\(K=200\)</span>、<span class="math inline">\(B=1{,}000\)</span>、<span class="math inline">\(L=100\)</span> 就是一组合适的选择。已有结果表明，BART的开箱即用表现非常出色，也就是说，只需极少的调节就能取得良好表现。</p>
+</section>
+<section id="树集成方法小结" class="level3">
+<h3 class="anchored" data-anchor-id="树集成方法小结">8.2.5 树集成方法小结</h3>
+<p>树很适合作为集成方法的弱学习器，原因有许多，包括灵活性，以及能够处理混合类型预测变量（即同时含定性和定量预测变量）的能力。</p>
+<p>到目前为止，我们已经看过拟合树集成模型的四种方法：装袋法、随机森林、提升法和BART。</p>
+<ul>
+<li>在<strong>装袋法</strong>中，各棵树在随机抽取的观测样本上独立生长。因此，各棵树往往十分相似。于是，装袋法可能陷入局部最优，无法充分探索模型空间。</li>
+<li>在<strong>随机森林</strong>中，各棵树同样在随机抽取的观测样本上独立生长。不过，每棵树的每次分裂都使用随机抽取的特征子集，从而降低各棵树之间的相关性，与装袋法相比，能够更充分地探索模型空间。</li>
+<li>在<strong>提升法</strong>中，只使用原始数据，不抽取任何随机样本。各棵树依次生长，采用一种“缓慢”的学习方式：每棵新树都对先前各棵树尚未捕捉的信号进行拟合，并在使用前进行收缩。</li>
+<li>在<strong>BART</strong>中，同样只使用原始数据，各棵树依次生长。不过，每棵树都会受到扰动，以避免陷入局部极小值，并更充分地探索模型空间。</li>
+</ul>
+</section>
+</section>
+<section id="实验基于树的方法" class="level2">
+<h2 class="anchored" data-anchor-id="实验基于树的方法">8.3 实验：基于树的方法</h2>
+<p>我们先在顶层导入一些常用的库。</p>
+<p>In[1]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.pyplot <span class="im">import</span> subplots</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.datasets <span class="im">import</span> get_rdataset</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.model_selection <span class="im">as</span> skm</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP <span class="im">import</span> load_data, confusion_table</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.models <span class="im">import</span> ModelSpec <span class="im">as</span> MS</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>同时集中导入本实验新用到的工具。</p>
+<p>In[2]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> (DecisionTreeClassifier <span class="im">as</span> DTC,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                          DecisionTreeRegressor <span class="im">as</span> DTR,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                          plot_tree,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                          export_text)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> (accuracy_score ,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                             log_loss)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> <span class="op">\</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>     (RandomForestRegressor <span class="im">as</span> RF,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>      GradientBoostingRegressor <span class="im">as</span> GBR)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.bart <span class="im">import</span> BART</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="拟合分类树" class="level3">
+<h3 class="anchored" data-anchor-id="拟合分类树">8.3.1 拟合分类树</h3>
+<p>我们首先用分类树分析 <code>Carseats</code> 数据集。在这个数据集中，<code>Sales</code> 是连续变量，因此先将它重新编码为二元变量。我们用 <code>where()</code> 函数创建一个名为 <code>High</code> 的变量：当 <code>Sales</code> 大于8时，其值为 <code>Yes</code>；否则为 <code>No</code>。</p>
+<p>In[3]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Carseats <span class="op">=</span> load_data(<span class="st">'Carseats'</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>High <span class="op">=</span> np.where(Carseats.Sales <span class="op">&gt;</span> <span class="dv">8</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Yes"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                <span class="st">"No"</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在使用 <code>DecisionTreeClassifier()</code> 拟合一棵分类树，用除 <code>Sales</code> 以外的所有变量预测 <code>High</code>。为此，需要像拟合回归模型时那样构造模型矩阵。</p>
+<p>In[4]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> MS(Carseats.columns.drop(<span class="st">'Sales'</span>), intercept<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> model.fit_transform(Carseats)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>feature_names <span class="op">=</span> <span class="bu">list</span>(D.columns)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.asarray(D)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>我们将数据框 <code>D</code> 转换成了数组 <code>X</code>，后面的一些分析需要使用这个数组。还需要保留 <code>feature_names</code>，以便稍后给图形添加标注。</p>
+<p>指定分类器时需要设置若干选项，例如 <code>max_depth</code>（树生长的最大深度）、<code>min_samples_split</code>（一个结点至少要有多少个观测才允许继续切分）以及 <code>criterion</code>（采用基尼指数还是交叉熵（cross-entropy）作为切分准则）。我们还设置了 <code>random_state</code>，以保证结果可复现；当多个切分的准则值相同时，会随机选择其中一个。</p>
+<p>In[5]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>clf <span class="op">=</span> DTC(criterion<span class="op">=</span><span class="st">'entropy'</span>,</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>          max_depth<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>          random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>clf.fit(X, High)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[5]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>DecisionTreeClassifier(criterion<span class="op">=</span><span class="st">'entropy'</span>, max_depth<span class="op">=</span><span class="dv">3</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>在3.3节讨论定性特征时，我们提到，对于线性回归模型，可以使用 <code>statsmodels</code> 的公式记法，在模型矩阵中加入一个虚拟变量矩阵（独热编码）来表示这类特征。正如8.1节所述，构建决策树时，可以用一种更自然的方式处理定性特征，而不需要这些虚拟变量：每次切分都是将各个水平划分成两组。不过，<code>sklearn</code> 中的决策树实现没有采用这种方法，而是直接将独热编码后的各个水平作为单独的变量。</p>
+<p>In[6]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>accuracy_score(High, clf.predict(X))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[6]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fl">0.7275</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>仅使用默认参数时，训练错误率为21%。对于分类树，可以用 <code>log_loss()</code> 得到偏差统计量的值，其表达式为</p>
+<p><span class="math display">\[
+-2\sum_m\sum_k n_{mk}\log\hat{p}_{mk},
+\]</span></p>
+<p>其中，<span class="math inline">\(n_{mk}\)</span> 是第 <span class="math inline">\(m\)</span> 个终端结点中属于第 <span class="math inline">\(k\)</span> 类的观测数。</p>
+<p>In[7]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>resid_dev <span class="op">=</span> np.<span class="bu">sum</span>(log_loss(High, clf.predict_proba(X)))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>resid_dev</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[7]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fl">0.4711</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>它与式（8.7）定义的熵密切相关。较小的偏差统计量表明，这棵树对（训练）数据的拟合较好。</p>
+<p>树最吸引人的特点之一是可以用图形展示。这里用 <code>plot()</code> 函数显示树的结构（此处未展示图形）。</p>
+<p>In[8]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">12</span>,<span class="dv">12</span>))[<span class="dv">1</span>]</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>plot_tree(clf,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>          feature_names<span class="op">=</span>feature_names ,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>          ax<span class="op">=</span>ax)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>Sales</code> 最重要的指标似乎是 <code>ShelveLoc</code>。</p>
+<p>可以用 <code>export_text()</code> 查看树的文本表示，其中会显示每个分支的切分准则（例如 <code>Price &lt;= 92.5</code>），对于叶结点则显示总体预测结果（<code>Yes</code> 或 <code>No</code>）。设置 <code>show_weights=True</code> 后，还可以看到该叶结点中取值为 <code>Yes</code> 和 <code>No</code> 的观测数。</p>
+<p>In[9]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(export_text(clf,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                  feature_names<span class="op">=</span>feature_names ,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                  show_weights<span class="op">=</span><span class="va">True</span>))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[9]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">|---</span> ShelveLoc[Good] <span class="op">&lt;=</span> <span class="fl">0.50</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|---</span> Price <span class="op">&lt;=</span> <span class="fl">92.50</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> Income <span class="op">&lt;=</span> <span class="fl">57.00</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> weights: [<span class="fl">7.00</span>, <span class="fl">3.00</span>] <span class="kw">class</span>: No</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> Income <span class="op">&gt;</span>  <span class="fl">57.00</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> weights: [<span class="fl">7.00</span>, <span class="fl">29.00</span>] <span class="kw">class</span>: Yes</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|---</span> Price <span class="op">&gt;</span>  <span class="fl">92.50</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> Advertising <span class="op">&lt;=</span> <span class="fl">13.50</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> weights: [<span class="fl">183.00</span>, <span class="fl">41.00</span>] <span class="kw">class</span>: No</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> Advertising <span class="op">&gt;</span>  <span class="fl">13.50</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> weights: [<span class="fl">20.00</span>, <span class="fl">25.00</span>] <span class="kw">class</span>: Yes</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="op">|---</span> ShelveLoc[Good] <span class="op">&gt;</span>  <span class="fl">0.50</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|---</span> Price <span class="op">&lt;=</span> <span class="fl">135.00</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> US[Yes] <span class="op">&lt;=</span> <span class="fl">0.50</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> weights: [<span class="fl">6.00</span>, <span class="fl">11.00</span>] <span class="kw">class</span>: Yes</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> US[Yes] <span class="op">&gt;</span>  <span class="fl">0.50</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> weights: [<span class="fl">2.00</span>, <span class="fl">49.00</span>] <span class="kw">class</span>: Yes</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|---</span> Price <span class="op">&gt;</span>  <span class="fl">135.00</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> Income <span class="op">&lt;=</span> <span class="fl">46.00</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> weights: [<span class="fl">6.00</span>, <span class="fl">0.00</span>] <span class="kw">class</span>: No</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> Income <span class="op">&gt;</span>  <span class="fl">46.00</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>   <span class="op">|</span>   <span class="op">|</span>   <span class="op">|---</span> weights: [<span class="fl">5.00</span>, <span class="fl">6.00</span>] <span class="kw">class</span>: Yes</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>要恰当地评估分类树在这些数据上的表现，需要估计测试误差，而不能只计算训练误差。我们将观测划分为训练集和测试集，用训练集构建树，再用测试数据评估其表现。这一流程与第6章类似，只是将线性模型换成了决策树，验证所用的代码几乎相同。采用这种方法，可以正确预测测试数据集中68.5%的销售地点。</p>
+<p>In[10]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>validation <span class="op">=</span> skm.ShuffleSplit(n_splits<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                              test_size<span class="op">=</span><span class="dv">200</span>,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                              random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> skm.cross_validate(clf,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>                             D,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                             High,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>                             cv<span class="op">=</span>validation)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>results[<span class="st">'test_score'</span>]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[10]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.685</span>])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>接下来，考察剪枝能否改善分类表现。首先，将数据划分为训练集和测试集。我们将利用交叉验证，在训练集上对树进行剪枝，然后在测试集上评估剪枝后树的表现。</p>
+<p>In[11]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>(X_train,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a> X_test,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a> High_train,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a> High_test) <span class="op">=</span> skm.train_test_split(X,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                                   High,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                                   test_size<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                                   random_state<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>先在训练集上重新拟合完整树。这里不设置 <code>max_depth</code> 参数，因为将通过交叉验证来确定它。</p>
+<p>In[12]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>clf <span class="op">=</span> DTC(criterion<span class="op">=</span><span class="st">'entropy'</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>clf.fit(X_train, High_train)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>accuracy_score(High_test, clf.predict(X_test))</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[12]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fl">0.735</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>接下来，使用 <code>clf</code> 的 <code>cost_complexity_pruning_path()</code> 方法提取代价复杂度的取值。</p>
+<p>In[13]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>ccp_path <span class="op">=</span> clf.cost_complexity_pruning_path(X_train, High_train)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>kfold <span class="op">=</span> skm.KFold(<span class="dv">10</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                  random_state<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                  shuffle<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>这样得到一组不纯度及相应的 <span class="math inline">\(\alpha\)</span> 值，可以通过交叉验证从中选出最优值。</p>
+<p>In[14]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> skm.GridSearchCV(clf,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                        {<span class="st">'ccp_alpha'</span>: ccp_path.ccp_alphas},</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                        refit<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                        cv<span class="op">=</span>kfold,</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>                        scoring<span class="op">=</span><span class="st">'accuracy'</span>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>grid.fit(X_train, High_train)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>grid.best_score_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[14]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fl">0.685</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>来看看剪枝后的树。</p>
+<p>In[15]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">12</span>))[<span class="dv">1</span>]</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>best_ <span class="op">=</span> grid.best_estimator_</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>plot_tree(best_,</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>          feature_names<span class="op">=</span>feature_names ,</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>          ax<span class="op">=</span>ax)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>这棵树的分支相当繁茂。可以数一数叶结点，也可以直接查询 <code>best_</code>。</p>
+<p>In[16]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>best_.tree_.n_leaves</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[16]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="dv">30</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>有30个终端结点的树取得了最低的交叉验证错误率，准确率为68.5%。这棵剪枝后的树在测试数据集上表现如何？我们再次使用 <code>predict()</code> 函数。</p>
+<p>In[17]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(accuracy_score(High_test,</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>                     best_.predict(X_test)))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>confusion <span class="op">=</span> confusion_table(best_.predict(X_test),</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>                            High_test)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>confusion</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[17]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fl">0.72</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    Truth    No  Yes</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>Predicted</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>      No    <span class="dv">108</span>   <span class="dv">61</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>     Yes     <span class="dv">10</span>   <span class="dv">21</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在，72.0%的测试观测被正确分类，表现比完整树（有35个叶结点）略差。因此，这里的交叉验证没有带来多大帮助：它只剪掉了5个叶结点，却使错误率略有上升。如果改变前面的随机数种子，结果也会改变；交叉验证虽然提供了一种无偏的模型选择方法，但它也有方差。</p>
+</section>
+<section id="拟合回归树" class="level3">
+<h3 class="anchored" data-anchor-id="拟合回归树">8.3.2 拟合回归树</h3>
+<p>这里对 <code>Boston</code> 数据集拟合一棵回归树。步骤与分类树类似。</p>
+<p>In[18]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>Boston <span class="op">=</span> load_data(<span class="st">"Boston"</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> MS(Boston.columns.drop(<span class="st">'medv'</span>), intercept<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> model.fit_transform(Boston)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>feature_names <span class="op">=</span> <span class="bu">list</span>(D.columns)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.asarray(D)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>首先，将数据划分为训练集和测试集，在训练数据上拟合这棵树。这里将30%的数据用作测试集。</p>
+<p>In[19]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>(X_train,</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a> X_test,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a> y_train,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a> y_test) <span class="op">=</span> skm.train_test_split(X,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>                                Boston[<span class="st">'medv'</span>],</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>                                test_size<span class="op">=</span><span class="fl">0.3</span>,</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>                                random_state<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>建立训练集和测试集之后，就可以拟合回归树。</p>
+<p>In[20]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>reg <span class="op">=</span> DTR(max_depth<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>reg.fit(X_train, y_train)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">12</span>,<span class="dv">12</span>))[<span class="dv">1</span>]</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>plot_tree(reg,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>          feature_names<span class="op">=</span>feature_names ,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>          ax<span class="op">=</span>ax)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>变量 <code>lstat</code> 衡量社会经济地位较低的人口所占的百分比。这棵树表明，较低的 <code>lstat</code> 值对应着更昂贵的房屋。对于居民社会经济地位较低（<code>lstat &gt; 14.4</code>）、犯罪率中等（<code>crim &gt; 5.8</code>）的郊区中的小型住宅（<code>rm &lt; 6.8</code>），这棵树预测的房价中位数为12,042美元。</p>
+<p>现在，使用交叉验证函数，看看剪枝能否改善表现。</p>
+<p>In[21]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>ccp_path <span class="op">=</span> reg.cost_complexity_pruning_path(X_train, y_train)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>kfold <span class="op">=</span> skm.KFold(<span class="dv">5</span>,</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                  shuffle<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                  random_state<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> skm.GridSearchCV(reg,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>                        {<span class="st">'ccp_alpha'</span>: ccp_path.ccp_alphas},</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>                        refit<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>                        cv<span class="op">=</span>kfold,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>                        scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>)</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> grid.fit(X_train, y_train)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>根据交叉验证结果，用剪枝后的树对测试集进行预测。</p>
+<p>In[22]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>best_ <span class="op">=</span> grid.best_estimator_</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>np.mean((y_test <span class="op">-</span> best_.predict(X_test))<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[22]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fl">28.07</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>换句话说，这棵回归树的测试集MSE为28.07。因此，MSE的平方根约为5.30，表明模型在测试集上给出的预测与相应郊区真实房价中位数之间的差距大致在5,300美元以内。</p>
+<p>来画出最优的树，看看它的可解释性如何。</p>
+<p>In[23]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">12</span>,<span class="dv">12</span>))[<span class="dv">1</span>]</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>plot_tree(G.best_estimator_ ,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>          feature_names<span class="op">=</span>feature_names ,</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>          ax<span class="op">=</span>ax)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="装袋法与随机森林" class="level3">
+<h3 class="anchored" data-anchor-id="装袋法与随机森林">8.3.3 装袋法与随机森林</h3>
+<p>这里使用 <code>sklearn.ensemble</code> 包中的 <code>RandomForestRegressor()</code>，将装袋法和随机森林应用于 <code>Boston</code> 数据。回顾一下，装袋法就是 <span class="math inline">\(m=p\)</span> 时随机森林的一个特例。因此，<code>RandomForestRegressor()</code> 函数既可以用于装袋法，也可以用于随机森林。我们先从装袋法开始。</p>
+<p>In[24]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>bag_boston <span class="op">=</span> RF(max_features<span class="op">=</span>X_train.shape[<span class="dv">1</span>], random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>bag_boston.fit(X_train, y_train)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[24]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>RandomForestRegressor(max_features<span class="op">=</span><span class="dv">12</span>, random_state<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>参数 <code>max_features</code> 表示，在树的每次切分中都应考虑全部12个预测变量，换句话说，就是采用装袋法。这个装袋模型在测试集上表现如何？</p>
+<p>In[25]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))[<span class="dv">1</span>]</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>y_hat_bag <span class="op">=</span> bag_boston.predict(X_test)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>ax.scatter(y_hat_bag, y_test)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>np.mean((y_test <span class="op">-</span> y_hat_bag)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[25]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fl">14.63</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>装袋回归树的测试集MSE为14.63，大约是最优剪枝后的单棵树的一半。可以使用 <code>n_estimators</code> 参数，将树的数量从默认的100改为其他值：</p>
+<p>In[26]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>bag_boston <span class="op">=</span> RF(max_features<span class="op">=</span>X_train.shape[<span class="dv">1</span>],</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>                n_estimators<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>                random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>y_hat_bag <span class="op">=</span> bag_boston.predict(X_test)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>np.mean((y_test <span class="op">-</span> y_hat_bag)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[26]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fl">14.61</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>变化不大。装袋法和随机森林不会因为增加树的数量而过拟合，但树的数量过少时可能欠拟合。</p>
+<p>构建随机森林的过程完全相同，只需将 <code>max_features</code> 参数设为更小的值。默认情况下，<code>RandomForestRegressor()</code> 在构建由回归树组成的随机森林时使用 <span class="math inline">\(p\)</span> 个变量（也就是说，默认采用装袋法）；<code>RandomForestClassifier()</code> 在构建由分类树组成的随机森林时则使用 <span class="math inline">\(\sqrt{p}\)</span> 个变量。这里使用 <code>max_features=6</code>。</p>
+<p>In[27]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>RF_boston <span class="op">=</span> RF(max_features<span class="op">=</span><span class="dv">6</span>,</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>               random_state<span class="op">=</span><span class="dv">0</span>).fit(X_train, y_train)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>y_hat_RF <span class="op">=</span> RF_boston.predict(X_test)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>np.mean((y_test <span class="op">-</span> y_hat_RF)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[27]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fl">20.04</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>测试集MSE为20.04，说明在这个例子中，随机森林的表现比装袋法稍差。从拟合模型中提取 <code>feature_importances_</code> 的值，可以查看各变量的重要性。</p>
+<p>In[28]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>feature_imp <span class="op">=</span> pd.DataFrame(</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'importance'</span>:RF_boston.feature_importances_},</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    index<span class="op">=</span>feature_names)</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>feature_imp.sort_values(by<span class="op">=</span><span class="st">'importance'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[28]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>         importance</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  lstat    <span class="fl">0.368683</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>     rm    <span class="fl">0.333842</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>ptratio    <span class="fl">0.057306</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  indus    <span class="fl">0.053303</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>   crim    <span class="fl">0.052426</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    dis    <span class="fl">0.042493</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    nox    <span class="fl">0.034410</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>    age    <span class="fl">0.024327</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>    tax    <span class="fl">0.022368</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>    rad    <span class="fl">0.005048</span></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>     zn    <span class="fl">0.003238</span></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>   chas    <span class="fl">0.002557</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>这一相对度量先计算依据某个变量进行切分所带来的结点不纯度总降幅，再对所有树取平均值（图8.9展示了对 <code>Heart</code> 数据拟合模型后得到的这一度量）。</p>
+<p>结果表明，在随机森林所考虑的全部树中，社区的财富水平（<code>lstat</code>）和房屋大小（<code>rm</code>）是两个远比其他变量重要的变量。</p>
+</section>
+<section id="提升法-1" class="level3">
+<h3 class="anchored" data-anchor-id="提升法-1">8.3.4 提升法</h3>
+<p>这里使用 <code>sklearn.ensemble</code> 中的 <code>GradientBoostingRegressor()</code>，对 <code>Boston</code> 数据集拟合提升回归树。分类问题则应使用 <code>GradientBoostingClassifier()</code>。参数 <code>n_estimators=5000</code> 表示要构建5,000棵树，选项 <code>max_depth=3</code> 限制每棵树的深度。参数 <code>learning_rate</code> 就是前面介绍提升法时提到的 <span class="math inline">\(\lambda\)</span>。</p>
+<p>In[29]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>boost_boston <span class="op">=</span> GBR(n_estimators<span class="op">=</span><span class="dv">5000</span>,</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>                   learning_rate<span class="op">=</span><span class="fl">0.001</span>,</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>                   max_depth<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>                   random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>boost_boston.fit(X_train, y_train)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以通过 <code>train_score_</code> 属性查看训练误差如何下降。要了解测试误差的下降过程，可以用 <code>staged_predict()</code> 方法得到沿着拟合路径各阶段的预测值。</p>
+<p>In[30]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>test_error <span class="op">=</span> np.zeros_like(boost_boston.train_score_)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, y_ <span class="kw">in</span> <span class="bu">enumerate</span>(boost_boston.staged_predict(X_test)):</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>   test_error[idx] <span class="op">=</span> np.mean((y_test <span class="op">-</span> y_)<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>plot_idx <span class="op">=</span> np.arange(boost_boston.train_score_.shape[<span class="dv">0</span>])</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))[<span class="dv">1</span>]</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>ax.plot(plot_idx,</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>        boost_boston.train_score_ ,</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">'b'</span>,</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">'Training'</span>)</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>ax.plot(plot_idx,</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>        test_error,</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>        <span class="st">'r'</span>,</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">'Test'</span>)</span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>ax.legend()<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在，用提升模型预测测试集中的 <code>medv</code>：</p>
+<p>In[31]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>y_hat_boost <span class="op">=</span> boost_boston.predict(X_test)<span class="op">;</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>np.mean((y_test <span class="op">-</span> y_hat_boost)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[31]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fl">14.48</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>得到的测试MSE为14.48，与装袋法的测试MSE相近。如果需要，也可以改变式（8.10）中收缩参数 <span class="math inline">\(\lambda\)</span> 的值来进行提升。默认值为0.001，不过很容易修改。这里取 <span class="math inline">\(\lambda=0.2\)</span>。</p>
+<p>In[32]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>boost_boston <span class="op">=</span> GBR(n_estimators<span class="op">=</span><span class="dv">5000</span>,</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>                   learning_rate<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>                   max_depth<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>                   random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>boost_boston.fit(X_train,</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>                 y_train)</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>y_hat_boost <span class="op">=</span> boost_boston.predict(X_test)<span class="op">;</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>np.mean((y_test <span class="op">-</span> y_hat_boost)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[32]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fl">14.50</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>在这个例子中，使用 <span class="math inline">\(\lambda=0.2\)</span> 得到的测试MSE与使用 <span class="math inline">\(\lambda=0.001\)</span> 时几乎相同。</p>
+</section>
+<section id="贝叶斯加性回归树-1" class="level3">
+<h3 class="anchored" data-anchor-id="贝叶斯加性回归树-1">8.3.5 贝叶斯加性回归树</h3>
+<p>本节演示 <code>ISLP.bart</code> 包中的BART Python实现。我们对 <code>Boston</code> 房价数据集拟合模型。这里的 <code>BART()</code> 估计器专为定量响应变量设计；也有其他实现，可以对分类响应拟合逻辑回归和概率单位（probit）模型。</p>
+<p>In[33]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>bart_boston <span class="op">=</span> BART(random_state<span class="op">=</span><span class="dv">0</span>, burnin<span class="op">=</span><span class="dv">5</span>, ndraw<span class="op">=</span><span class="dv">15</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>bart_boston.fit(X_train, y_train)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[33]:</p>
+<pre class="text"><code>BART(burnin=5, ndraw=15, random_state=0)</code></pre>
+<p>在这个数据集及这次训练集、测试集划分下，可以看到BART的测试误差与随机森林相近。</p>
+<p>In[34]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>yhat_test <span class="op">=</span> bart_boston.predict(X_test.astype(np.float32))</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>np.mean((y_test <span class="op">-</span> yhat_test)<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[34]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fl">20.92</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>可以检查各个变量在这一组树中出现了多少次。这提供了一种汇总，与提升法和随机森林的变量重要性图类似。</p>
+<p>In[35]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>var_inclusion <span class="op">=</span> pd.Series(bart_boston.variable_inclusion_.mean(<span class="dv">0</span>),</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>                               index<span class="op">=</span>D.columns)</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>var_inclusion</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[35]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>   crim    <span class="fl">25.333333</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>     zn    <span class="fl">27.000000</span></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  indus    <span class="fl">21.266667</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>   chas    <span class="fl">20.466667</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    nox    <span class="fl">25.400000</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>     rm    <span class="fl">32.400000</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    age    <span class="fl">26.133333</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>    dis    <span class="fl">25.666667</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>    rad    <span class="fl">24.666667</span></span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>    tax    <span class="fl">23.933333</span></span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>ptratio    <span class="fl">25.000000</span></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>  lstat    <span class="fl">31.866667</span></span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>dtype: float64</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="习题" class="level2">
+<h2 class="anchored" data-anchor-id="习题">8.4 习题</h2>
+<section id="概念题" class="level3">
+<h3 class="anchored" data-anchor-id="概念题">概念题</h3>
+<ol type="1">
+<li><p>自行构造一个二维特征空间的划分例子，使其能够由递归二元切分得到。你的例子应至少包含六个区域。画出与这一划分对应的决策树。务必标明图中的各个要素，包括区域 <span class="math inline">\(R_1,R_2,\ldots\)</span>、切分点 <span class="math inline">\(t_1,t_2,\ldots\)</span> 等。</p>
+<p><em>提示：结果应与图8.1和图8.2类似。</em></p></li>
+<li><p>第8.2.3节提到，用深度为1的树（即树桩）进行提升会得到一个加性模型，即具有以下形式的模型：</p>
+<p><span class="math display">\[
+f(X)=\sum_{j=1}^{p}f_j(X_j).
+\]</span></p>
+<p>解释为什么如此。可以从算法8.2中的式(8.12)入手。</p></li>
+<li><p>考虑一个只有两个类别的简单分类问题中的基尼指数、分类错误率和熵。在同一张图中画出这三个量随 <span class="math inline">\(\hat{p}_{m1}\)</span> 变化的曲线。横轴为 <span class="math inline">\(\hat{p}_{m1}\)</span>，取值从0到1；纵轴为基尼指数、分类错误率和熵的取值。</p>
+<p><em>提示：在二分类情形下，<span class="math inline">\(\hat{p}_{m1}=1-\hat{p}_{m2}\)</span>。可以手绘这张图，但用R绘图会容易得多。</em></p></li>
+<li><p>本题与图8.14中的图形有关。</p></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-8-14.png" class="img-fluid figure-img"></p>
+<figcaption>图8.14：习题4的预测变量空间划分与树</figcaption>
+</figure>
+</div>
+<p><strong>图8.14</strong> 左图：习题4(a)中的预测变量空间划分。右图：习题4(b)中的树。图内 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 为两个预测变量；区域均值、切分阈值及叶结点数值保持原样。</p>
+<ol type="a">
+<li><p>画出与图8.14左图所示预测变量空间划分对应的树。方框中的数字表示各区域内 <span class="math inline">\(Y\)</span> 的均值。</p></li>
+<li><p>根据图8.14右图所示的树，画一张与该图左侧类似的示意图。应将预测变量空间划分为正确的区域，并标明各区域的均值。</p></li>
+</ol>
+<ol start="5" type="1">
+<li><p>假设从一个包含红、绿两类的数据集中生成十个自助样本，然后分别在每个自助样本上拟合一棵分类树。对于某个特定的 <span class="math inline">\(X\)</span> 值，得到 <span class="math inline">\(P(\text{类别为红色}\mid X)\)</span> 的10个估计值：</p>
+<p><span class="math display">\[
+0.1,\ 0.15,\ 0.2,\ 0.2,\ 0.55,\ 0.6,\ 0.6,\ 0.65,\ 0.7,\ 0.75.
+\]</span></p>
+<p>将这些结果合并为单个类别预测有两种常见方法：一种是本章介绍的多数投票法，另一种是根据平均概率进行分类。在这个例子中，两种方法最终分别会给出什么分类？</p></li>
+<li><p>详细解释用于拟合回归树的算法。</p></li>
+</ol>
+</section>
+<section id="应用题" class="level3">
+<h3 class="anchored" data-anchor-id="应用题">应用题</h3>
+<ol start="7" type="1">
+<li><p>在第8.3.3节中，我们将随机森林用于 <code>Boston</code> 数据，设置 <code>max_features = 6</code>，并分别使用 <code>n_estimators = 100</code> 和 <code>n_estimators = 500</code>。现在，针对更广泛的 <code>max_features</code> 和 <code>n_estimators</code> 取值范围，画图展示随机森林在该数据集上的测试误差。可以仿照图8.10绘图。描述所得结果。</p></li>
+<li><p>在实验中，我们先把 <code>Sales</code> 转换为定性响应变量，再对 <code>Carseats</code> 数据集应用分类树。现在将响应视为定量变量，使用回归树及相关方法预测 <code>Sales</code>。</p>
+<ol type="a">
+<li><p>将数据集划分为训练集和测试集。</p></li>
+<li><p>在训练集上拟合回归树。画出这棵树并解释结果。得到的测试MSE是多少？</p></li>
+<li><p>使用交叉验证确定最优的树复杂度。剪枝是否改善了测试MSE？</p></li>
+<li><p>使用装袋法分析这些数据。得到的测试MSE是多少？根据 <code>feature_importance_</code> 的值确定哪些变量最重要。</p></li>
+<li><p>使用随机森林分析这些数据。得到的测试MSE是多少？根据 <code>feature_importance_</code> 的值确定哪些变量最重要。描述每次切分时考虑的变量数 <span class="math inline">\(m\)</span> 对所得错误率的影响。</p></li>
+<li><p>现在使用BART分析这些数据，并报告结果。</p></li>
+</ol></li>
+<li><p>本题使用 <code>ISLP</code> 包中的 <code>OJ</code> 数据集。</p>
+<ol type="a">
+<li><p>随机抽取800个观测构成训练集，其余观测构成测试集。</p></li>
+<li><p>在训练数据上拟合一棵树，以 <code>Purchase</code> 为响应，其余变量为预测变量。训练错误率是多少？</p></li>
+<li><p>画出这棵树并解释结果。树有多少个终端结点？</p></li>
+<li><p>使用 <code>export_tree()</code> 函数生成所拟合树的文本摘要。选取其中一个终端结点，解释所显示的信息。</p></li>
+<li><p>预测测试数据的响应，生成混淆矩阵，比较测试标签与预测的测试标签。测试错误率是多少？</p></li>
+<li><p>在训练集上使用交叉验证，确定最优的树大小。</p></li>
+<li><p>画一张图，横轴为树的大小，纵轴为交叉验证分类错误率。</p></li>
+<li><p>交叉验证分类错误率最低时，树的大小是多少？</p></li>
+<li><p>根据交叉验证得到的最优树大小，生成相应的剪枝树。如果交叉验证没有选择剪枝树，则生成一棵具有五个终端结点的剪枝树。</p></li>
+<li><p>比较剪枝树与未剪枝树的训练错误率。哪一个更高？</p></li>
+<li><p>比较剪枝树与未剪枝树的测试错误率。哪一个更高？</p></li>
+</ol></li>
+<li><p>现在使用提升法预测 <code>Hitters</code> 数据集中的 <code>Salary</code>。</p>
+<ol type="a">
+<li><p>删除薪资信息未知的观测，然后对薪资做对数变换。</p></li>
+<li><p>用前200个观测构成训练集，其余观测构成测试集。</p></li>
+<li><p>对收缩参数 <span class="math inline">\(\lambda\)</span> 采用一系列不同取值，在训练集上使用1,000棵树进行提升。画一张图，横轴为不同的收缩参数值，纵轴为相应的训练集MSE。</p></li>
+<li><p>画一张图，横轴为不同的收缩参数值，纵轴为相应的测试集MSE。</p></li>
+<li><p>将提升法的测试MSE，与第3章和第6章介绍的回归方法中任选两种所得到的测试MSE进行比较。</p></li>
+<li><p>在提升模型中，哪些变量看起来是最重要的预测变量？</p></li>
+<li><p>现在对训练集应用装袋法。这种方法的测试集MSE是多少？</p></li>
+</ol></li>
+<li><p>本题使用 <code>Caravan</code> 数据集。</p>
+<ol type="a">
+<li><p>用前1,000个观测构成训练集，其余观测构成测试集。</p></li>
+<li><p>在训练集上拟合提升模型，以 <code>Purchase</code> 为响应，其余变量为预测变量。使用1,000棵树，收缩参数取0.01。哪些预测变量看起来最重要？</p></li>
+<li><p>用提升模型预测测试数据的响应。如果估计的购买概率大于20%，就预测该人会购买。构造混淆矩阵。在被预测为会购买的人中，实际购买的比例是多少？与在该数据集上应用KNN或逻辑回归所得的结果相比如何？</p></li>
+</ol></li>
+<li><p>自选一个数据集，应用提升法、装袋法、随机森林和BART。务必在训练集上拟合模型，并在测试集上评价表现。与线性回归或逻辑回归等简单方法相比，结果有多准确？其中哪种方法表现最好？</p></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "已复制");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "已复制");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"可滚动的代码","output":"可滚动的输出"};
+  </script>
+<nav class="page-navigation" aria-label="页面">
+  <div class="nav-page nav-page-previous">
+      <a href="../dist/chapter7.html" class="pagination-link" aria-label="第七章　超越线性">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">第七章　超越线性</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>An Introduction to Statistical Learning: with Applications in Python<br> Authors: Gareth James et al.<br> Translator: Yuechen Qi</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
