@@ -1308,7 +1308,7 @@ grid.best_params_['ridge__alpha']
 grid.best_estimator_
 ```
 
-回顾一下，我们在第271页设置了用于5折交叉验证的 `kfold` 对象。现在以 $-\log(\lambda)$ 为横轴，画出交叉验证MSE；从左到右，收缩程度逐渐减弱。
+回顾一下，在先前的可视化中，我们设置了用于5折交叉验证的 `kfold` 对象。现在以 $-\log(\lambda)$ 为横轴，画出交叉验证MSE；从左到右，收缩程度逐渐减弱。
 
 In [34]:
 
@@ -1496,7 +1496,7 @@ ax.set_xlabel('$-\log(\lambda)$', fontsize=20)
 ax.set_ylabel('Standardized coefficiients', fontsize=20);
 ```
 
-最小的交叉验证误差低于空模型和最小二乘法的测试集MSE，并且与通过交叉验证选择 $\lambda$ 的岭回归测试MSE 115526.71（第278页）非常接近。
+最小的交叉验证误差低于空模型和最小二乘法的测试集MSE，并且与通过交叉验证选择 $\lambda$ 的岭回归测试MSE 115526.71非常接近。
 
 In [46]:
 

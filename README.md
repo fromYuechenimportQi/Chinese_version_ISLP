@@ -5,6 +5,9 @@ _An Introduction to Statistical Learning_, with applications in Python
 Author: [**Gareth James**](https://www.garethmjames.com/) et al.
 
 Translator: Yuechen Qi, a maintainer of this repository
+
+## 统计学习导论·基于Python实现·中文译本
+链接： https://fromyuechenimportqi.github.io/Chinese_version_ISLP
 ## 目录
 
 [译者序](dist/translator_perface.md)

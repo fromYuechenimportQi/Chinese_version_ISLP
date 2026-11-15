@@ -14,6 +14,7 @@ book:
     - dist/chapter5.qmd
     - dist/chapter6.qmd
     - dist/chapter7.qmd
+    - dist/chapter8.qmd
 
   page-footer:
     left: |
