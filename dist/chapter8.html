@@ -71,6 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../dist/chapter9.html" rel="next">
 <link href="../dist/chapter7.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -188,6 +189,16 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../dist/chapter1.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第一章　导论</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter2.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第二章　统计学习</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../dist/chapter3.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第三章　线性回归</span></a>
   </div>
 </li>
@@ -216,6 +227,11 @@ window.Quarto = {
   <a href="../dist/chapter8.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第八章　基于树的方法</span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter9.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第9章 支持向量机（Support Vector Machines）</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -235,7 +251,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#装袋法随机森林提升法与贝叶斯加性回归树" id="toc-装袋法随机森林提升法与贝叶斯加性回归树" class="nav-link" data-scroll-target="#装袋法随机森林提升法与贝叶斯加性回归树">8.2 装袋法、随机森林、提升法与贝叶斯加性回归树</a>
   <ul class="collapse">
-  <li><a href="#装袋法bagging" id="toc-装袋法bagging" class="nav-link" data-scroll-target="#装袋法bagging">8.2.1 装袋法（Bagging）</a></li>
+  <li><a href="#装袋法" id="toc-装袋法" class="nav-link" data-scroll-target="#装袋法">8.2.1 装袋法</a></li>
   <li><a href="#随机森林" id="toc-随机森林" class="nav-link" data-scroll-target="#随机森林">8.2.2 随机森林</a></li>
   <li><a href="#提升法" id="toc-提升法" class="nav-link" data-scroll-target="#提升法">8.2.3 提升法</a></li>
   <li><a href="#贝叶斯加性回归树" id="toc-贝叶斯加性回归树" class="nav-link" data-scroll-target="#贝叶斯加性回归树">8.2.4 贝叶斯加性回归树</a></li>
@@ -462,8 +478,8 @@ f(X)=\sum_{m=1}^{M}c_m\cdot1_{(X\in R_m)} \tag{8.9}
 <h2 class="anchored" data-anchor-id="装袋法随机森林提升法与贝叶斯加性回归树">8.2 装袋法、随机森林、提升法与贝叶斯加性回归树</h2>
 <p><strong>集成（ensemble）方法</strong>将许多简单的“构件”模型组合起来，得到一个可能十分强大的模型。这些简单的构件模型有时称为<strong>弱学习器（weak learners）</strong>，因为它们单独使用时，预测表现可能平平。</p>
 <p>下面讨论装袋法、随机森林、提升法和贝叶斯加性回归树。这些都是以回归树或分类树作为简单构件的集成方法。</p>
-<section id="装袋法bagging" class="level3 page-columns page-full">
-<h3 class="anchored" data-anchor-id="装袋法bagging">8.2.1 装袋法（Bagging）</h3>
+<section id="装袋法" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="装袋法">8.2.1 装袋法</h3>
 <p>第5章介绍的自助法是一个极其强大的思想。在许多情形下，我们很难甚至根本无法直接计算某个所关心的量的标准差，自助法便能派上用场。这里将看到，自助法还可以用于一个完全不同的场景，改进决策树等统计学习方法。</p>
 <p>第8.1节讨论的决策树存在<strong>方差较高</strong>的问题。这意味着，如果把训练数据随机分成两半，并在每一半上各拟合一棵决策树，得到的结果可能很不一样。相比之下，方差较低的方法在不同数据集上反复应用时，会得到相似的结果；当 <span class="math inline">\(n\)</span> 与 <span class="math inline">\(p\)</span> 的比值较大时，线性回归的方差往往较低。<strong>自助聚合（bootstrap aggregation）</strong>，也称为<strong>装袋法</strong>，是一种降低统计学习方法方差的通用方法。这里介绍它，是因为它在决策树中尤其有用，也经常使用。</p>
 <p>回顾一下，给定 <span class="math inline">\(n\)</span> 个相互独立的观测 <span class="math inline">\(Z_1,\ldots,Z_n\)</span>，若每个观测的方差都是 <span class="math inline">\(\sigma^2\)</span>，那么观测均值 <span class="math inline">\(\bar Z\)</span> 的方差为 <span class="math inline">\(\sigma^2/n\)</span>。换句话说，<em>对一组观测取平均能够降低方差</em>。因此，要降低统计学习方法的方差并提高其在测试集上的准确性，一个自然的办法是从总体中取得许多训练集，在每个训练集上分别构建一个预测模型，再对得到的预测取平均。也就是说，可以使用 <span class="math inline">\(B\)</span> 个不同的训练集，计算 <span class="math inline">\(\hat f^1(x),\hat f^2(x),\ldots,\hat f^B(x)\)</span>，然后取平均，得到一个方差较低的统计学习模型：</p>
@@ -1583,6 +1599,9 @@ f(X)=\sum_{j=1}^{p}f_j(X_j).
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../dist/chapter9.html" class="pagination-link" aria-label="第9章 支持向量机（Support Vector Machines）">
+        <span class="nav-page-text"><span class="chapter-title">第9章 支持向量机（Support Vector Machines）</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->

@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>第一章　导论 – 统计学习导论：Python 应用 · 中文译本</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../dist/chapter2.html" rel="next">
+<link href="../index.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-fc3b36746e1955fb88c77d3f07db1d35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "没有结果",
+    "search-matching-documents-text": "匹配的文档",
+    "search-copy-link-title": "复制搜索链接",
+    "search-hide-matches-text": "隐藏其它匹配结果",
+    "search-more-match-text": "更多匹配结果",
+    "search-more-matches-text": "更多匹配结果",
+    "search-clear-button-title": "清除",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "取消",
+    "search-submit-button-title": "提交",
+    "search-label": "搜索"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">跳至主要内容</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="工具栏">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="展开或折叠侧边栏导航" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter1.html"><span class="chapter-title">第一章　导论</span></a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="搜索" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto" aria-label="网站">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">统计学习导论：Python 应用 · 中文译本</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/fromYuechenimportQi/Chinese_version_ISLP" title="源代码" class="quarto-navigation-tool px-1" aria-label="源代码"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="搜索"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">译者序</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter1.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第一章　导论</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter2.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第二章　统计学习</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter3.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第三章　线性回归</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter4.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第四章　分类</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter5.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第五章　重抽样方法</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter6.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第六章　线性模型选择与正则化</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter7.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第七章　超越线性</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter8.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第八章　基于树的方法</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter9.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第9章 支持向量机（Support Vector Machines）</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">目录</h2>
+   
+  <ul>
+  <li><a href="#统计学习概述" id="toc-统计学习概述" class="nav-link active" data-scroll-target="#统计学习概述">统计学习概述</a>
+  <ul class="collapse">
+  <li><a href="#工资数据wage-data" id="toc-工资数据wage-data" class="nav-link" data-scroll-target="#工资数据wage-data">工资数据（Wage Data）</a></li>
+  <li><a href="#股票市场数据" id="toc-股票市场数据" class="nav-link" data-scroll-target="#股票市场数据">股票市场数据</a></li>
+  <li><a href="#基因表达数据gene-expression-data" id="toc-基因表达数据gene-expression-data" class="nav-link" data-scroll-target="#基因表达数据gene-expression-data">基因表达数据（Gene Expression Data）</a></li>
+  </ul></li>
+  <li><a href="#统计学习简史" id="toc-统计学习简史" class="nav-link" data-scroll-target="#统计学习简史">统计学习简史</a></li>
+  <li><a href="#关于本书" id="toc-关于本书" class="nav-link" data-scroll-target="#关于本书">关于本书</a></li>
+  <li><a href="#本书适合哪些读者" id="toc-本书适合哪些读者" class="nav-link" data-scroll-target="#本书适合哪些读者">本书适合哪些读者？</a></li>
+  <li><a href="#符号与简单矩阵代数" id="toc-符号与简单矩阵代数" class="nav-link" data-scroll-target="#符号与简单矩阵代数">符号与简单矩阵代数</a></li>
+  <li><a href="#本书的组织结构" id="toc-本书的组织结构" class="nav-link" data-scroll-target="#本书的组织结构">本书的组织结构</a></li>
+  <li><a href="#实验和习题使用的数据集" id="toc-实验和习题使用的数据集" class="nav-link" data-scroll-target="#实验和习题使用的数据集">实验和习题使用的数据集</a></li>
+  <li><a href="#本书网站" id="toc-本书网站" class="nav-link" data-scroll-target="#本书网站">本书网站</a></li>
+  <li><a href="#致谢" id="toc-致谢" class="nav-link" data-scroll-target="#致谢">致谢</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">第一章　导论</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="统计学习概述" class="level2">
+<h2 class="anchored" data-anchor-id="统计学习概述">统计学习概述</h2>
+<p><strong>统计学习（statistical learning）</strong> 是指一大类用于<em>理解数据</em>的工具。这些工具可分为<strong>监督学习（supervised learning）</strong> 和<strong>无监督学习（unsupervised learning）</strong>。概括地说，监督统计学习通过建立统计模型，根据一个或多个<em>输入（input）</em> 预测或估计一个<em>输出（output）</em>。这类问题广泛存在于商业、医学、天体物理学和公共政策等领域。无监督统计学习则只有输入，没有用于监督的输出；即便如此，我们仍然可以从这类数据中学习其中的关系和结构。为了说明统计学习的一些应用，下面简要介绍本书涉及的三个真实数据集。</p>
+<section id="工资数据wage-data" class="level3">
+<h3 class="anchored" data-anchor-id="工资数据wage-data">工资数据（Wage Data）</h3>
+<p>在这个应用中，我们考察美国大西洋沿岸地区一组男性的工资及其相关因素，本书将这份数据称为 <code>Wage</code> 数据集。具体而言，我们希望了解雇员的年龄（<code>age</code>）、教育程度（<code>education</code>），以及日历年份（<code>year</code>）与其工资（<code>wage</code>）之间的关联（association）。例如，图1.1左图展示了数据集中每个人的工资与年龄的关系。图中显示，工资随年龄增加而上升，但大约在60岁之后又开始下降。蓝线给出了各个年龄下平均工资的估计，使这一趋势更加清楚。给定一名雇员的年龄，我们可以利用这条曲线<em>预测</em>他的工资。不过，图1.1也清楚表明，实际工资围绕这一平均值存在相当大的变异，因此，仅凭年龄不太可能准确预测某一位男性的工资。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-1-1.png" class="img-fluid figure-img"></p>
+<figcaption>图1.1：Wage数据中工资与年龄、年份和教育程度的关系</figcaption>
+</figure>
+</div>
+<p><strong>图1.1</strong> <code>Wage</code> 数据包含美国大西洋中部沿岸地区男性的收入调查信息。<em>左图</em>：工资与年龄的关系。平均而言，工资随年龄增加而上升，直到约60岁时开始下降。<em>中图</em>：工资与年份的关系。2003年至2009年，平均工资缓慢而稳定地增加了约10,000美元。<em>右图</em>：展示工资与教育程度关系的<strong>箱线图（boxplots）</strong>，其中1表示最低教育程度（没有高中毕业文凭），5表示最高教育程度（研究生层次的高级学位）。平均而言，工资随教育程度提高而增加。图内文字：Wage＝工资，Age＝年龄，Year＝年份，Education Level＝教育程度；原有刻度及水平编码保持不变。</p>
+<p>我们还掌握每名雇员的教育程度，以及取得这份工资的年份。图1.1中图和右图分别展示了工资与年份、教育程度的关系，表明这两个因素都与工资相关。2003年至2009年，工资大致呈线性（即直线）增长，增加了约10,000美元，但相对于数据中的变异而言，这一增长幅度很小。教育程度较高的人，工资通常也更高：教育程度最低（1）的男性，其工资往往明显低于教育程度最高（5）的男性。显然，要尽可能准确地预测某一位男性的工资，应当综合考虑他的年龄、教育程度和年份。第3章将讨论<strong>线性回归（linear regression）</strong>，它可以用来预测这个数据集中的工资。理想情况下，预测工资时还应考虑工资与年龄之间的非线性关系（non-linear relationship）。第7章将讨论一类解决这一问题的方法。</p>
+</section>
+<section id="股票市场数据" class="level3">
+<h3 class="anchored" data-anchor-id="股票市场数据">股票市场数据</h3>
+<p><code>Wage</code> 数据中的任务，是预测一个<strong>连续的（continuous）</strong> 或<strong>定量的（quantitative）</strong> 输出值。这通常称为<strong>回归（regression）</strong> 问题。但在某些情形下，我们可能希望预测一个非数值取值，也就是一个<strong>类别型的（categorical）</strong> 或<strong>定性的（qualitative）</strong> 输出。例如，第4章将考察一个股票市场数据集，它包含2001年至2005年这5年间标准普尔500（Standard &amp; Poor’s 500，S&amp;P）股票指数的每日变动。本书将它称为 <code>Smarket</code> 数据。目标是利用此前5天该指数的百分比变化，预测某一天指数会<em>上涨</em>还是<em>下跌</em>。这里的统计学习问题不涉及预测数值，而是预测某一天的股市表现属于 <code>Up</code>（上涨）类别还是 <code>Down</code>（下跌）类别。这称为<strong>分类（classification）</strong> 问题。如果一个模型能准确预测市场的涨跌方向，就会非常有用！</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-1-2.png" class="img-fluid figure-img"></p>
+<figcaption>图1.2：按照当日涨跌方向分组的此前一至三天S&amp;P指数百分比变化箱线图</figcaption>
+</figure>
+</div>
+<p><strong>图1.2</strong> <em>左图</em>：按市场当日上涨或下跌分组，展示前一天S&amp;P指数百分比变化的箱线图，数据来自 <code>Smarket</code>。<em>中图和右图</em>：与左图相同，但分别展示此前第2天和第3天的百分比变化。图内文字：Yesterday＝昨天，Two Days Previous＝此前第2天，Three Days Previous＝此前第3天，Today’s Direction＝当日涨跌方向，Percentage change in S&amp;P＝S&amp;P指数的百分比变化，Down＝下跌，Up＝上涨。</p>
+<p>图1.2左图包含两个箱线图，展示股票指数前一天的百分比变化：一个对应于次日市场上涨的648天，另一个对应于市场下跌的602天。两幅箱线图看上去几乎相同，表明没有一种简单策略，可以根据昨天S&amp;P指数的变动预测今天的收益率。另外两幅图展示了距今天2天和3天的百分比变化，其箱线图同样表明，过去与当前的收益率之间关联很小。当然，缺乏明显规律是意料之中的：如果连续几天的收益率之间存在很强的相关性，就能采用一种简单的交易策略，从市场中获利。尽管如此，第4章仍将使用几种不同的统计学习方法探索这份数据。有意思的是，数据中隐约存在一些微弱趋势，表明至少在这5年间，大约有60%的情况下可以正确预测市场的涨跌方向（图1.3）。</p>
+</section>
+<section id="基因表达数据gene-expression-data" class="level3">
+<h3 class="anchored" data-anchor-id="基因表达数据gene-expression-data">基因表达数据（Gene Expression Data）</h3>
+<p>前两个应用展示的都是同时具有输入变量和输出变量的数据集。还有另一类重要问题：我们只观测到输入变量，却没有相应的输出。例如，在市场营销中，我们可能掌握许多现有客户或潜在客户的人口统计学信息，希望根据观测到的特征将人们分组，从而了解哪些类型的客户彼此相似。这称为<strong>聚类（clustering）</strong> 问题。与前面的例子不同，这里并不试图预测输出变量。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-1-3.png" class="img-fluid figure-img"></p>
+<figcaption>图1.3：Smarket数据中按实际涨跌方向分组的市场下跌预测概率</figcaption>
+</figure>
+</div>
+<p><strong>图1.3</strong> 我们在 <code>Smarket</code> 数据中对应2001–2004年的子集上拟合了一个<strong>二次判别分析（quadratic discriminant analysis）</strong> 模型，并利用2005年的数据预测股市下跌的概率。平均而言，市场实际下跌的那些天，其预测下跌概率更高。根据这些结果，可以在60%的情况下正确预测市场的涨跌方向。图内文字：Today’s Direction＝当日涨跌方向，Predicted Probability＝预测概率，Down＝下跌，Up＝上涨。</p>
+<p>第12章专门讨论在没有自然对应的输出变量时，如何使用统计学习方法。我们将考察 <code>NCI60</code> 数据集，它包含64个癌症<strong>细胞系（cell lines）</strong>，每个细胞系有6,830个基因表达测量值。我们关注的不是预测某个特定输出变量，而是根据基因表达测量值，判断这些细胞系中是否存在若干组，也就是<em>簇</em>。这个问题很难回答，部分原因在于每个细胞系都有数千个基因表达测量值，难以将数据可视化。</p>
+<p>图1.4左图通过仅用两个数<span class="math inline">\(Z_1\)</span>和<span class="math inline">\(Z_2\)</span>表示这64个细胞系中的每一个，来解决这一问题。这两个数是数据的前两个<strong>主成分（principal components）</strong>，将每个细胞系的6,830个表达测量值概括为两个数，也就是两个维度。虽然这种<strong>降维（dimension reduction）</strong> 很可能损失了一些信息，但现在我们能够从图形上检查数据是否存在聚类。确定簇的数目通常很困难。不过，图1.4左图表明至少存在四组细胞系，我们用不同颜色表示了它们。</p>
+<p>在这个特定数据集中，这些细胞系实际上对应14种不同的癌症。（不过，绘制图1.4左图时并未使用这一信息。）图1.4右图与左图相同，只是用不同颜色的符号区分14种癌症。图中清楚地表明，在这种二维表示中，属于同一癌症类型的细胞系往往彼此靠近。此外，虽然生成左图时没有使用癌症类型信息，所得的聚类与右图中观察到的某些实际癌症类型仍有一定相似性。这为聚类分析的准确性提供了一些独立验证。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-1-4.png" class="img-fluid figure-img"></p>
+<figcaption>图1.4：NCI60基因表达数据的前两个主成分及癌症类型对照</figcaption>
+</figure>
+</div>
+<p><strong>图1.4</strong> <em>左图</em>：<code>NCI60</code> 基因表达数据集在二维空间<span class="math inline">\(Z_1\)</span>和<span class="math inline">\(Z_2\)</span>中的表示。每个点对应64个细胞系中的一个。这些细胞系看起来分成四组，我们用不同颜色表示。<em>右图</em>：与左图相同，但用不同颜色的符号分别表示14种不同的癌症。对应同一癌症类型的细胞系，在二维空间中往往彼此靠近。图内坐标轴<span class="math inline">\(Z_1\)</span>、<span class="math inline">\(Z_2\)</span>及数值刻度保持原样。</p>
+</section>
+</section>
+<section id="统计学习简史" class="level2">
+<h2 class="anchored" data-anchor-id="统计学习简史">统计学习简史</h2>
+<p>虽然<em>统计学习</em>这个术语相当新，但这一领域赖以建立的许多概念早已出现。19世纪初，最小二乘法（least squares）问世，形成了如今所谓线性回归的最早形式。这一方法最初成功应用于天文学问题。线性回归用于预测定量数值，例如个人薪资。为了预测定性取值，例如患者存活还是死亡，或者股市上涨还是下跌，人们在1936年提出了<strong>线性判别分析（linear discriminant analysis）</strong>。20世纪40年代，多位研究者提出了另一种方法，即<strong>逻辑回归（logistic regression）</strong>。20世纪70年代初，<strong>广义线性模型（generalized linear model）</strong> 这一术语出现，用来描述一整类统计学习方法，其中线性回归和逻辑回归都是特例。</p>
+<p>到20世纪70年代末，已经有了更多从数据中学习的技术。不过，这些技术几乎全是<em>线性</em>方法，因为当时拟合非线性关系在计算上十分困难。到了20世纪80年代，计算技术终于取得了足够的进展，非线性方法所需的计算不再难以承受。20世纪80年代中期，人们提出了<strong>分类树和回归树（classification and regression trees）</strong>，紧接着又提出了<strong>广义加性模型（generalized additive models）</strong>。<strong>神经网络（neural networks）</strong> 在20世纪80年代开始流行，<strong>支持向量机（support vector machines）</strong> 则在20世纪90年代出现。</p>
+<p>此后，统计学习逐渐成为统计学中的一个新分支，着重研究监督和无监督建模及预测。近年来，统计学习的进步也体现在功能强大、使用相对方便的软件越来越容易获得，例如广受欢迎且可以免费使用的Python系统。这有望继续推动这一领域转变：从主要由统计学家和计算机科学家使用、开发的一组技术，转变为更广泛群体不可或缺的工具。</p>
+</section>
+<section id="关于本书" class="level2">
+<h2 class="anchored" data-anchor-id="关于本书">关于本书</h2>
+<p>Hastie、Tibshirani和Friedman所著的《统计学习基础》（<em>The Elements of Statistical Learning</em>，ESL）于2001年首次出版。此后，它成为统计机器学习基础方面的重要参考书。这本书之所以成功，一方面在于它全面、细致地介绍了统计学习中的许多重要主题，另一方面在于，相较许多高阶统计学教材，它适合更广泛的读者。不过，ESL获得成功的最重要原因，还是它切合了时代需求。这本书出版时，人们对统计学习领域的兴趣正开始迅速增长。ESL是最早以通俗而全面的方式介绍这一主题的著作之一。</p>
+<p>自ESL初版问世以来，统计学习领域不断蓬勃发展。这种扩展体现在两个方面。最明显的是，人们提出了新的、改进的统计学习方法，用于回答众多领域中的各种科学问题。与此同时，统计学习的受众也在扩大。20世纪90年代，计算能力的提高使许多非统计专业人士对这一领域产生了浓厚兴趣，他们希望使用前沿统计工具分析自己的数据。然而，这些方法的技术性很强，使用者仍主要限于统计学、计算机科学及相关领域的专家；他们接受过相应训练，也有时间理解和实现这些方法。</p>
+<p>近年来，新的、改进的软件包显著减轻了实现许多统计学习方法的负担。同时，从商业、医疗到遗传学、社会科学及其他领域，人们越来越认识到，统计学习是一种具有重要实际用途的有力工具。因此，这一领域已经从主要受到学术界关注的研究方向，发展为拥有庞大潜在受众的主流学科。随着海量数据及其分析软件越来越容易获得，这一趋势势必还会继续。</p>
+<p>《统计学习导论》（<em>An Introduction to Statistical Learning</em>，ISL）的目的，是促进统计学习从学术领域走向主流。本书无意取代ESL；无论是所讨论方法的数量，还是探讨的深度，ESL都要全面得多。对于需要理解统计学习方法背后技术细节的专业人士——例如拥有统计学、机器学习或相关领域研究生学位的人——我们认为ESL是一本重要的配套读物。但统计学习技术的使用者已经扩展到兴趣和背景更加广泛的人群。因此，有必要提供一本技术细节较少、更加易读的ESL式教材。</p>
+<p>多年来的教学使我们发现，这些主题不仅能引起工商管理、生物学和计算机科学等不同领域硕士、博士研究生的兴趣，也能吸引偏重定量分析的高年级本科生。对于这样一个背景多样的群体，理解各类方法的模型、直观思想及优缺点十分重要。但对这些读者来说，统计学习方法背后的许多技术细节，例如优化算法（optimization algorithms）和理论性质，并不是最关心的内容。我们认为，即使不深入理解这些方面，他们仍能成为有判断力的方法使用者，并运用统计学习工具为自己选择的领域作出贡献。</p>
+<p>ISL基于以下四个前提。</p>
+<ol type="1">
+<li><p><em>许多统计学习方法不仅适用于统计科学，还与广泛的学术及非学术领域有关，并且十分有用。</em> 我们相信，许多当今的统计学习方法，应当也将会像线性回归这样的经典方法一样，广泛地被人们掌握和使用。因此，我们没有试图讨论所有可能的方法——这本来就是不可能完成的任务——而是集中介绍我们认为适用范围最广的方法。</p></li>
+<li><p><em>不应将统计学习看作一系列黑箱（black boxes）。</em> 没有哪一种方法能在所有可能的应用中都表现出色。如果不了解箱子内部的各个齿轮及其相互作用，就无法选出最合适的箱子。因此，我们力求仔细说明所讨论的每种方法背后的模型、直观思想、假设及权衡。</p></li>
+<li><p><em>虽然了解每个齿轮的作用很重要，但并不需要具备构造箱内整台机器的本领！</em> 因此，我们尽量少讨论拟合程序和理论性质的技术细节。我们假定读者熟悉基本数学概念，但不要求读者拥有数学科学的研究生学位。例如，我们几乎完全避免使用矩阵代数（matrix algebra）；即使对矩阵（matrices）和向量（vectors）没有深入了解，也可以理解全书。</p></li>
+<li><p><em>我们假定读者有兴趣将统计学习方法应用于现实问题。</em> 为了帮助读者做到这一点，也为了说明所讨论技术的用途，我们在每章中都安排了一节计算机实验。在每个实验中，我们带领读者逐步完成该章方法的一项实际应用。我们讲授这些内容时，大约用三分之一的课堂时间完成实验，并发现实验极为有用。许多不太偏重计算的学生，起初对实验感到畏惧，但在一学季或一学期的学习过程中，逐渐掌握了操作方法。</p>
+<p>本书最初出版时（2013年，第二版于2021年出版），计算机实验使用R语言。此后，读者对以Python实现统计学习中重要技术的需求日益增长，因此，这个版本的实验使用Python。可用的Python软件包数量正在迅速增长；查看各实验开头的导入语句，就能看到我们经过仔细挑选，采用了最合适的软件包。我们还在自己的 <code>ISLP</code> 包中提供了一些额外代码和功能。不过，ISL中的实验都是独立完整的；如果读者希望使用其他软件，或不想将所讨论的方法应用于现实问题，也可以跳过这些实验。</p></li>
+</ol>
+</section>
+<section id="本书适合哪些读者" class="level2">
+<h2 class="anchored" data-anchor-id="本书适合哪些读者">本书适合哪些读者？</h2>
+<p>本书面向所有希望运用现代统计方法，根据数据进行建模和预测的读者。其中既包括科学家、工程师、<strong>数据分析师（data analysts）</strong>、<strong>数据科学家（data scientists）</strong> 和<strong>量化分析师（quants）</strong>，也包括技术背景较少、拥有社会科学或商科等非定量领域学位的读者。我们希望读者至少修过一门初等统计学课程。具有线性回归基础也会有所帮助，但并非必需，因为第3章会回顾线性回归背后的关键概念。本书的数学要求不高，不需要深入掌握矩阵运算。本书也介绍Python入门知识。以前接触过MATLAB或R等编程语言会有帮助，但同样不是必要条件。</p>
+<p>本教材第一版曾用于教授商科、经济学、计算机科学、生物学、地球科学、心理学，以及自然科学和社会科学许多其他领域的硕士和博士研究生。它也曾用于教授已经修过线性回归课程的高年级本科生。对于数学要求更严格、以ESL为主要教材的课程，ISL可以作为补充教材，用来讲授各类方法的计算实现。</p>
+</section>
+<section id="符号与简单矩阵代数" class="level2">
+<h2 class="anchored" data-anchor-id="符号与简单矩阵代数">符号与简单矩阵代数</h2>
+<p>为教材选择符号总是一件困难的事。我们基本沿用ESL的符号约定。</p>
+<p>我们用<span class="math inline">\(n\)</span>表示样本（sample）中不同数据点或观测的数目，用<span class="math inline">\(p\)</span>表示可用于作出预测的变量数目。例如，<code>Wage</code>数据集包含3,000个人的11个变量，因此有<span class="math inline">\(n=3{,}000\)</span>个观测和<span class="math inline">\(p=11\)</span>个变量，例如<code>year</code>、<code>age</code>、<code>race</code>等。注意，本书始终用彩色字体标示变量名，例如<code>Variable Name</code>。在某些例子中，<span class="math inline">\(p\)</span>可能很大，达到数千甚至数百万的量级；例如，在现代生物学数据或网络广告数据的分析中，这种情况就相当常见。</p>
+<p>一般来说，我们用<span class="math inline">\(x_{ij}\)</span>表示第<span class="math inline">\(i\)</span>个观测的第<span class="math inline">\(j\)</span>个变量的值，其中<span class="math inline">\(i=1,2,\ldots,n\)</span>，<span class="math inline">\(j=1,2,\ldots,p\)</span>。本书始终用<span class="math inline">\(i\)</span>索引样本或观测（从1到<span class="math inline">\(n\)</span>），用<span class="math inline">\(j\)</span>索引变量（从1到<span class="math inline">\(p\)</span>）。令<span class="math inline">\(\mathbf X\)</span>为一个<span class="math inline">\(n\times p\)</span>的<em>矩阵</em>，其第<span class="math inline">\((i,j)\)</span>个元素为<span class="math inline">\(x_{ij}\)</span>，即</p>
+<p><span class="math display">\[
+\mathbf X=
+\begin{pmatrix}
+x_{11}&amp;x_{12}&amp;\ldots&amp;x_{1p}\\
+x_{21}&amp;x_{22}&amp;\ldots&amp;x_{2p}\\
+\vdots&amp;\vdots&amp;\ddots&amp;\vdots\\
+x_{n1}&amp;x_{n2}&amp;\ldots&amp;x_{np}
+\end{pmatrix}.
+\]</span></p>
+<p>对于不熟悉矩阵的读者，可以把<span class="math inline">\(\mathbf X\)</span>想象成一张有<span class="math inline">\(n\)</span>行、<span class="math inline">\(p\)</span>列数字的电子表格。</p>
+<p>有时，我们关注<span class="math inline">\(\mathbf X\)</span>的各行，将它们记为<span class="math inline">\(x_1,x_2,\ldots,x_n\)</span>。这里，<span class="math inline">\(x_i\)</span>是一个长度为<span class="math inline">\(p\)</span>的<em>向量</em>，包含第<span class="math inline">\(i\)</span>个观测的<span class="math inline">\(p\)</span>个变量的测量值，即</p>
+<p><span class="math display">\[
+x_i=
+\begin{pmatrix}
+x_{i1}\\
+x_{i2}\\
+\vdots\\
+x_{ip}
+\end{pmatrix}.
+\tag{1.1}
+\]</span></p>
+<p>（向量默认以列的形式表示。）例如，在<code>Wage</code>数据中，<span class="math inline">\(x_i\)</span>是长度为11的向量，包含第<span class="math inline">\(i\)</span>个人的<code>year</code>、<code>age</code>、<code>race</code>等取值。有时，我们关注的则是<span class="math inline">\(\mathbf X\)</span>的各列，将它们记为<span class="math inline">\(\mathbf x_1,\mathbf x_2,\ldots,\mathbf x_p\)</span>。每一列都是长度为<span class="math inline">\(n\)</span>的向量，即</p>
+<p><span class="math display">\[
+\mathbf x_j=
+\begin{pmatrix}
+x_{1j}\\
+x_{2j}\\
+\vdots\\
+x_{nj}
+\end{pmatrix}.
+\]</span></p>
+<p>例如，在<code>Wage</code>数据中，<span class="math inline">\(\mathbf x_1\)</span>包含<code>year</code>的<span class="math inline">\(n=3{,}000\)</span>个取值。用这种记号，矩阵<span class="math inline">\(\mathbf X\)</span>可以写成</p>
+<p><span class="math display">\[
+\mathbf X=\begin{pmatrix}\mathbf x_1&amp;\mathbf x_2&amp;\cdots&amp;\mathbf x_p\end{pmatrix},
+\]</span></p>
+<p>或者</p>
+<p><span class="math display">\[
+\mathbf X=
+\begin{pmatrix}
+x_1^T\\
+x_2^T\\
+\vdots\\
+x_n^T
+\end{pmatrix}.
+\]</span></p>
+<p>上标<span class="math inline">\(T\)</span>表示矩阵或向量的<strong>转置（transpose）</strong>。例如，</p>
+<p><span class="math display">\[
+\mathbf X^T=
+\begin{pmatrix}
+x_{11}&amp;x_{21}&amp;\ldots&amp;x_{n1}\\
+x_{12}&amp;x_{22}&amp;\ldots&amp;x_{n2}\\
+\vdots&amp;\vdots&amp;\ddots&amp;\vdots\\
+x_{1p}&amp;x_{2p}&amp;\ldots&amp;x_{np}
+\end{pmatrix},
+\]</span></p>
+<p>而</p>
+<p><span class="math display">\[
+x_i^T=\begin{pmatrix}x_{i1}&amp;x_{i2}&amp;\cdots&amp;x_{ip}\end{pmatrix}.
+\]</span></p>
+<p>我们用<span class="math inline">\(y_i\)</span>表示希望预测的变量（例如<code>wage</code>）的第<span class="math inline">\(i\)</span>个观测。因此，全部<span class="math inline">\(n\)</span>个观测可以写成向量形式：</p>
+<p><span class="math display">\[
+\mathbf y=
+\begin{pmatrix}
+y_1\\
+y_2\\
+\vdots\\
+y_n
+\end{pmatrix}.
+\]</span></p>
+<p>于是，观测到的数据由<span class="math inline">\(\{(x_1,y_1),(x_2,y_2),\ldots,(x_n,y_n)\}\)</span>组成，其中每个<span class="math inline">\(x_i\)</span>都是长度为<span class="math inline">\(p\)</span>的向量。（如果<span class="math inline">\(p=1\)</span>，那么<span class="math inline">\(x_i\)</span>就是一个<strong>标量（scalar）</strong>。）</p>
+<p>本书始终用<em>小写粗体</em>表示长度为<span class="math inline">\(n\)</span>的向量，例如</p>
+<p><span class="math display">\[
+\mathbf a=
+\begin{pmatrix}
+a_1\\
+a_2\\
+\vdots\\
+a_n
+\end{pmatrix}.
+\]</span></p>
+<p>而长度不为<span class="math inline">\(n\)</span>的向量，例如式（1.1）中长度为<span class="math inline">\(p\)</span>的<strong>特征向量（feature vector）</strong>，则用<em>小写普通字体</em>表示，例如<span class="math inline">\(a\)</span>。标量也用<em>小写普通字体</em>表示，例如<span class="math inline">\(a\)</span>。这两种小写普通字体的用法偶尔可能造成歧义，届时我们会明确说明所指的是哪一种。矩阵用<em>大写粗体</em>表示，例如<span class="math inline">\(\mathbf A\)</span>。随机变量无论维数如何，都用<em>大写普通字体</em>表示，例如<span class="math inline">\(A\)</span>。</p>
+<p>有时，我们需要标明某个对象的维数。用<span class="math inline">\(a\in\mathbb R\)</span>表示对象是一个标量，用<span class="math inline">\(a\in\mathbb R^k\)</span>表示它是长度为<span class="math inline">\(k\)</span>的向量；如果长度为<span class="math inline">\(n\)</span>，则写作<span class="math inline">\(\mathbf a\in\mathbb R^n\)</span>。用<span class="math inline">\(\mathbf A\in\mathbb R^{r\times s}\)</span>表示对象是一个<span class="math inline">\(r\times s\)</span>矩阵。</p>
+<p>我们尽可能避免使用矩阵代数，但在少数情形中，完全避开矩阵代数反而会使表述过于繁琐。在这些少数情形下，理解两个矩阵相乘的概念很重要。假设<span class="math inline">\(\mathbf A\in\mathbb R^{r\times d}\)</span>，<span class="math inline">\(\mathbf B\in\mathbb R^{d\times s}\)</span>，则<span class="math inline">\(\mathbf A\)</span>与<span class="math inline">\(\mathbf B\)</span>的乘积记为<span class="math inline">\(\mathbf{AB}\)</span>。计算<span class="math inline">\(\mathbf{AB}\)</span>的第<span class="math inline">\((i,j)\)</span>个元素时，将<span class="math inline">\(\mathbf A\)</span>第<span class="math inline">\(i\)</span>行的每个元素与<span class="math inline">\(\mathbf B\)</span>第<span class="math inline">\(j\)</span>列的对应元素相乘，再把乘积相加，即<span class="math inline">\((\mathbf{AB})_{ij}=\sum_{k=1}^{d}a_{ik}b_{kj}\)</span>。例如，考虑</p>
+<p><span class="math display">\[
+\mathbf A=\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}
+\qquad\text{以及}\qquad
+\mathbf B=\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix}.
+\]</span></p>
+<p>那么</p>
+<p><span class="math display">\[
+\mathbf{AB}=
+\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}
+\begin{pmatrix}5&amp;6\\7&amp;8\end{pmatrix}
+=
+\begin{pmatrix}
+1\times5+2\times7&amp;1\times6+2\times8\\
+3\times5+4\times7&amp;3\times6+4\times8
+\end{pmatrix}
+=
+\begin{pmatrix}19&amp;22\\43&amp;50\end{pmatrix}.
+\]</span></p>
+<p>注意，这一运算得到的是一个<span class="math inline">\(r\times s\)</span>矩阵。只有当<span class="math inline">\(\mathbf A\)</span>的列数与<span class="math inline">\(\mathbf B\)</span>的行数相同时，才能计算<span class="math inline">\(\mathbf{AB}\)</span>。</p>
+</section>
+<section id="本书的组织结构" class="level2">
+<h2 class="anchored" data-anchor-id="本书的组织结构">本书的组织结构</h2>
+<p>第2章介绍统计学习的基本术语和概念，还介绍了<strong>K近邻分类器（K-nearest neighbor classifier）</strong>。这是一种非常简单的方法，却在许多问题上有着出人意料的良好表现。第3章和第4章讨论用于回归和分类的经典线性方法。其中，第3章回顾线性回归，它是所有回归方法的基本起点。第4章讨论两种最重要的经典分类方法：逻辑回归和线性判别分析。</p>
+<p>在各种统计学习情形中，一个核心问题都是为具体应用选择最佳方法。因此，第5章介绍<strong>交叉验证（cross-validation）</strong> 和<strong>自助法（bootstrap）</strong>，可以用它们估计若干种不同方法的准确性，从而选出最佳方法。</p>
+<p>近年来，统计学习领域的大量研究集中在非线性方法上。但是，线性方法在可解释性方面往往比非线性方法更有优势，有时在准确性方面也是如此。因此，第6章讨论多种经典及较新的线性方法，它们有可能改进标准线性回归。这些方法包括<strong>逐步选择（stepwise selection）</strong>、<strong>岭回归（ridge regression）</strong>、<strong>主成分回归（principal components regression）</strong> 以及<strong>套索法（lasso）</strong>。</p>
+<p>后面的章节将进入非线性统计学习的领域。第7章先介绍几种适用于单个输入变量问题的非线性方法，再说明如何用它们拟合具有多个输入的非线性加性模型。第8章研究<strong>基于树的方法（tree-based methods）</strong>，包括<strong>装袋法（bagging）</strong>、<strong>提升法（boosting）</strong> 和<strong>随机森林（random forests）</strong>。第9章讨论支持向量机，这是一组既可进行线性分类、也可进行非线性分类的方法。第10章介绍<strong>深度学习（deep learning）</strong>，它是一种用于非线性回归和分类的方法，近年来受到广泛关注。第11章探讨<strong>生存分析（survival analysis）</strong>，这种回归方法专门用于输出变量存在<strong>删失（censored）</strong>、即未被完全观测的情形。</p>
+<p>第12章讨论只有输入变量、没有输出变量的无监督情形，具体介绍<strong>主成分分析（principal components analysis）</strong>、<strong>K均值聚类（K-means clustering）</strong> 和<strong>层次聚类（hierarchical clustering）</strong>。最后，第13章讨论非常重要的<strong>多重假设检验（multiple hypothesis testing）</strong> 主题。</p>
+<p>每章末尾都有一个或多个Python实验小节，系统地演示本章各种方法的应用。这些实验展示不同方法的优缺点，也为实现各种方法所需的语法提供了有用的参考。读者可以按自己的进度完成实验，也可以在课堂环境中，以小组活动的形式集中完成实验。每个Python实验给出的结果，都是我们撰写本书时运行实验所获得的结果。然而，Python不断发布新版本，实验调用的包也会随时间更新。因此，未来读者亲自运行实验时，所得结果可能不再与实验小节中展示的结果完全一致。必要时，我们会在本书网站上发布实验的更新。</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Auto</td>
+<td>汽车的燃油经济性、马力及其他信息。</td>
+</tr>
+<tr class="even">
+<td>Bikeshare</td>
+<td>华盛顿特区某共享单车项目每小时的使用情况。</td>
+</tr>
+<tr class="odd">
+<td>Boston</td>
+<td>波士顿人口普查区的房屋价值及其他信息。</td>
+</tr>
+<tr class="even">
+<td>BrainCancer</td>
+<td>确诊脑癌患者的生存时间。</td>
+</tr>
+<tr class="odd">
+<td>Caravan</td>
+<td>曾被推介旅行拖车保险的个人信息。</td>
+</tr>
+<tr class="even">
+<td>Carseats</td>
+<td>400家商店的汽车座椅销售信息。</td>
+</tr>
+<tr class="odd">
+<td>College</td>
+<td>美国高校的人口统计特征、学费等信息。</td>
+</tr>
+<tr class="even">
+<td>Credit</td>
+<td>400位客户的信用卡欠款信息。</td>
+</tr>
+<tr class="odd">
+<td>Default</td>
+<td>某信用卡公司的客户违约记录。</td>
+</tr>
+<tr class="even">
+<td>Fund</td>
+<td>2,000位对冲基金经理在50个月中的收益率。</td>
+</tr>
+<tr class="odd">
+<td>Hitters</td>
+<td>棒球运动员的比赛记录和薪资。</td>
+</tr>
+<tr class="even">
+<td>Khan</td>
+<td>四种癌症类型的基因表达测量值。</td>
+</tr>
+<tr class="odd">
+<td>NCI60</td>
+<td>64个癌症细胞系的基因表达测量值。</td>
+</tr>
+<tr class="even">
+<td>NYSE</td>
+<td>纽约证券交易所的收益率、波动率和成交量。</td>
+</tr>
+<tr class="odd">
+<td>OJ</td>
+<td>Citrus Hill和Minute Maid橙汁的销售信息。</td>
+</tr>
+<tr class="even">
+<td>Portfolio</td>
+<td>金融资产的历史取值，用于投资组合配置。</td>
+</tr>
+<tr class="odd">
+<td>Publication</td>
+<td>244项临床试验发表所需的时间。</td>
+</tr>
+<tr class="even">
+<td>Smarket</td>
+<td>标准普尔500指数在5年中的每日百分比收益率。</td>
+</tr>
+<tr class="odd">
+<td>USArrests</td>
+<td>美国50个州每10万居民的犯罪统计。</td>
+</tr>
+<tr class="even">
+<td>Wage</td>
+<td>美国中大西洋地区男性的收入调查数据。</td>
+</tr>
+<tr class="odd">
+<td>Weekly</td>
+<td>21年中的1,089个每周股票市场收益率。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表1.1</strong> 完成本书实验和习题所需的数据集。除<code>USArrests</code>以外，所有数据集都可从<code>ISLP</code>包获得；<code>USArrests</code>属于R基础发行版，但也可以从Python中访问。</p>
+<p>我们用<img src="../assets/display-crops/ch01-advanced-marker.png" alt="进阶内容标记" class="advanced-marker" width="28">符号标记包含更具挑战性概念的小节或习题。不希望深入探讨这些内容，或缺少相应数学背景的读者，可以跳过它们。</p>
+</section>
+<section id="实验和习题使用的数据集" class="level2">
+<h2 class="anchored" data-anchor-id="实验和习题使用的数据集">实验和习题使用的数据集</h2>
+<p>本书用市场营销、金融、生物学等领域的实际应用来说明统计学习方法。<code>ISLP</code>包包含完成本书实验和习题所需的多个数据集。另有一个数据集属于R基础发行版，即<code>USArrests</code>数据；12.5.1节将说明如何从Python中访问它。表1.1汇总了完成实验和习题所需的数据集。其中少数数据集也以文本文件的形式放在本书网站上，供第2章使用。</p>
+</section>
+<section id="本书网站" class="level2">
+<h2 class="anchored" data-anchor-id="本书网站">本书网站</h2>
+<p>本书的网站为</p>
+<p><a href="https://www.statlearning.com">www.statlearning.com</a></p>
+<p>网站提供多种资源，包括本书配套的Python包以及一些额外的数据集。</p>
+</section>
+<section id="致谢" class="level2">
+<h2 class="anchored" data-anchor-id="致谢">致谢</h2>
+<p>本书有几幅图取自ESL，即图6.7、图8.3和图12.14。其余图均为ISL的R版本绘制，唯一的例外是图13.10：由于绘制该图所用的Python软件不同，其呈现也有所不同。</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "已复制");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "已复制");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"可滚动的代码","output":"可滚动的输出"};
+  </script>
+<nav class="page-navigation" aria-label="页面">
+  <div class="nav-page nav-page-previous">
+      <a href="../index.html" class="pagination-link" aria-label="译者序">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">译者序</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../dist/chapter2.html" class="pagination-link" aria-label="第二章　统计学习">
+        <span class="nav-page-text"><span class="chapter-title">第二章　统计学习</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>An Introduction to Statistical Learning: with Applications in Python<br> Authors: Gareth James et al.<br> Translator: Yuechen Qi</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

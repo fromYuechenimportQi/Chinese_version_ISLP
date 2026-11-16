@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>第9章 支持向量机（Support Vector Machines） – 统计学习导论：Python 应用 · 中文译本</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../dist/chapter8.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-fc3b36746e1955fb88c77d3f07db1d35.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "没有结果",
+    "search-matching-documents-text": "匹配的文档",
+    "search-copy-link-title": "复制搜索链接",
+    "search-hide-matches-text": "隐藏其它匹配结果",
+    "search-more-match-text": "更多匹配结果",
+    "search-more-matches-text": "更多匹配结果",
+    "search-clear-button-title": "清除",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "取消",
+    "search-submit-button-title": "提交",
+    "search-label": "搜索"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">跳至主要内容</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" aria-label="工具栏">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="展开或折叠侧边栏导航" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter9.html"><span class="chapter-title">第9章 支持向量机（Support Vector Machines）</span></a></li></ol></nav>
+        <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="搜索" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto" aria-label="网站">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">统计学习导论：Python 应用 · 中文译本</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/fromYuechenimportQi/Chinese_version_ISLP" title="源代码" class="quarto-navigation-tool px-1" aria-label="源代码"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="搜索"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">译者序</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter1.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第一章　导论</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter2.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第二章　统计学习</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter3.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第三章　线性回归</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter4.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第四章　分类</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter5.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第五章　重抽样方法</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter6.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第六章　线性模型选择与正则化</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter7.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第七章　超越线性</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter8.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第八章　基于树的方法</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter9.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第9章 支持向量机（Support Vector Machines）</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">目录</h2>
+   
+  <ul>
+  <li><a href="#最大间隔分类器" id="toc-最大间隔分类器" class="nav-link active" data-scroll-target="#最大间隔分类器">9.1 最大间隔分类器</a>
+  <ul class="collapse">
+  <li><a href="#什么是超平面" id="toc-什么是超平面" class="nav-link" data-scroll-target="#什么是超平面">9.1.1 什么是超平面？</a></li>
+  <li><a href="#使用分离超平面进行分类" id="toc-使用分离超平面进行分类" class="nav-link" data-scroll-target="#使用分离超平面进行分类">9.1.2 使用分离超平面进行分类</a></li>
+  <li><a href="#最大间隔分类器-1" id="toc-最大间隔分类器-1" class="nav-link" data-scroll-target="#最大间隔分类器-1">9.1.3 最大间隔分类器</a></li>
+  <li><a href="#构建最大间隔分类器" id="toc-构建最大间隔分类器" class="nav-link" data-scroll-target="#构建最大间隔分类器">9.1.4 构建最大间隔分类器</a></li>
+  <li><a href="#不可分的情形" id="toc-不可分的情形" class="nav-link" data-scroll-target="#不可分的情形">9.1.5 不可分的情形</a></li>
+  </ul></li>
+  <li><a href="#支持向量分类器" id="toc-支持向量分类器" class="nav-link" data-scroll-target="#支持向量分类器">9.2 支持向量分类器</a>
+  <ul class="collapse">
+  <li><a href="#支持向量分类器概述" id="toc-支持向量分类器概述" class="nav-link" data-scroll-target="#支持向量分类器概述">9.2.1 支持向量分类器概述</a></li>
+  <li><a href="#支持向量分类器的细节" id="toc-支持向量分类器的细节" class="nav-link" data-scroll-target="#支持向量分类器的细节">9.2.2 支持向量分类器的细节</a></li>
+  </ul></li>
+  <li><a href="#支持向量机-support-vector-machines" id="toc-支持向量机-support-vector-machines" class="nav-link" data-scroll-target="#支持向量机-support-vector-machines">9.3 支持向量机 (Support Vector Machines)</a>
+  <ul class="collapse">
+  <li><a href="#使用非线性决策边界进行分类" id="toc-使用非线性决策边界进行分类" class="nav-link" data-scroll-target="#使用非线性决策边界进行分类">9.3.1 使用非线性决策边界进行分类</a></li>
+  <li><a href="#支持向量机-the-support-vector-machine" id="toc-支持向量机-the-support-vector-machine" class="nav-link" data-scroll-target="#支持向量机-the-support-vector-machine">9.3.2 支持向量机 (The Support Vector Machine)</a></li>
+  <li><a href="#在心脏病数据上的应用" id="toc-在心脏病数据上的应用" class="nav-link" data-scroll-target="#在心脏病数据上的应用">9.3.3 在心脏病数据上的应用</a></li>
+  </ul></li>
+  <li><a href="#多于两个类别的svm" id="toc-多于两个类别的svm" class="nav-link" data-scroll-target="#多于两个类别的svm">9.4 多于两个类别的SVM</a>
+  <ul class="collapse">
+  <li><a href="#一对一分类" id="toc-一对一分类" class="nav-link" data-scroll-target="#一对一分类">9.4.1 一对一分类</a></li>
+  <li><a href="#一对其余分类" id="toc-一对其余分类" class="nav-link" data-scroll-target="#一对其余分类">9.4.2 一对其余分类</a></li>
+  </ul></li>
+  <li><a href="#与逻辑回归的关系" id="toc-与逻辑回归的关系" class="nav-link" data-scroll-target="#与逻辑回归的关系">9.5 与逻辑回归的关系 <img src="../assets/display-crops/exercise-marker.png" alt="原书较进阶内容标记" style="width:36px;display:inline-block;vertical-align:middle"></a></li>
+  <li><a href="#实验支持向量机" id="toc-实验支持向量机" class="nav-link" data-scroll-target="#实验支持向量机">9.6 实验：支持向量机</a>
+  <ul class="collapse">
+  <li><a href="#支持向量分类器-1" id="toc-支持向量分类器-1" class="nav-link" data-scroll-target="#支持向量分类器-1">9.6.1 支持向量分类器</a></li>
+  <li><a href="#支持向量机" id="toc-支持向量机" class="nav-link" data-scroll-target="#支持向量机">9.6.2 支持向量机</a></li>
+  <li><a href="#roc曲线" id="toc-roc曲线" class="nav-link" data-scroll-target="#roc曲线">9.6.3 ROC曲线</a></li>
+  <li><a href="#多类别svm" id="toc-多类别svm" class="nav-link" data-scroll-target="#多类别svm">9.6.4 多类别SVM</a></li>
+  <li><a href="#基因表达数据的应用" id="toc-基因表达数据的应用" class="nav-link" data-scroll-target="#基因表达数据的应用">9.6.5 基因表达数据的应用</a></li>
+  </ul></li>
+  <li><a href="#习题" id="toc-习题" class="nav-link" data-scroll-target="#习题">9.7 习题</a>
+  <ul class="collapse">
+  <li><a href="#概念题" id="toc-概念题" class="nav-link" data-scroll-target="#概念题">概念题</a></li>
+  <li><a href="#应用题" id="toc-应用题" class="nav-link" data-scroll-target="#应用题">应用题</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">第9章 支持向量机（Support Vector Machines）</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>本章讨论支持向量机（SVM）。这是一种分类方法，由计算机科学界在20世纪90年代提出，此后日益流行。支持向量机在多种情境中都表现良好，常被认为是最好的“开箱即用”分类器之一。</p>
+<p>支持向量机是对一种简单、直观的分类器的推广，这种分类器称为<strong>最大间隔分类器（maximal margin classifier）</strong>，将在9.1节介绍。虽然它简洁而优美，但我们将看到，它要求各类别能够用线性边界分开，因此遗憾的是，大多数数据集都不能使用它。9.2节介绍<strong>支持向量分类器（support vector classifier）</strong>，它扩展了最大间隔分类器，适用情形更广。9.3节介绍支持向量机，它在支持向量分类器的基础上进一步扩展，以适应非线性的类别边界。支持向量机原本面向只有两个类别的二元分类情形；9.4节将讨论如何把它扩展到两个以上类别的情形。9.5节讨论支持向量机与逻辑回归等其他统计方法之间的密切联系。</p>
+<p>人们常常把最大间隔分类器、支持向量分类器和支持向量机统称为“支持向量机”。为避免混淆，本章将仔细区分这三个概念。</p>
+<section id="最大间隔分类器" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="最大间隔分类器">9.1 最大间隔分类器</h2>
+<p>本节定义<strong>超平面（hyperplane）</strong>，并介绍<strong>最优分离超平面（optimal separating hyperplane）</strong> 的概念。</p>
+<section id="什么是超平面" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="什么是超平面">9.1.1 什么是超平面？</h3>
+<p>在 <span class="math inline">\(p\)</span> 维空间中，超平面是一个维数为 <span class="math inline">\(p-1\)</span> 的平坦仿射子空间。<sup><a href="#ch09-fn1" id="ch09-fnref1">1</a></sup> 例如，在二维空间中，超平面是平坦的一维子空间，也就是一条直线。在三维空间中，超平面是平坦的二维子空间，也就是一个平面。当 <span class="math inline">\(p&gt;3\)</span> 时，超平面可能难以直观呈现，但它仍然是一个平坦的 <span class="math inline">\((p-1)\)</span> 维子空间。</p>
+<aside class="footnote" id="ch09-fn1">
+<a href="#ch09-fnref1">1</a> “仿射（affine）”表示这个子空间不必经过原点。
+</aside>
+<p>超平面的数学定义相当简单。在二维空间中，超平面由方程</p>
+<p><span class="math display">\[
+\beta_0+\beta_1X_1+\beta_2X_2=0 \tag{9.1}
+\]</span></p>
+<p>定义，其中参数为 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span> 和 <span class="math inline">\(\beta_2\)</span>。我们说式（9.1）“定义”了超平面，是指任何满足式（9.1）的 <span class="math inline">\(X=(X_1,X_2)^T\)</span>，都是超平面上的一个点。注意，式（9.1）就是直线方程，因为在二维空间中，超平面确实就是一条直线。</p>
+<p>式（9.1）很容易扩展到 <span class="math inline">\(p\)</span> 维情形：</p>
+<p><span class="math display">\[
+\beta_0+\beta_1X_1+\beta_2X_2+\cdots+\beta_pX_p=0 \tag{9.2}
+\]</span></p>
+<p>定义了一个 <span class="math inline">\(p\)</span> 维超平面。同样，这意味着：如果 <span class="math inline">\(p\)</span> 维空间中的点 <span class="math inline">\(X=(X_1,X_2,\ldots,X_p)^T\)</span>（即长度为 <span class="math inline">\(p\)</span> 的向量）满足式（9.2），那么 <span class="math inline">\(X\)</span> 就位于该超平面上。</p>
+<p>现在，假设 <span class="math inline">\(X\)</span> 不满足式（9.2），而是满足</p>
+<p><span class="math display">\[
+\beta_0+\beta_1X_1+\beta_2X_2+\cdots+\beta_pX_p&gt;0. \tag{9.3}
+\]</span></p>
+<p>这就说明，<span class="math inline">\(X\)</span> 位于超平面的一侧。反之，如果</p>
+<p><span class="math display">\[
+\beta_0+\beta_1X_1+\beta_2X_2+\cdots+\beta_pX_p&lt;0, \tag{9.4}
+\]</span></p>
+<p>那么 <span class="math inline">\(X\)</span> 就位于超平面的另一侧。因此，可以把超平面看作将 <span class="math inline">\(p\)</span> 维空间分成两半。只需计算式（9.2）左侧的正负号，就能轻易判断一个点位于超平面的哪一侧。图9.1展示了二维空间中的一个超平面。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-1.png" class="img-fluid figure-img"></p>
+<figcaption>图9.1：二维空间中的超平面及两侧区域</figcaption>
+</figure>
+</div>
+<p><strong>图9.1</strong> 图中展示了超平面 <span class="math inline">\(1+2X_1+3X_2=0\)</span>。蓝色区域由满足 <span class="math inline">\(1+2X_1+3X_2&gt;0\)</span> 的点构成，紫色区域由满足 <span class="math inline">\(1+2X_1+3X_2&lt;0\)</span> 的点构成。图内坐标 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 和数值保持原样。</p>
+</section>
+<section id="使用分离超平面进行分类" class="level3">
+<h3 class="anchored" data-anchor-id="使用分离超平面进行分类">9.1.2 使用分离超平面进行分类</h3>
+<p>现在，假设我们有一个 <span class="math inline">\(n\times p\)</span> 的数据矩阵 <span class="math inline">\(\mathbf{X}\)</span>，它由 <span class="math inline">\(p\)</span> 维空间中的 <span class="math inline">\(n\)</span> 个训练观测构成：</p>
+<p><span class="math display">\[
+x_1=\begin{pmatrix}x_{11}\\\vdots\\x_{1p}\end{pmatrix},\ldots,x_n=\begin{pmatrix}x_{n1}\\\vdots\\x_{np}\end{pmatrix}, \tag{9.5}
+\]</span></p>
+<p>这些观测属于两个类别，即 <span class="math inline">\(y_1,\ldots,y_n\in\{-1,1\}\)</span>，其中 <span class="math inline">\(-1\)</span> 代表一个类别，1代表另一个类别。</p>
+<p>我们还有一个测试观测，它的观测特征是一个 <span class="math inline">\(p\)</span> 维向量 <span class="math inline">\(x^*=(x_1^*\ \cdots\ x_p^*)^T\)</span>。我们的目标是根据训练数据构建分类器，利用测试观测的特征测量值对其正确分类。前面已经介绍过一些完成这项任务的方法，例如第4章的线性判别分析和逻辑回归，以及第8章的分类树、装袋法和提升法。现在，我们将介绍一种基于<strong>分离超平面（separating hyperplane）</strong> 概念的新方法。</p>
+<p>假设能够构建一个超平面，按照类别标签将训练观测完全分开。图9.2左图展示了三个这样的分离超平面。可以把蓝色类别的观测标为 <span class="math inline">\(y_i=1\)</span>，把紫色类别的观测标为 <span class="math inline">\(y_i=-1\)</span>。于是，分离超平面具有以下性质：</p>
+<p><span class="math display">\[
+\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}&gt;0\quad\text{若 }y_i=1, \tag{9.6}
+\]</span></p>
+<p>且</p>
+<p><span class="math display">\[
+\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}&lt;0\quad\text{若 }y_i=-1. \tag{9.7}
+\]</span></p>
+<p>等价地，分离超平面具有性质</p>
+<p><span class="math display">\[
+y_i(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip})&gt;0 \tag{9.8}
+\]</span></p>
+<p>对所有 <span class="math inline">\(i=1,\ldots,n\)</span> 成立。</p>
+<p>如果存在分离超平面，就可以利用它构建一种很自然的分类器：根据测试观测位于超平面的哪一侧，把它分配给相应类别。图9.2右图给出了这样的分类器的例子。也就是说，根据 <span class="math inline">\(f(x^*)=\beta_0+\beta_1x_1^*+\beta_2x_2^*+\cdots+\beta_px_p^*\)</span> 的正负号对测试观测 <span class="math inline">\(x^*\)</span> 分类。如果 <span class="math inline">\(f(x^*)\)</span> 为正，就把它分到类别1；如果 <span class="math inline">\(f(x^*)\)</span> 为负，就把它分到类别 <span class="math inline">\(-1\)</span>。还可以利用 <span class="math inline">\(f(x^*)\)</span> 的大小。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-2.png" class="img-fluid figure-img"></p>
+<figcaption>图9.2：分离超平面与对应的分类规则</figcaption>
+</figure>
+</div>
+<p><strong>图9.2</strong> 左图：两个类别的观测分别用蓝色和紫色表示，每个观测都有两个变量的测量值。黑线给出了众多可能的分离超平面中的三个。右图：黑线表示一个分离超平面。蓝色和紫色网格表示基于这个分离超平面的分类器所采用的决策规则：落在网格蓝色部分的测试观测被分到蓝色类别，落在紫色部分的测试观测被分到紫色类别。图内坐标 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 和数值保持原样。</p>
+<p>如果 <span class="math inline">\(f(x^*)\)</span> 远离0，就说明 <span class="math inline">\(x^*\)</span> 离超平面很远，因此我们对 <span class="math inline">\(x^*\)</span> 的类别判定可以很有把握。反之，如果 <span class="math inline">\(f(x^*)\)</span> 接近0，那么 <span class="math inline">\(x^*\)</span> 就位于超平面附近，我们对其类别判定的把握也就较小。正如图9.2所示，基于分离超平面的分类器会产生线性决策边界，这并不令人意外。</p>
+</section>
+<section id="最大间隔分类器-1" class="level3">
+<h3 class="anchored" data-anchor-id="最大间隔分类器-1">9.1.3 最大间隔分类器</h3>
+<p>一般来说，如果数据能被一个超平面完全分开，那么实际上会存在无穷多个这样的超平面。这是因为，通常可以把给定的分离超平面稍微向上或向下移动，或稍微旋转，而不碰到任何观测。图9.2左图展示了三个可能的分离超平面。要根据分离超平面构建分类器，就必须有合理的方法，从无穷多个可能的分离超平面中决定采用哪一个。</p>
+<p>一个自然的选择是<strong>最大间隔超平面（maximal margin hyperplane）</strong>，也称最优分离超平面，即离训练观测最远的分离超平面。具体而言，对于一个给定的分离超平面，可以计算每个训练观测到它的垂直距离；这些距离中的最小值，就是观测到该超平面的最短距离，称为<strong>间隔（margin）</strong>。最大间隔超平面，就是使间隔达到最大的分离超平面；换言之，它到训练观测的最短距离最大。随后，根据测试观测位于最大间隔超平面的哪一侧，对其分类。这就称为最大间隔分类器。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-3.png" class="img-fluid figure-img"></p>
+<figcaption>图9.3：最大间隔超平面、间隔与支持向量</figcaption>
+</figure>
+</div>
+<p><strong>图9.3</strong> 两个类别的观测分别用蓝色和紫色表示。实线表示最大间隔超平面。间隔是实线到任意一条虚线的距离。位于虚线上的两个蓝点和一个紫点是支持向量；箭头表示这些点到超平面的距离。紫色和蓝色网格表示基于这个分离超平面的分类器所采用的决策规则。图内坐标 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 和数值保持原样。</p>
+<p>我们希望，训练数据上间隔较大的分类器，在测试数据上也有较大的间隔，从而正确分类测试观测。虽然最大间隔分类器往往表现不错，但当 <span class="math inline">\(p\)</span> 很大时，它也可能导致过拟合。</p>
+<p>如果 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span> 是最大间隔超平面的系数，那么最大间隔分类器就根据 <span class="math inline">\(f(x^*)=\beta_0+\beta_1x_1^*+\beta_2x_2^*+\cdots+\beta_px_p^*\)</span> 的正负号，对测试观测 <span class="math inline">\(x^*\)</span> 分类。</p>
+<p>图9.3展示了图9.2数据集的最大间隔超平面。把图9.2右图与图9.3比较，就会发现，图9.3的最大间隔超平面确实使观测到分离超平面的最短距离更大，也就是间隔更大。从某种意义上说，最大间隔超平面是能插入两个类别之间的最宽“板带”的中线。</p>
+<p>仔细看图9.3，可以发现有三个训练观测与最大间隔超平面的距离相同，并位于表示间隔宽度的虚线上。这三个观测称为<strong>支持向量（support vectors）</strong>：它们是 <span class="math inline">\(p\)</span> 维空间中的向量（图9.3中 <span class="math inline">\(p=2\)</span>），而且“支撑”着最大间隔超平面；如果稍微移动这些点，最大间隔超平面也会随之移动。有趣的是，最大间隔超平面直接依赖支持向量，却不依赖其他观测：只要其他观测的移动没有使其越过间隔所确定的边界，移动其中任何一个观测都不会影响分离超平面。</p>
+<p>最大间隔超平面只直接依赖少量观测这一性质十分重要。在本章后面讨论支持向量分类器和支持向量机时，我们还会遇到这一性质。</p>
+</section>
+<section id="构建最大间隔分类器" class="level3">
+<h3 class="anchored" data-anchor-id="构建最大间隔分类器">9.1.4 构建最大间隔分类器</h3>
+<p>现在考虑如何根据 <span class="math inline">\(n\)</span> 个训练观测 <span class="math inline">\(x_1,\ldots,x_n\in\mathbb{R}^p\)</span> 及其类别标签 <span class="math inline">\(y_1,\ldots,y_n\in\{-1,1\}\)</span>，构建最大间隔超平面。简言之，最大间隔超平面是以下优化问题的解：</p>
+<p><span class="math display">\[
+\underset{\beta_0,\beta_1,\ldots,\beta_p,M}{\text{最大化}}\ M \tag{9.9}
+\]</span></p>
+<p><span class="math display">\[
+\text{满足}\quad\sum_{j=1}^{p}\beta_j^2=1, \tag{9.10}
+\]</span></p>
+<p><span class="math display">\[
+y_i(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip})\ge M\quad\forall\ i=1,\ldots,n. \tag{9.11}
+\]</span></p>
+<p>优化问题（9.9）–（9.11）其实比看起来简单。首先，只要 <span class="math inline">\(M\)</span> 为正，式（9.11）中的约束</p>
+<p><span class="math display">\[
+y_i(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip})\ge M\quad\forall\ i=1,\ldots,n
+\]</span></p>
+<p>就保证每个观测都位于超平面的正确一侧。（实际上，要让每个观测都位于超平面的正确一侧，只需 <span class="math inline">\(y_i(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip})&gt;0\)</span>。因此，只要 <span class="math inline">\(M\)</span> 为正，式（9.11）就进一步要求每个观测在超平面的正确一侧留出一定余地。）</p>
+<p>其次，注意式（9.10）实际上并不限制超平面本身，因为如果 <span class="math inline">\(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}=0\)</span> 定义了一个超平面，那么对于任意 <span class="math inline">\(k\ne0\)</span>，<span class="math inline">\(k(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip})=0\)</span> 也定义了同一个超平面。不过，式（9.10）使式（9.11）有了明确的含义：可以证明，在这一约束下，第 <span class="math inline">\(i\)</span> 个观测到超平面的垂直距离为</p>
+<p><span class="math display">\[
+y_i(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}).
+\]</span></p>
+<p>因此，约束（9.10）和（9.11）保证每个观测都在超平面的正确一侧，而且到超平面的距离至少为 <span class="math inline">\(M\)</span>。所以，<span class="math inline">\(M\)</span> 代表超平面的间隔，优化问题则选择 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span>，使 <span class="math inline">\(M\)</span> 达到最大。这正是最大间隔超平面的定义！问题（9.9）–（9.11）可以高效求解，但这种优化的细节超出了本书范围。</p>
+</section>
+<section id="不可分的情形" class="level3">
+<h3 class="anchored" data-anchor-id="不可分的情形">9.1.5 不可分的情形</h3>
+<p><em>如果存在分离超平面</em>，最大间隔分类器是一种很自然的分类方法。不过，正如前面所暗示的，很多情况下并不存在分离超平面，因此也就没有最大间隔分类器。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-4.png" class="img-fluid figure-img"></p>
+<figcaption>图9.4：无法用超平面分开的两类观测</figcaption>
+</figure>
+</div>
+<p><strong>图9.4</strong> 两个类别的观测分别用蓝色和紫色表示。在这个例子中，无法用超平面将两个类别分开，因此不能使用最大间隔分类器。图内坐标 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 和数值保持原样。</p>
+<p>此时，优化问题（9.9）–（9.11）没有满足 <span class="math inline">\(M&gt;0\)</span> 的解。图9.4给出了一个例子：这里无法将两个类别<em>完全</em>分开。不过，正如下节将要介绍的，可以扩展分离超平面的概念，使用所谓的<strong>软间隔（soft margin）</strong>，构建一个<em>几乎</em>能分开两个类别的超平面。将最大间隔分类器推广到不可分情形，就得到了支持向量分类器。</p>
+</section>
+</section>
+<section id="支持向量分类器" class="level2">
+<h2 class="anchored" data-anchor-id="支持向量分类器">9.2 支持向量分类器</h2>
+<section id="支持向量分类器概述" class="level3">
+<h3 class="anchored" data-anchor-id="支持向量分类器概述">9.2.1 支持向量分类器概述</h3>
+<p>从图9.4可知，属于两个类别的观测未必能用一个超平面分开。事实上，即使存在分离超平面，在某些情形下，基于它的分类器也未必理想。基于分离超平面的分类器必然会将所有训练观测完全正确地分类，这可能使它对个别观测十分敏感。图9.5展示了一个例子：右图仅增加了一个观测，就导致最大间隔超平面发生剧烈变化。由此得到的最大间隔超平面并不令人满意，首先，它的间隔极小。这是个问题，因为如前所述，观测到超平面的距离可以看作我们对其分类正确程度的信心度量。此外，最大间隔超平面对一个观测的变化都极其敏感，这也提示它可能对训练数据过拟合了。</p>
+<p>在这种情况下，我们也许愿意考虑一种基于超平面的分类器，它不必完全分开两个类别，以求：</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-5.png" class="img-fluid figure-img"></p>
+<figcaption>图9.5：单个新增观测对最大间隔超平面的影响</figcaption>
+</figure>
+</div>
+<p><strong>图9.5</strong> 左图：蓝色和紫色表示两个类别的观测，同时画出了最大间隔超平面。右图：增加了一个蓝色观测，使实线所示的最大间隔超平面发生剧烈偏移。虚线表示没有增加这个点时得到的最大间隔超平面。图内坐标 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 和数值保持原样。</p>
+<ul>
+<li>对个别观测更加稳健；</li>
+<li>更好地分类大多数训练观测。</li>
+</ul>
+<p>也就是说，为了更好地分类其余观测，允许少数训练观测被误分类，可能是值得的。</p>
+<p>支持向量分类器有时也称为<strong>软间隔分类器（soft margin classifier）</strong>，它正是这样做的。我们不再追求一个尽可能大的间隔，同时要求每个观测既位于超平面的正确一侧，也位于间隔边界的正确一侧；相反，允许部分观测落在间隔边界的错误一侧，甚至落在超平面的错误一侧。（间隔之所以是“软”的，是因为部分训练观测可以违背它的限制。）图9.6左图给出了一个例子。大多数观测位于间隔边界的正确一侧，但少量观测位于错误一侧。</p>
+<p>观测不仅可能位于间隔边界的错误一侧，还可能位于超平面的错误一侧。事实上，当不存在分离超平面时，这种情形不可避免。位于超平面错误一侧的观测，就是被支持向量分类器误分类的训练观测。图9.6右图展示了这种情形。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-6.png" class="img-fluid figure-img"></p>
+<figcaption>图9.6：间隔违例与超平面两侧的观测</figcaption>
+</figure>
+</div>
+<p><strong>图9.6</strong> 左图：对一个小型数据集拟合支持向量分类器。实线表示超平面，虚线表示间隔边界。紫色观测：观测3、4、5、6位于间隔边界的正确一侧，观测2在间隔边界上，观测1位于间隔边界的错误一侧。蓝色观测：观测7、10位于间隔边界的正确一侧，观测9在间隔边界上，观测8位于间隔边界的错误一侧。没有观测位于超平面的错误一侧。右图：与左图相同，但增加了两个点11、12。这两个观测既位于超平面的错误一侧，也位于间隔边界的错误一侧。图内坐标 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span>、观测编号和数值保持原样。</p>
+</section>
+<section id="支持向量分类器的细节" class="level3">
+<h3 class="anchored" data-anchor-id="支持向量分类器的细节">9.2.2 支持向量分类器的细节</h3>
+<p>支持向量分类器根据测试观测位于超平面的哪一侧，对其分类。所选择的超平面应能将大多数训练观测正确地分到两个类别中，但也可能误分类少数观测。</p>
+<p>它是以下优化问题的解：</p>
+<p><span class="math display">\[
+\underset{\beta_0,\beta_1,\ldots,\beta_p,\epsilon_1,\ldots,\epsilon_n,M}{\text{最大化}}\ M \tag{9.12}
+\]</span></p>
+<p><span class="math display">\[
+\text{满足}\quad\sum_{j=1}^{p}\beta_j^2=1, \tag{9.13}
+\]</span></p>
+<p><span class="math display">\[
+y_i(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip})\ge M(1-\epsilon_i), \tag{9.14}
+\]</span></p>
+<p><span class="math display">\[
+\epsilon_i\ge0,\quad\sum_{i=1}^{n}\epsilon_i\le C, \tag{9.15}
+\]</span></p>
+<p>其中，<span class="math inline">\(C\)</span> 是非负的调节参数。与式（9.11）中一样，<span class="math inline">\(M\)</span> 是间隔的宽度；我们的目标是使它尽可能大。式（9.14）中的 <span class="math inline">\(\epsilon_1,\ldots,\epsilon_n\)</span> 是<strong>松弛变量（slack variables）</strong>，它们允许个别观测位于间隔边界或超平面的错误一侧；稍后会详细解释。求解问题（9.12）–（9.15）之后，就像前面一样，只需确定测试观测 <span class="math inline">\(x^*\)</span> 位于超平面的哪一侧，就能对其分类。也就是说，根据 <span class="math inline">\(f(x^*)=\beta_0+\beta_1x_1^*+\cdots+\beta_px_p^*\)</span> 的正负号分类。</p>
+<p>问题（9.12）–（9.15）看似复杂，但通过下面一系列简单的观察，就能理解其行为。首先，松弛变量 <span class="math inline">\(\epsilon_i\)</span> 告诉我们第 <span class="math inline">\(i\)</span> 个观测相对于超平面和间隔的位置。如果 <span class="math inline">\(\epsilon_i=0\)</span>，那么第 <span class="math inline">\(i\)</span> 个观测位于间隔边界的正确一侧，正如9.1.4节所示。如果 <span class="math inline">\(\epsilon_i&gt;0\)</span>，那么第 <span class="math inline">\(i\)</span> 个观测位于间隔边界的错误一侧，我们称它违背了间隔的限制。如果 <span class="math inline">\(\epsilon_i&gt;1\)</span>，那么它位于超平面的错误一侧。</p>
+<p>现在考虑调节参数 <span class="math inline">\(C\)</span> 的作用。在式（9.15）中，<span class="math inline">\(C\)</span> 为所有 <span class="math inline">\(\epsilon_i\)</span> 之和设定上限，因此决定了我们能够容忍的间隔违例（以及超平面违例）的数量和严重程度。可以把 <span class="math inline">\(C\)</span> 理解为：允许 <span class="math inline">\(n\)</span> 个观测违背间隔限制的“预算”。如果 <span class="math inline">\(C=0\)</span>，就没有违例预算，此时必有 <span class="math inline">\(\epsilon_1=\cdots=\epsilon_n=0\)</span>，问题（9.12）–（9.15）也就等同于最大间隔超平面的优化问题（9.9）–（9.11）。（当然，只有两个类别可分时，最大间隔超平面才存在。）当 <span class="math inline">\(C&gt;0\)</span> 时，位于超平面错误一侧的观测不可能超过 <span class="math inline">\(C\)</span> 个，因为这样的观测必有 <span class="math inline">\(\epsilon_i&gt;1\)</span>，而式（9.15）要求 <span class="math inline">\(\sum_{i=1}^{n}\epsilon_i\le C\)</span>。随着预算 <span class="math inline">\(C\)</span> 增大，我们对间隔违例的容忍度提高，因此间隔变宽。反之，随着 <span class="math inline">\(C\)</span> 减小，对间隔违例的容忍度降低，间隔也变窄。图9.7展示了一个例子。</p>
+<p>实践中，通常把 <span class="math inline">\(C\)</span> 作为调节参数，通过交叉验证选择。与本书此前介绍的调节参数一样，<span class="math inline">\(C\)</span> 控制这一统计学习方法的偏差—方差权衡。当 <span class="math inline">\(C\)</span> 很小时，我们寻求的是很少出现违例的窄间隔；这意味着分类器对数据拟合得很紧，可能具有低偏差和高方差。另一方面，当 <span class="math inline">\(C\)</span> 较大时，间隔更宽，也允许更多违例；这相当于放松对数据的拟合，得到的分类器可能偏差较高，但方差较低。</p>
+<p>优化问题（9.12）–（9.15）有一个很有趣的性质：只有位于间隔边界上，或违背间隔限制的观测，才会影响超平面，从而影响得到的分类器。换言之，严格位于间隔边界正确一侧的观测，不会影响支持向量分类器！只要这类观测的新位置仍在间隔边界的正确一侧，改变其位置完全不会改变分类器。恰好位于间隔边界上，或位于其所属类别的间隔边界错误一侧的观测，称为支持向量。这些观测会影响支持向量分类器。</p>
+<p>只有支持向量影响分类器，这与前面关于 <span class="math inline">\(C\)</span> 控制支持向量分类器偏差—方差权衡的说法一致。当调节参数 <span class="math inline">\(C\)</span> 很大时，间隔很宽，许多观测违背间隔限制，因此支持向量很多。这时，许多观测都参与决定超平面。图9.7左上图展示了这种情形：这个分类器的方差较低（因为许多观测都是支持向量），但偏差可能较高。相反，如果 <span class="math inline">\(C\)</span> 很小，支持向量就较少，得到的分类器便具有低偏差和高方差。图9.7右下图展示了这种情形，其中只有八个支持向量。</p>
+<p>支持向量分类器的决策规则可能只依赖少量训练观测（即支持向量），这意味着它对远离超平面的观测的变化相当稳健。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-7.png" class="img-fluid figure-img"></p>
+<figcaption>图9.7：不同违例预算下的支持向量分类器</figcaption>
+</figure>
+</div>
+<p><strong>图9.7</strong> 用问题（9.12）–（9.15）中调节参数 <span class="math inline">\(C\)</span> 的四个不同取值，分别拟合支持向量分类器。左上图使用的 <span class="math inline">\(C\)</span> 最大；右上、左下、右下各图依次使用更小的值。当 <span class="math inline">\(C\)</span> 很大时，对观测位于间隔边界错误一侧的容忍度很高，因此间隔很大。随着 <span class="math inline">\(C\)</span> 减小，这种容忍度下降，间隔也变窄。图内坐标 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 和数值保持原样。</p>
+<p>这一性质不同于前几章介绍的一些分类方法，例如线性判别分析。回想一下，LDA的分类规则依赖每个类别中所有观测的均值，以及利用全部观测计算的类内协方差矩阵。与LDA不同，逻辑回归对远离决策边界的观测也很不敏感。事实上，9.5节将说明，支持向量分类器与逻辑回归关系密切。</p>
+</section>
+</section>
+<section id="支持向量机-support-vector-machines" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="支持向量机-support-vector-machines">9.3 支持向量机 (Support Vector Machines)</h2>
+<p>我们先讨论一种通用机制，将线性分类器转变为能够产生非线性决策边界的分类器。然后介绍支持向量机，它能够自动实现这一过程。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-8.png" class="img-fluid figure-img"></p>
+<figcaption>图9.8：非线性类别边界与支持向量分类器</figcaption>
+</figure>
+</div>
+<p><strong>图9.8</strong> 左图：观测分属于两个类别，类别之间的边界是非线性的。右图：支持向量分类器寻找线性边界，因此表现很差。图内的 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 为两个特征，坐标刻度保持原样。</p>
+<section id="使用非线性决策边界进行分类" class="level3">
+<h3 class="anchored" data-anchor-id="使用非线性决策边界进行分类">9.3.1 使用非线性决策边界进行分类</h3>
+<p>在二分类问题中，如果两个类别之间的边界是线性的，支持向量分类器是一种自然的分类方法。然而，实践中有时会遇到非线性的类别边界。例如，考虑图9.8左图中的数据。显然，支持向量分类器或任何线性分类器在这里都会表现不佳。事实上，图9.8右图所示的支持向量分类器在这里毫无用处。</p>
+<p>第7章中也遇到过类似的情况。我们在那里看到，当预测变量与结果之间存在非线性关系时，线性回归的表现可能很差。在这种情况下，我们考虑利用预测变量的函数，例如二次项和三次项，扩展<strong>特征空间（feature space）</strong>，以处理这种非线性。对于支持向量分类器，也可以采用类似的方法：利用预测变量的二次、三次乃至更高次多项式函数扩展特征空间，从而处理类别之间可能存在的非线性边界。例如，我们可以不使用 <span class="math inline">\(p\)</span> 个特征</p>
+<p><span class="math display">\[
+X_1,X_2,\ldots,X_p,
+\]</span></p>
+<p>而改为使用 <span class="math inline">\(2p\)</span> 个特征来拟合支持向量分类器：</p>
+<p><span class="math display">\[
+X_1,X_1^2,X_2,X_2^2,\ldots,X_p,X_p^2.
+\]</span></p>
+<p>于是，式（9.12）–（9.15）变为</p>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\underset{\beta_0,\beta_{11},\beta_{12},\ldots,\beta_{p1},\beta_{p2},\epsilon_1,\ldots,\epsilon_n,\,M}{\text{最大化}}\quad M\\
+&amp;\text{约束条件为}\quad y_i\left(\beta_0+\sum_{j=1}^{p}\beta_{j1}x_{ij}+\sum_{j=1}^{p}\beta_{j2}x_{ij}^{2}\right)\geq M(1-\epsilon_i),\\
+&amp;\sum_{i=1}^{n}\epsilon_i\leq C,\quad \epsilon_i\geq0,\quad\sum_{j=1}^{p}\sum_{k=1}^{2}\beta_{jk}^{2}=1.
+\end{aligned}\tag{9.16}
+\]</span></p>
+<p>为什么这会产生非线性决策边界？在扩展后的特征空间中，由式（9.16）得到的决策边界实际上是线性的。但在原始特征空间中，决策边界具有 <span class="math inline">\(q(x)=0\)</span> 的形式，其中 <span class="math inline">\(q\)</span> 是一个二次多项式，其解通常是非线性的。我们还可能希望利用更高次的多项式项，或者形如 <span class="math inline">\(X_jX_{j'}\)</span>（<span class="math inline">\(j\ne j'\)</span>）的交互项，进一步扩展特征空间。也可以不采用多项式，而考虑预测变量的其他函数。不难看出，扩展特征空间的方法很多；如果不加注意，最终可能会得到数量极其庞大的特征，使计算变得难以处理。接下来介绍的支持向量机能够扩展支持向量分类器所使用的特征空间，同时保持计算效率。</p>
+</section>
+<section id="支持向量机-the-support-vector-machine" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="支持向量机-the-support-vector-machine">9.3.2 支持向量机 (The Support Vector Machine)</h3>
+<p>支持向量机（SVM）是支持向量分类器的一种扩展，它使用<strong>核（kernel）</strong>，以特定方式扩展特征空间。下面讨论这一扩展，其细节较为复杂，超出了本书范围。不过，主要思路已在9.3.1节说明：我们可能希望扩展特征空间，以适应类别之间的非线性边界。这里介绍的核方法，只是高效实现这一思路的一种计算方法。</p>
+<p>我们尚未具体讨论如何计算支持向量分类器，因为其细节涉及一些技术问题。不过，支持向量分类器问题（9.12）–（9.15）的解，实际上只涉及观测之间的<strong>内积（inner product）</strong>，而不直接涉及观测本身。两个 <span class="math inline">\(r\)</span> 维向量 <span class="math inline">\(a\)</span> 与 <span class="math inline">\(b\)</span> 的内积定义为 <span class="math inline">\(\langle a,b\rangle=\sum_{i=1}^{r}a_ib_i\)</span>。因此，两个观测 <span class="math inline">\(x_i\)</span> 与 <span class="math inline">\(x_{i'}\)</span> 的内积为</p>
+<p><span class="math display">\[
+\langle x_i,x_{i'}\rangle=\sum_{j=1}^{p}x_{ij}x_{i'j}.\tag{9.17}
+\]</span></p>
+<p>可以证明：</p>
+<ul>
+<li><p>线性支持向量分类器可以表示为</p>
+<p><span class="math display">\[
+  f(x)=\beta_0+\sum_{i=1}^{n}\alpha_i\langle x,x_i\rangle,\tag{9.18}
+  \]</span></p>
+<p>其中有 <span class="math inline">\(n\)</span> 个参数 <span class="math inline">\(\alpha_i\)</span>（<span class="math inline">\(i=1,\ldots,n\)</span>），每个训练观测对应一个参数。</p></li>
+<li><p>要估计参数 <span class="math inline">\(\alpha_1,\ldots,\alpha_n\)</span> 和 <span class="math inline">\(\beta_0\)</span>，我们只需要所有训练观测对之间的 <span class="math inline">\(\binom{n}{2}\)</span> 个内积 <span class="math inline">\(\langle x_i,x_{i'}\rangle\)</span>。（记号 <span class="math inline">\(\binom{n}{2}\)</span> 表示 <span class="math inline">\(n(n-1)/2\)</span>，即 <span class="math inline">\(n\)</span> 个元素中不同元素对的数量。）</p></li>
+</ul>
+<p>注意，在式（9.18）中，为了计算函数 <span class="math inline">\(f(x)\)</span> 的值，需要计算新点 <span class="math inline">\(x\)</span> 与每个训练点 <span class="math inline">\(x_i\)</span> 之间的内积。不过，实际上只有解中的支持向量对应的 <span class="math inline">\(\alpha_i\)</span> 非零；也就是说，如果某个训练观测不是支持向量，它的 <span class="math inline">\(\alpha_i\)</span> 就等于零。因此，如果用 <span class="math inline">\(\mathcal{S}\)</span> 表示这些支持点的索引集合，就可以把式（9.18）形式的任意解函数改写为</p>
+<p><span class="math display">\[
+f(x)=\beta_0+\sum_{i\in\mathcal{S}}\alpha_i\langle x,x_i\rangle,\tag{9.19}
+\]</span></p>
+<p>其中的项数通常远少于式（9.18）。<sup><a href="#ch09-fn2" id="ch09-fnref2">2</a></sup></p>
+<aside class="footnote" id="ch09-fn2">
+<a href="#ch09-fnref2">2</a> 展开式（9.19）中的每个内积，就容易看出，<span class="math inline">\(f(x)\)</span> 是 <span class="math inline">\(x\)</span> 的各坐标的线性函数。这样做也能建立 <span class="math inline">\(\alpha_i\)</span> 与原始参数 <span class="math inline">\(\beta_j\)</span> 之间的对应关系。
+</aside>
+<p>概括来说，无论是表示线性分类器 <span class="math inline">\(f(x)\)</span>，还是计算其系数，我们都只需要内积。</p>
+<p>现在假设，每当内积（9.17）出现在表示式（9.18）中，或者出现在支持向量分类器的求解计算中，我们都将其替换为一种广义内积，形式为</p>
+<p><span class="math display">\[
+K(x_i,x_{i'}),\tag{9.20}
+\]</span></p>
+<p>其中 <span class="math inline">\(K\)</span> 是某个函数，我们称之为核。核是一个量化两个观测相似程度的函数。例如，我们可以直接取</p>
+<p><span class="math display">\[
+K(x_i,x_{i'})=\sum_{j=1}^{p}x_{ij}x_{i'j},\tag{9.21}
+\]</span></p>
+<p>这样得到的就是原来的支持向量分类器。式（9.21）称为<strong>线性核（linear kernel）</strong>，因为支持向量分类器对于特征是线性的；线性核本质上使用皮尔逊（标准）相关来量化一对观测的相似性。但是，也可以为式（9.20）选择其他形式。例如，可以将每一处 <span class="math inline">\(\sum_{j=1}^{p}x_{ij}x_{i'j}\)</span> 替换为</p>
+<p><span class="math display">\[
+K(x_i,x_{i'})=\left(1+\sum_{j=1}^{p}x_{ij}x_{i'j}\right)^d.\tag{9.22}
+\]</span></p>
+<p>这称为 <span class="math inline">\(d\)</span> 次<strong>多项式核（polynomial kernel）</strong>，其中 <span class="math inline">\(d\)</span> 为正整数。在支持向量分类器算法中，用 <span class="math inline">\(d&gt;1\)</span> 的这种核代替标准线性核（9.21），会得到灵活得多的决策边界。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-9.png" class="img-fluid figure-img"></p>
+<figcaption>图9.9：使用多项式核与径向核的支持向量机</figcaption>
+</figure>
+</div>
+<p><strong>图9.9</strong> 左图：将使用三次多项式核的SVM应用于图9.8的非线性数据，得到的决策规则合适得多。右图：应用使用径向核的SVM。在本例中，两种核都能捕捉到决策边界。图内的 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_2\)</span> 及坐标刻度保持原样。</p>
+<p>从本质上说，这相当于在一个包含 <span class="math inline">\(d\)</span> 次多项式的更高维空间中拟合支持向量分类器，而不是在原始特征空间中拟合。当支持向量分类器与式（9.22）这样的非线性核相结合时，得到的分类器就称为支持向量机。注意，此时的非线性函数具有如下形式：</p>
+<p><span class="math display">\[
+f(x)=\beta_0+\sum_{i\in\mathcal{S}}\alpha_iK(x,x_i).\tag{9.23}
+\]</span></p>
+<p>图9.9左图展示了一个例子：将带有多项式核的SVM应用于图9.8的非线性数据。与线性支持向量分类器相比，拟合有了很大改善。当 <span class="math inline">\(d=1\)</span> 时，SVM便退化为本章前面介绍的支持向量分类器。</p>
+<p>式（9.22）中的多项式核只是非线性核的一个例子，还有许多其他选择。另一种常见选择是<strong>径向核（radial kernel）</strong>，其形式为</p>
+<p><span class="math display">\[
+K(x_i,x_{i'})=\exp\left(-\gamma\sum_{j=1}^{p}(x_{ij}-x_{i'j})^2\right).\tag{9.24}
+\]</span></p>
+<p>式（9.24）中，<span class="math inline">\(\gamma\)</span> 是一个正常数。图9.9右图给出了将使用径向核的SVM应用于这一非线性数据的例子；它也能很好地区分这两个类别。</p>
+<p>径向核（9.24）究竟如何起作用？如果一个给定的测试观测 <span class="math inline">\(x^*=(x_1^*,\ldots,x_p^*)^T\)</span> 与某个训练观测 <span class="math inline">\(x_i\)</span> 的<strong>欧几里得距离（Euclidean distance）</strong> 很大，那么 <span class="math inline">\(\sum_{j=1}^{p}(x_j^*-x_{ij})^2\)</span> 就很大，因此 <span class="math inline">\(K(x^*,x_i)=\exp(-\gamma\sum_{j=1}^{p}(x_j^*-x_{ij})^2)\)</span> 就非常小。这意味着，在式（9.23）中，<span class="math inline">\(x_i\)</span> 对 <span class="math inline">\(f(x^*)\)</span> 几乎不起作用。回顾一下，测试观测 <span class="math inline">\(x^*\)</span> 的预测类别标签取决于 <span class="math inline">\(f(x^*)\)</span> 的正负号。换言之，远离 <span class="math inline">\(x^*\)</span> 的训练观测对 <span class="math inline">\(x^*\)</span> 的预测类别标签基本不起作用。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-10.png" class="img-fluid figure-img"></p>
+<figcaption>图9.10：Heart训练集上的ROC曲线</figcaption>
+</figure>
+</div>
+<p><strong>图9.10</strong> <code>Heart</code> 数据训练集上的ROC曲线。左图：比较支持向量分类器与LDA。右图：将支持向量分类器与使用径向基核（radial basis kernel）、<span class="math inline">\(\gamma\)</span> 分别为 <span class="math inline">\(10^{-3}\)</span>、<span class="math inline">\(10^{-2}\)</span> 和 <span class="math inline">\(10^{-1}\)</span> 的SVM进行比较。图内文字：True positive rate＝真阳性率；False positive rate＝假阳性率；Support Vector Classifier＝支持向量分类器；LDA＝线性判别分析；SVM及 <span class="math inline">\(\gamma\)</span> 取值保持原样。</p>
+<p>因此，径向核具有很强的局部性，也就是说，只有邻近的训练观测才会影响某个测试观测的类别标签。</p>
+<p>使用核，与像式（9.16）那样直接利用原始特征的函数扩展特征空间相比，有什么优势？一个优势在于计算：使用核时，只需要对所有 <span class="math inline">\(\binom{n}{2}\)</span> 个不同的观测对 <span class="math inline">\(i,i'\)</span> 计算 <span class="math inline">\(K(x_i,x_i')\)</span>，无须显式地在扩展后的特征空间中计算。这一点很重要，因为在许多SVM应用中，扩展后的特征空间非常大，计算会变得难以处理。对于径向核（9.24）这样的某些核，特征空间是隐式且无限维的，因此我们无论如何也不可能在那里直接完成计算！</p>
+</section>
+<section id="在心脏病数据上的应用" class="level3">
+<h3 class="anchored" data-anchor-id="在心脏病数据上的应用">9.3.3 在心脏病数据上的应用</h3>
+<p>第8章中，我们将决策树及相关方法应用于 <code>Heart</code> 数据。目标是利用 <code>Age</code>、<code>Sex</code> 和 <code>Chol</code> 等13个预测变量，预测一个人是否患有心脏病。现在考察SVM在这一数据上的表现与LDA相比如何。删除6个有缺失值的观测后，数据包含297名受试者。我们将其随机划分为207个训练观测和90个测试观测。</p>
+<p>首先，对训练数据拟合LDA和支持向量分类器。注意，支持向量分类器等价于使用 <span class="math inline">\(d=1\)</span> 次多项式核的SVM。图9.10左图展示了LDA与支持向量分类器对训练集预测所得的ROC曲线（见4.4.2节）。两种分类器都会为每个观测计算形如 <span class="math inline">\(\hat f(X)=\hat\beta_0+\hat\beta_1X_1+\hat\beta_2X_2+\cdots+\hat\beta_pX_p\)</span> 的得分。对于任意给定的阈值 <span class="math inline">\(t\)</span>，根据 <span class="math inline">\(\hat f(X)&lt;t\)</span> 还是 <span class="math inline">\(\hat f(X)\geq t\)</span>，将观测归入患有心脏病或没有心脏病的类别。对一系列 <span class="math inline">\(t\)</span> 值作出这些预测，并计算假阳性率和真阳性率，就可以得到ROC曲线。最优分类器的曲线会紧贴ROC图的左上角。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-11.png" class="img-fluid figure-img"></p>
+<figcaption>图9.11：Heart测试集上的ROC曲线</figcaption>
+</figure>
+</div>
+<p><strong>图9.11</strong> <code>Heart</code> 数据测试集上的ROC曲线。左图：比较支持向量分类器与LDA。右图：将支持向量分类器与使用径向基核、<span class="math inline">\(\gamma\)</span> 分别为 <span class="math inline">\(10^{-3}\)</span>、<span class="math inline">\(10^{-2}\)</span> 和 <span class="math inline">\(10^{-1}\)</span> 的SVM进行比较。图内文字：True positive rate＝真阳性率；False positive rate＝假阳性率；Support Vector Classifier＝支持向量分类器；LDA＝线性判别分析；SVM及 <span class="math inline">\(\gamma\)</span> 取值保持原样。</p>
+<p>在本例中，LDA和支持向量分类器的表现都很好，不过，支持向量分类器似乎略胜一筹。</p>
+<p>图9.10右图展示了使用径向核、取不同 <span class="math inline">\(\gamma\)</span> 值的SVM所对应的ROC曲线。随着 <span class="math inline">\(\gamma\)</span> 增大、拟合变得更为非线性，ROC曲线有所改善。取 <span class="math inline">\(\gamma=10^{-1}\)</span> 时，ROC曲线看上去几乎完美。然而，这些曲线反映的是训练错误率，可能会误导我们对新测试数据上表现的判断。图9.11展示了在90个测试观测上计算得到的ROC曲线。它们与训练ROC曲线有所不同。图9.11左图中，支持向量分类器似乎比LDA略有优势，不过这些差异在统计上并不显著。右图中，在训练数据上表现最好的 <span class="math inline">\(\gamma=10^{-1}\)</span> 的SVM，在测试数据上给出了最差的估计结果。这再次表明，更灵活的方法虽然往往能获得较低的训练错误率，却不一定能改善在测试数据上的表现。<span class="math inline">\(\gamma=10^{-2}\)</span> 和 <span class="math inline">\(\gamma=10^{-3}\)</span> 的SVM与支持向量分类器表现相当，三者都优于 <span class="math inline">\(\gamma=10^{-1}\)</span> 的SVM。</p>
+</section>
+</section>
+<section id="多于两个类别的svm" class="level2">
+<h2 class="anchored" data-anchor-id="多于两个类别的svm">9.4 多于两个类别的SVM</h2>
+<p>到目前为止，我们的讨论仅限于二分类，也就是只有两个类别的分类问题。如何将SVM扩展到类别数任意的一般情况？SVM所依据的分离超平面概念，并不能自然地适用于两个以上的类别。虽然已有多种将SVM扩展到 <span class="math inline">\(K\)</span> 类问题的方案，最常用的两种是<strong>一对一（one-versus-one）</strong>和<strong>一对其余（one-versus-all）</strong>方法。下面简要介绍这两种方法。</p>
+<section id="一对一分类" class="level3">
+<h3 class="anchored" data-anchor-id="一对一分类">9.4.1 一对一分类</h3>
+<p>假设我们希望使用SVM进行分类，且有 <span class="math inline">\(K&gt;2\)</span> 个类别。一对一方法，也称<strong>全配对（all-pairs）</strong>方法，会构建 <span class="math inline">\(\binom{K}{2}\)</span> 个SVM，每个SVM比较一对类别。例如，其中一个SVM可能比较编码为 <span class="math inline">\(+1\)</span> 的第 <span class="math inline">\(k\)</span> 类与编码为 <span class="math inline">\(-1\)</span> 的第 <span class="math inline">\(k'\)</span> 类。我们用这 <span class="math inline">\(\binom{K}{2}\)</span> 个分类器分别对一个测试观测进行分类，并统计该观测被分入各个类别的次数。最终，将它分入这 <span class="math inline">\(\binom{K}{2}\)</span> 次两两分类中出现次数最多的类别。</p>
+</section>
+<section id="一对其余分类" class="level3">
+<h3 class="anchored" data-anchor-id="一对其余分类">9.4.2 一对其余分类</h3>
+<p>一对其余方法（one-versus-all，也称 <strong>one-versus-rest</strong>）是将SVM应用于 <span class="math inline">\(K&gt;2\)</span> 个类别时的另一种方法。我们拟合 <span class="math inline">\(K\)</span> 个SVM，每次将其中一个类别与其余 <span class="math inline">\(K-1\)</span> 个类别进行比较。用 <span class="math inline">\(\beta_{0k},\beta_{1k},\ldots,\beta_{pk}\)</span> 表示拟合一个SVM时得到的参数；这个SVM比较的是第 <span class="math inline">\(k\)</span> 类（编码为 <span class="math inline">\(+1\)</span>）与其余类别（编码为 <span class="math inline">\(-1\)</span>）。设 <span class="math inline">\(x^*\)</span> 表示一个测试观测。我们将该观测分入使 <span class="math inline">\(\beta_{0k}+\beta_{1k}x_1^*+\beta_{2k}x_2^*+\cdots+\beta_{pk}x_p^*\)</span> 最大的类别，因为这意味着，我们较有把握认为该观测属于第 <span class="math inline">\(k\)</span> 类，而不是其他任何类别。</p>
+</section>
+</section>
+<section id="与逻辑回归的关系" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="与逻辑回归的关系">9.5 与逻辑回归的关系 <img src="../assets/display-crops/exercise-marker.png" alt="原书较进阶内容标记" style="width:36px;display:inline-block;vertical-align:middle"></h2>
+<p>SVM在20世纪90年代中期刚出现时，在统计学和机器学习领域引起了很大反响。部分原因在于它表现出色、宣传得力，也在于其基本方法看上去既新颖又神秘。寻找一个尽可能将数据分开的超平面，同时允许一些违背这种分离的情况，这一思路似乎与逻辑回归、线性判别分析等经典分类方法截然不同。此外，使用核扩展特征空间，以适应非线性类别边界，也仿佛是一项独特而有价值的特性。</p>
+<p>然而，此后人们逐渐发现，SVM与其他更为经典的统计方法之间存在深刻联系。原来，拟合支持向量分类器 <span class="math inline">\(f(X)=\beta_0+\beta_1X_1+\cdots+\beta_pX_p\)</span> 的准则（9.12）–（9.15）可以改写为</p>
+<p><span class="math display">\[
+\underset{\beta_0,\beta_1,\ldots,\beta_p}{\text{最小化}}\left\{\sum_{i=1}^{n}\max\left[0,1-y_if(x_i)\right]+\lambda\sum_{j=1}^{p}\beta_j^2\right\},\tag{9.25}
+\]</span></p>
+<p>其中，<span class="math inline">\(\lambda\)</span> 是一个非负调节参数。当 <span class="math inline">\(\lambda\)</span> 较大时，<span class="math inline">\(\beta_1,\ldots,\beta_p\)</span> 较小，允许更多的间隔违例，得到的分类器方差较低、偏差较高。当 <span class="math inline">\(\lambda\)</span> 较小时，间隔违例较少，对应的分类器方差较高、偏差较低。</p>
+<p>因此，式（9.25）中较小的 <span class="math inline">\(\lambda\)</span> 对应于式（9.15）中较小的 <span class="math inline">\(C\)</span>。注意，式（9.25）中的 <span class="math inline">\(\lambda\sum_{j=1}^{p}\beta_j^2\)</span> 就是6.2.1节中的岭惩罚项；它在控制支持向量分类器的偏差—方差权衡方面发挥着类似作用。</p>
+<p>式（9.25）现在具有本书中反复出现的“损失＋惩罚项”形式：</p>
+<p><span class="math display">\[
+\underset{\beta_0,\beta_1,\ldots,\beta_p}{\text{最小化}}\left\{L(\mathbf X,\mathbf y,\boldsymbol\beta)+\lambda P(\boldsymbol\beta)\right\}.\tag{9.26}
+\]</span></p>
+<p>式（9.26）中，<span class="math inline">\(L(\mathbf X,\mathbf y,\boldsymbol\beta)\)</span> 是某个损失函数，量化以 <span class="math inline">\(\boldsymbol\beta\)</span> 为参数的模型对数据 <span class="math inline">\((\mathbf X,\mathbf y)\)</span> 的拟合程度；<span class="math inline">\(P(\boldsymbol\beta)\)</span> 是对参数向量 <span class="math inline">\(\boldsymbol\beta\)</span> 的惩罚函数，其作用由非负调节参数 <span class="math inline">\(\lambda\)</span> 控制。例如，岭回归和套索法都具有这一形式，其中</p>
+<p><span class="math display">\[
+L(\mathbf X,\mathbf y,\boldsymbol\beta)=\sum_{i=1}^{n}\left(y_i-\beta_0-\sum_{j=1}^{p}x_{ij}\beta_j\right)^2,
+\]</span></p>
+<p>岭回归对应 <span class="math inline">\(P(\boldsymbol\beta)=\sum_{j=1}^{p}\beta_j^2\)</span>，套索法对应 <span class="math inline">\(P(\boldsymbol\beta)=\sum_{j=1}^{p}|\beta_j|\)</span>。对于式（9.25），损失函数则采用如下形式：</p>
+<p><span class="math display">\[
+L(\mathbf X,\mathbf y,\boldsymbol\beta)=\sum_{i=1}^{n}\max\left[0,1-y_i(\beta_0+\beta_1x_{i1}+\cdots+\beta_px_{ip})\right].
+\]</span></p>
+<p>这称为<strong>合页损失（hinge loss）</strong>，如图9.12所示。不过，合页损失函数与逻辑回归所使用的损失函数有着密切联系；后者也展示在图9.12中。</p>
+<p>支持向量分类器有一个有趣的特征：只有支持向量会影响最终得到的分类器，处于间隔正确一侧的观测不会影响它。这是因为，对于满足 <span class="math inline">\(y_i(\beta_0+\beta_1x_{i1}+\cdots+\beta_px_{ip})\geq1\)</span> 的观测，图9.12中的损失函数恰好为零；这些观测对应于处在间隔正确一侧的观测。<sup><a href="#ch09-fn3" id="ch09-fnref3">3</a></sup></p>
+<aside class="footnote" id="ch09-fn3">
+<a href="#ch09-fnref3">3</a> 在这种“合页损失＋惩罚项”的表示中，间隔对应于数值1，而间隔的宽度由 <span class="math inline">\(\sum\beta_j^2\)</span> 决定。
+</aside>
+<p>相比之下，图9.12中逻辑回归的损失函数在任何位置都不恰好等于零，但对于远离决策边界的观测，其值非常小。由于两者的损失函数相似，逻辑回归与支持向量分类器往往给出非常接近的结果。当各类别分离得较好时，SVM的表现通常优于逻辑回归；当各类别重叠较多时，往往更倾向于采用逻辑回归。</p>
+<p>支持向量分类器和SVM刚出现时，人们曾认为，式（9.15）中的调节参数 <span class="math inline">\(C\)</span> 是一个无关紧要的“干扰”参数，可以设为某个默认值，例如1。然而，支持向量分类器的“损失＋惩罚项”表示式（9.25）说明，事实并非如此。调节参数的选择非常重要，它决定了模型对数据欠拟合或过拟合的程度，例如图9.7所展示的情况。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../assets/display-crops/figure-9-12.png" class="img-fluid figure-img"></p>
+<figcaption>图9.12：SVM与逻辑回归的损失函数</figcaption>
+</figure>
+</div>
+<p><strong>图9.12</strong> 比较SVM和逻辑回归的损失函数，它们都是 <span class="math inline">\(y_i(\beta_0+\beta_1x_{i1}+\cdots+\beta_px_{ip})\)</span> 的函数。当 <span class="math inline">\(y_i(\beta_0+\beta_1x_{i1}+\cdots+\beta_px_{ip})\)</span> 大于1时，SVM损失为零，因为这对应于处在间隔正确一侧的观测。总体而言，两个损失函数的表现相当相似。图内文字：Loss＝损失；SVM Loss＝SVM损失；Logistic Regression Loss＝逻辑回归损失；横轴表达式保持原样。</p>
+<p>我们已经说明，支持向量分类器与逻辑回归以及其他已有的统计方法密切相关。那么，使用核扩展特征空间，以适应非线性类别边界，是SVM独有的做法吗？答案是否定的。逻辑回归和本书介绍的许多其他分类方法，同样可以使用非线性核；这与第7章中的一些非线性方法关系密切。不过，由于历史原因，非线性核在SVM中的使用，远比在逻辑回归或其他方法中的使用广泛。</p>
+<p>虽然这里没有讨论，SVM实际上还可以扩展到回归问题，也就是响应为定量而非定性的情况，这称为<strong>支持向量回归（support vector regression）</strong>。第3章中，我们看到，最小二乘回归寻找系数 <span class="math inline">\(\beta_0,\beta_1,\ldots,\beta_p\)</span>，使残差平方和尽可能小。（回顾第3章，残差定义为 <span class="math inline">\(y_i-\beta_0-\beta_1x_{i1}-\cdots-\beta_px_{ip}\)</span>。）支持向量回归寻找的系数，则使另一种损失达到最小；在这种损失中，只有绝对值大于某个正常数的残差才会对损失函数作出贡献。这相当于将支持向量分类器中的间隔推广到了回归情形。</p>
+</section>
+<section id="实验支持向量机" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="实验支持向量机">9.6 实验：支持向量机</h2>
+<p>本实验使用 <code>sklearn.svm</code> 库演示支持向量分类器和支持向量机。</p>
+<p>先导入一些常用的库。</p>
+<p>In[1]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.pyplot <span class="im">import</span> subplots, cm</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.model_selection <span class="im">as</span> skm</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP <span class="im">import</span> load_data, confusion_table</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>同时集中导入本实验新用到的工具。</p>
+<p>In[2]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.svm <span class="im">import</span> SVC</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ISLP.svm <span class="im">import</span> plot <span class="im">as</span> plot_svm</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> RocCurveDisplay</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>我们将用 <code>RocCurveDisplay.from_estimator()</code> 函数绘制几幅ROC图，并将它简记为 <code>roc_curve</code>。</p>
+<p>In[3]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>roc_curve <span class="op">=</span> RocCurveDisplay.from_estimator <span class="co"># shorthand</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="支持向量分类器-1" class="level3">
+<h3 class="anchored" data-anchor-id="支持向量分类器-1">9.6.1 支持向量分类器</h3>
+<p>现在使用 <code>sklearn</code> 中的 <code>SupportVectorClassifier()</code> 函数（简称 <code>SVC()</code>），针对给定的参数 <code>C</code> 拟合支持向量分类器。参数 <code>C</code> 用来指定违背间隔的代价。代价参数较小时，间隔较宽，许多支持向量会位于间隔边界上，或违背间隔。参数 <code>C</code> 较大时，间隔较窄，位于间隔边界上或违背间隔的支持向量也较少。</p>
+<p>这里用一个二维示例演示 <code>SVC()</code> 的用法，以便画出得到的决策边界。首先生成属于两个类别的观测，并检查这两个类别是否线性可分。</p>
+<p>In[4]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.standard_normal((<span class="dv">50</span>, <span class="dv">2</span>))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.array([<span class="op">-</span><span class="dv">1</span>]<span class="op">*</span><span class="dv">25</span><span class="op">+</span>[<span class="dv">1</span>]<span class="op">*</span><span class="dv">25</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>X[y<span class="op">==</span><span class="dv">1</span>] <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>ax.scatter(X[:,<span class="dv">0</span>],</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>           X[:,<span class="dv">1</span>],</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>           c<span class="op">=</span>y,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>           cmap<span class="op">=</span>cm.coolwarm)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>结果表明，它们并非线性可分。现在拟合分类器。</p>
+<p>In[5]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>svm_linear <span class="op">=</span> SVC(C<span class="op">=</span><span class="dv">10</span>, kernel<span class="op">=</span><span class="st">'linear'</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>svm_linear.fit(X, y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[5]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>SVC(C<span class="op">=</span><span class="dv">10</span>, kernel<span class="op">=</span><span class="st">'linear'</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>对于具有两个特征的支持向量分类器，可以通过绘制其<strong>决策函数（decision function）</strong>的取值来展示分类结果。<code>ISLP</code> 包中提供了一个用于此目的的函数（其灵感来自 <code>sklearn</code> 文档中的一个类似示例）。</p>
+<p>In[6]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>plot_svm(X,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>         y,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>         svm_linear,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>两个类别之间的决策边界是线性的（因为使用了参数 <code>kernel='linear'</code>）。支持向量用 <code>+</code> 标记，其余观测则画成圆点。</p>
+<p>如果改用较小的代价参数值，会怎样呢？</p>
+<p>In[7]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>svm_linear_small <span class="op">=</span> SVC(C<span class="op">=</span><span class="fl">0.1</span>, kernel<span class="op">=</span><span class="st">'linear'</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>svm_linear_small.fit(X, y)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>plot_svm(X,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>         y,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>         svm_linear_small ,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>代价参数较小时，间隔更宽，因此会得到更多支持向量。对于线性核，可以按如下方式提取线性决策边界的系数：</p>
+<p>In[8]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>svm_linear.coef_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[8]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>array([[<span class="fl">1.173</span>  , <span class="fl">0.7734</span>]])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>由于支持向量机在 <code>sklearn</code> 中是一个估计器，因此可以使用常规方法调节其参数。</p>
+<p>In[9]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>kfold <span class="op">=</span> skm.KFold(<span class="dv">5</span>,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                  random_state<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                  shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> skm.GridSearchCV(svm_linear,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                        {<span class="st">'C'</span>:[<span class="fl">0.001</span>,<span class="fl">0.01</span>,<span class="fl">0.1</span>,<span class="dv">1</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">100</span>]},</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                        refit<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                        cv<span class="op">=</span>kfold,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                        scoring<span class="op">=</span><span class="st">'accuracy'</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>grid.fit(X, y)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>grid.best_params_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[9]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>{<span class="st">'C'</span>: <span class="dv">1</span>}</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>每个模型的交叉验证误差都可以方便地从 <code>grid.cv_results_</code> 中获得。它会输出大量细节，因此这里只提取准确率结果。</p>
+<p>In[10]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>grid.cv_results_[(<span class="st">'mean_test_score'</span>)]</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[10]:</p>
+<pre class="text"><code>array([0.46, 0.46, 0.72, 0.74, 0.74, 0.74, 0.74])</code></pre>
+<p>可以看到，<code>C=1</code> 时得到最高的交叉验证准确率0.74，不过有几个 <code>C</code> 值的准确率相同。分类器 <code>grid.best_estimator_</code> 可以用于预测一组测试观测的类别标签。下面生成一个测试数据集。</p>
+<p>In[11]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>X_test <span class="op">=</span> rng.standard_normal((<span class="dv">20</span>, <span class="dv">2</span>))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>y_test <span class="op">=</span> np.array([<span class="op">-</span><span class="dv">1</span>]<span class="op">*</span><span class="dv">10</span><span class="op">+</span>[<span class="dv">1</span>]<span class="op">*</span><span class="dv">10</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>X_test[y_test<span class="op">==</span><span class="dv">1</span>] <span class="op">+=</span> <span class="dv">1</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在预测这些测试观测的类别标签。这里用交叉验证选出的最佳模型进行预测。</p>
+<p>In[12]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>best_ <span class="op">=</span> grid.best_estimator_</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>y_test_hat <span class="op">=</span> best_.predict(X_test)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>confusion_table(y_test_hat , y_test)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[12]:</p>
+<pre class="text"><code>    Truth  -1   1
+Predicted
+       -1   8   4
+        1   2   6</code></pre>
+<p>因此，使用这个 <code>C</code> 值时，70%的测试观测得到正确分类。如果改用 <code>C=0.001</code>，会怎样呢？</p>
+<p>In[13]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>svm_ <span class="op">=</span> SVC(C<span class="op">=</span><span class="fl">0.001</span>,</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>           kernel<span class="op">=</span><span class="st">'linear'</span>).fit(X, y)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>y_test_hat <span class="op">=</span> svm_.predict(X_test)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>confusion_table(y_test_hat , y_test)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[13]:</p>
+<pre class="text"><code>    Truth  -1   1
+Predicted
+       -1   2   0
+        1   8  10</code></pre>
+<p>此时，60%的测试观测得到正确分类。</p>
+<p>现在考虑两个类别线性可分的情形。这时可以用 <code>SVC()</code> 估计器找到一个最优分离超平面。首先，将模拟数据中的两个类别进一步分开，使其线性可分：</p>
+<p>In[14]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>X[y<span class="op">==</span><span class="dv">1</span>] <span class="op">+=</span> <span class="fl">1.9</span><span class="op">;</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>ax.scatter(X[:,<span class="dv">0</span>], X[:,<span class="dv">1</span>], c<span class="op">=</span>y, cmap<span class="op">=</span>cm.coolwarm)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在，这些观测刚好能够线性分开。</p>
+<p>In[15]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>svm_ <span class="op">=</span> SVC(C<span class="op">=</span><span class="fl">1e5</span>, kernel<span class="op">=</span><span class="st">'linear'</span>).fit(X, y)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>y_hat <span class="op">=</span> svm_.predict(X)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>confusion_table(y_hat, y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[15]:</p>
+<pre class="text"><code>    Truth   -1   1
+Predicted
+       -1   25   0
+        1    0  25</code></pre>
+<p>我们使用一个非常大的 <code>C</code> 值拟合支持向量分类器，并画出得到的超平面，使所有观测均不会被误分类。</p>
+<p>In[16]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>plot_svm(X,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>         y,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>         svm_,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>确实没有出现训练错误，而且只用到了三个支持向量。事实上，较大的 <code>C</code> 值也意味着这三个支持点都位于间隔边界上，并共同确定了间隔。一个仅依赖三个数据点的分类器，在测试数据上究竟能表现多好，难免让人疑惑！现在试一个较小的 <code>C</code> 值。</p>
+<p>In[17]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>svm_ <span class="op">=</span> SVC(C<span class="op">=</span><span class="fl">0.1</span>, kernel<span class="op">=</span><span class="st">'linear'</span>).fit(X, y)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>y_hat <span class="op">=</span> svm_.predict(X)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>confusion_table(y_hat, y)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[17]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>    Truth   <span class="op">-</span><span class="dv">1</span>   <span class="dv">1</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>Predicted</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>       <span class="op">-</span><span class="dv">1</span>   <span class="dv">25</span>   <span class="dv">0</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span>    <span class="dv">0</span>  <span class="dv">25</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>使用 <code>C=0.1</code> 时，同样没有任何训练观测被误分类，但间隔宽得多，而且用到了十二个支持向量。它们共同确定决策边界的方向；由于支持向量更多，决策边界也更稳定。这个模型在测试数据上的表现可能会优于 <code>C=1e5</code> 的模型（事实上，用一个大的测试集做简单实验便能证实这一点）。</p>
+<p>In[18]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>plot_svm(X,</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>         y,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>         svm_,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="支持向量机" class="level3">
+<h3 class="anchored" data-anchor-id="支持向量机">9.6.2 支持向量机</h3>
+<p>要使用非线性核拟合SVM，仍然使用 <code>SVC()</code> 估计器，但这次要改变参数 <code>kernel</code> 的取值。拟合多项式核SVM时使用 <code>kernel="poly"</code>，拟合径向核SVM时使用 <code>kernel="rbf"</code>。前一种情形还要用 <code>degree</code> 参数指定多项式核的次数（即式（9.22）中的 <span class="math inline">\(d\)</span>）；后一种情形则用 <code>gamma</code> 指定径向基核（9.24）中的 <span class="math inline">\(\gamma\)</span> 值。</p>
+<p>首先，按如下方式生成一些类别边界非线性的数据：</p>
+<p>In[19]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.standard_normal((<span class="dv">200</span>, <span class="dv">2</span>))</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>X[:<span class="dv">100</span>] <span class="op">+=</span> <span class="dv">2</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>X[<span class="dv">100</span>:<span class="dv">150</span>] <span class="op">-=</span> <span class="dv">2</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.array([<span class="dv">1</span>]<span class="op">*</span><span class="dv">150</span><span class="op">+</span>[<span class="dv">2</span>]<span class="op">*</span><span class="dv">50</span>)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>把数据画出来，就能清楚地看到类别边界确实是非线性的。</p>
+<p>In[20]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>ax.scatter(X[:,<span class="dv">0</span>],</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>           X[:,<span class="dv">1</span>],</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>           c<span class="op">=</span>y,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>           cmap<span class="op">=</span>cm.coolwarm)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[20]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>matplotlib.collections.PathCollection at <span class="bn">0x7faa9ba52eb0</span> <span class="op">&gt;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>将数据随机分为训练组和测试组，然后使用具有径向核且 <span class="math inline">\(\gamma=1\)</span> 的 <code>SVC()</code> 估计器拟合训练数据：</p>
+<p>In[21]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>(X_train,</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a> X_test,</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a> y_train,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a> y_test) <span class="op">=</span> skm.train_test_split(X,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>                                y,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>                                test_size<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>                                random_state<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>svm_rbf <span class="op">=</span> SVC(kernel<span class="op">=</span><span class="st">"rbf"</span>, gamma<span class="op">=</span><span class="dv">1</span>, C<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>svm_rbf.fit(X_train, y_train)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>图中显示，得到的SVM具有明显非线性的边界。</p>
+<p>In[22]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>plot_svm(X_train,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>         y_train,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>         svm_rbf,</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>从图中可以看到，这个SVM拟合有相当多的训练错误。增大 <code>C</code> 的值可以减少训练错误，但代价是决策边界更不规则，似乎存在过拟合数据的风险。</p>
+<p>In[23]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>svm_rbf <span class="op">=</span> SVC(kernel<span class="op">=</span><span class="st">"rbf"</span>, gamma<span class="op">=</span><span class="dv">1</span>, C<span class="op">=</span><span class="fl">1e5</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>svm_rbf.fit(X_train, y_train)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>plot_svm(X_train,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>         y_train,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>         svm_rbf,</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>对于具有径向核的SVM，可以用 <code>skm.GridSearchCV()</code> 进行交叉验证，选择最佳的 <span class="math inline">\(\gamma\)</span> 和 <span class="math inline">\(C\)</span>：</p>
+<p>In[24]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>kfold <span class="op">=</span> skm.KFold(<span class="dv">5</span>,</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                  random_state<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>                  shuffle<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> skm.GridSearchCV(svm_rbf,</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>                        {<span class="st">'C'</span>:[<span class="fl">0.1</span>,<span class="dv">1</span>,<span class="dv">10</span>,<span class="dv">100</span>,<span class="dv">1000</span>],</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>                         <span class="st">'gamma'</span>:[<span class="fl">0.5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>]},</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>                        refit<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>                        cv<span class="op">=</span>kfold,</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>                        scoring<span class="op">=</span><span class="st">'accuracy'</span>)<span class="op">;</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>grid.fit(X_train, y_train)</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>grid.best_params_</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[24]:</p>
+<pre class="text"><code>{'C': 100, 'gamma': 1}</code></pre>
+<p>五折交叉验证下，最佳参数选择出现在 <code>C=1</code>、<code>gamma=0.5</code>，不过其他几个取值也能达到相同的结果。</p>
+<p>In[25]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>best_svm <span class="op">=</span> grid.best_estimator_</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>plot_svm(X_train,</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>         y_train,</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>         best_svm,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>y_hat_test <span class="op">=</span> best_svm.predict(X_test)</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>confusion_table(y_hat_test , y_test)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[25]:</p>
+<pre class="text"><code>    Truth   1   2
+Predicted
+        1  69   6
+        2   6  19</code></pre>
+<p>使用这些参数时，这个SVM将12%的测试观测误分类。</p>
+</section>
+<section id="roc曲线" class="level3">
+<h3 class="anchored" data-anchor-id="roc曲线">9.6.3 ROC曲线</h3>
+<p>SVM和支持向量分类器会为每个观测输出一个类别标签。不过，也可以得到每个观测的拟合值，即用来确定类别标签的数值评分。例如，对于支持向量分类器，观测 <span class="math inline">\(X=(X_1,X_2,\ldots,X_p)^T\)</span> 的拟合值具有 <span class="math inline">\(\hat\beta_0+\hat\beta_1X_1+\hat\beta_2X_2+\ldots+\hat\beta_pX_p\)</span> 的形式。对于采用非线性核的SVM，拟合值的计算式见（9.23）。拟合值的正负号决定了观测位于决策边界的哪一侧。因此，对于给定观测，拟合值与预测类别之间的关系很简单：拟合值大于零时，将观测归入一个类别；小于零时，则归入另一个类别。把阈值从零改成某个正值，就会使分类倾向于其中一个类别。考虑一系列正、负阈值，就能得到绘制ROC图所需的信息。调用已拟合SVM估计器的 <code>decision_function()</code> 方法，即可取得这些数值。</p>
+<p>函数 <code>ROCCurveDisplay.from_estimator()</code>（这里简记为 <code>roc_curve()</code>）可以绘制ROC曲线。它的第一个参数是已拟合的估计器，后面依次为模型矩阵 <code>X</code> 和标签 <code>y</code>。参数 <code>name</code> 用于图例，<code>color</code> 用于指定线条颜色。结果会画在坐标轴对象 <code>ax</code> 上。</p>
+<p>In[26]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>roc_curve(best_svm,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>          X_train,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>          y_train,</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>          name<span class="op">=</span><span class="st">'Training'</span>,</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>          color<span class="op">=</span><span class="st">'r'</span>,</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>          ax<span class="op">=</span>ax)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>在这个示例中，SVM似乎能给出准确的预测。增大 <span class="math inline">\(\gamma\)</span> 可以得到更灵活的拟合，并进一步提高准确率。</p>
+<p>In[27]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>svm_flex <span class="op">=</span> SVC(kernel<span class="op">=</span><span class="st">"rbf"</span>,</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>              gamma<span class="op">=</span><span class="dv">50</span>,</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>              C<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>svm_flex.fit(X_train, y_train)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>roc_curve(svm_flex,</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>          X_train,</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>          y_train,</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>          name<span class="op">=</span><span class="st">'Training $</span><span class="er">\</span><span class="st">gamma=50$'</span>,</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>          color<span class="op">=</span><span class="st">'r'</span>,</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>          ax<span class="op">=</span>ax)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>不过，这些ROC曲线都是基于训练数据的。我们真正更关心的是测试数据上的预测准确率。在测试数据上计算ROC曲线时，<span class="math inline">\(\gamma=0.5\)</span> 的模型似乎给出了最准确的结果。</p>
+<p>In[28]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>roc_curve(svm_flex,</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>          X_test,</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>          y_test,</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>          name<span class="op">=</span><span class="st">'Test $</span><span class="er">\</span><span class="st">gamma=50$'</span>,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>          color<span class="op">=</span><span class="st">'b'</span>,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>          ax<span class="op">=</span>ax)</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>fig<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>下面看看调参后的SVM。</p>
+<p>In[29]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (X_, y_, c, name) <span class="kw">in</span> <span class="bu">zip</span>(</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>     (X_train, X_test),</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>     (y_train, y_test),</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>     (<span class="st">'r'</span>, <span class="st">'b'</span>),</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>     (<span class="st">'CV tuned on training'</span>,</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">'CV tuned on test'</span>)):</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>    roc_curve(best_svm,</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>              X_,</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>              y_,</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>              name<span class="op">=</span>name,</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>              ax<span class="op">=</span>ax,</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>              color<span class="op">=</span>c)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="多类别svm" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="多类别svm">9.6.4 多类别SVM</h3>
+<p>如果响应是一个包含两个以上水平的因子，<code>SVC()</code> 函数就会使用一对一方法（当 <code>decision_function_shape=='ovo'</code> 时）或一对其余方法<sup><a href="#ch09-fn4" id="ch09-fnref4">4</a></sup>（当 <code>decision_function_shape=='ovr'</code> 时）进行多类别分类。这里通过生成第三类观测，简要考察这种情形。</p>
+<aside class="footnote" id="ch09-fn4">
+<a href="#ch09-fnref4">4</a> one-versus-rest也称为one-versus-all。
+</aside>
+<p>In[30]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">123</span>)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.vstack([X, rng.standard_normal((<span class="dv">50</span>, <span class="dv">2</span>))])</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.hstack([y, [<span class="dv">0</span>]<span class="op">*</span><span class="dv">50</span>])</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>X[y<span class="op">==</span><span class="dv">0</span>,<span class="dv">1</span>] <span class="op">+=</span> <span class="dv">2</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>ax.scatter(X[:,<span class="dv">0</span>], X[:,<span class="dv">1</span>], c<span class="op">=</span>y, cmap<span class="op">=</span>cm.coolwarm)<span class="op">;</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>现在对数据拟合一个SVM：</p>
+<p>In[31]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>svm_rbf_3 <span class="op">=</span> SVC(kernel<span class="op">=</span><span class="st">"rbf"</span>,</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>                C<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>                gamma<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>                decision_function_shape<span class="op">=</span><span class="st">'ovo'</span>)<span class="op">;</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>svm_rbf_3.fit(X, y)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">8</span>))</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>plot_svm(X,</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>         y,</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>         svm_rbf_3,</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>         scatter_cmap<span class="op">=</span>cm.tab10,</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>         ax<span class="op">=</span>ax)</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>sklearn.svm</code> 库还可以使用估计器 <code>SupportVectorRegression()</code>，对数值型响应进行<strong>支持向量回归（support vector regression）</strong>。</p>
+</section>
+<section id="基因表达数据的应用" class="level3">
+<h3 class="anchored" data-anchor-id="基因表达数据的应用">9.6.5 基因表达数据的应用</h3>
+<p>现在考察 <code>Khan</code> 数据集。它包含来自四种不同类型的<strong>小圆蓝细胞肿瘤（small round blue cell tumors）</strong>的若干组织样本，每个组织样本都有基因表达测量值。数据集包含训练数据 <code>xtrain</code> 和 <code>ytrain</code>，以及测试数据 <code>xtest</code> 和 <code>ytest</code>。</p>
+<p>先查看数据的维度：</p>
+<p>In[32]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>Khan <span class="op">=</span> load_data(<span class="st">'Khan'</span>)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>Khan[<span class="st">'xtrain'</span>].shape, Khan[<span class="st">'xtest'</span>].shape</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[32]:</p>
+<pre class="text"><code>((63, 2308), (20, 2308))</code></pre>
+<p>这个数据集包含2,308个基因的表达测量值。训练集和测试集分别有63个和20个观测。</p>
+<p>我们将使用支持向量方法，根据基因表达测量值预测癌症亚型。这个数据集的特征数相对于观测数非常多。这提示我们应当使用线性核，因为使用多项式核或径向核带来的额外灵活性并无必要。</p>
+<p>In[33]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>khan_linear <span class="op">=</span> SVC(kernel<span class="op">=</span><span class="st">'linear'</span>, C<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>khan_linear.fit(Khan[<span class="st">'xtrain'</span>], Khan[<span class="st">'ytrain'</span>])</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>confusion_table(khan_linear.predict(Khan[<span class="st">'xtrain'</span>]),</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>                Khan[<span class="st">'ytrain'</span>])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[33]:</p>
+<pre class="text"><code>    Truth   1   2   3   4
+Predicted
+        1   8   0   0   0
+        2   0  23   0   0
+        3   0   0  12   0
+        4   0   0   0  20</code></pre>
+<p>可以看到，没有任何训练错误。事实上，这并不奇怪，因为变量数远多于观测数，很容易找到能够将各个类别完全分开的超平面。</p>
+<p>我们更关心的是支持向量分类器在测试观测上的表现。</p>
+<p>In[34]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>confusion_table(khan_linear.predict(Khan[<span class="st">'xtest'</span>]),</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>                Khan[<span class="st">'ytest'</span>])</span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Out[34]:</p>
+<pre class="text"><code>    Truth   1  2  3  4
+Predicted
+        1   3  0  0  0
+        2   0  6  2  0
+        3   0  0  4  0
+        4   0  0  0  5</code></pre>
+<p>可以看到，使用 <code>C=10</code> 时，这些数据中有两个测试集错误。</p>
+</section>
+</section>
+<section id="习题" class="level2">
+<h2 class="anchored" data-anchor-id="习题">9.7 习题</h2>
+<section id="概念题" class="level3">
+<h3 class="anchored" data-anchor-id="概念题">概念题</h3>
+<ol type="1">
+<li><p>本题讨论二维空间中的超平面。</p>
+<ol type="a">
+<li><p>画出超平面 <span class="math inline">\(1+3X_1-X_2=0\)</span> 的示意图。标出满足 <span class="math inline">\(1+3X_1-X_2&gt;0\)</span> 的点集，以及满足 <span class="math inline">\(1+3X_1-X_2&lt;0\)</span> 的点集。</p></li>
+<li><p>在同一张图上画出超平面 <span class="math inline">\(-2+X_1+2X_2=0\)</span>。标出满足 <span class="math inline">\(-2+X_1+2X_2&gt;0\)</span> 的点集，以及满足 <span class="math inline">\(-2+X_1+2X_2&lt;0\)</span> 的点集。</p></li>
+</ol></li>
+<li><p>我们已经看到，在 <span class="math inline">\(p=2\)</span> 维空间中，线性决策边界具有 <span class="math inline">\(\beta_0+\beta_1X_1+\beta_2X_2=0\)</span> 的形式。现在考察一个非线性决策边界。</p>
+<ol type="a">
+<li>画出曲线</li>
+</ol>
+<p><span class="math display">\[
+(1+X_1)^2+(2-X_2)^2=4.
+\]</span></p>
+<ol start="2" type="a">
+<li>在图中标出满足</li>
+</ol>
+<p><span class="math display">\[
+(1+X_1)^2+(2-X_2)^2&gt;4,
+\]</span></p>
+<p>的点集，以及满足</p>
+<p><span class="math display">\[
+(1+X_1)^2+(2-X_2)^2\leq 4.
+\]</span></p>
+<p>的点集。</p>
+<ol start="3" type="a">
+<li>假设一个分类器在观测满足</li>
+</ol>
+<p><span class="math display">\[
+(1+X_1)^2+(2-X_2)^2&gt;4,
+\]</span></p>
+<p>时将其划为蓝色类，否则划为红色类。观测 <span class="math inline">\((0,0)\)</span> 被划为哪一类？<span class="math inline">\((-1,1)\)</span>、<span class="math inline">\((2,2)\)</span>、<span class="math inline">\((3,8)\)</span> 又分别被划为哪一类？</p>
+<ol start="4" type="a">
+<li>说明：虽然(c)中的决策边界对于 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 而言不是线性的，但对于 <span class="math inline">\(X_1\)</span>、<span class="math inline">\(X_1^2\)</span>、<span class="math inline">\(X_2\)</span> 和 <span class="math inline">\(X_2^2\)</span> 而言是线性的。</li>
+</ol></li>
+<li><p>这里用一个示例数据集考察最大间隔分类器。</p>
+<ol type="a">
+<li>给定 <span class="math inline">\(p=2\)</span> 维空间中的 <span class="math inline">\(n=7\)</span> 个观测，每个观测都有相应的类别标签。</li>
+</ol>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">观测序号</th>
+<th style="text-align: right;"><span class="math inline">\(X_1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_2\)</span></th>
+<th><span class="math inline">\(Y\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td>Red</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td>Red</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td>Red</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td>Red</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td>Blue</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td>Blue</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1</td>
+<td>Blue</td>
+</tr>
+</tbody>
+</table>
+<p>画出这些观测。表中Red和Blue分别表示红色类和蓝色类。</p>
+<ol start="2" type="a">
+<li><p>画出最优分离超平面，并给出这个超平面的方程（采用式(9.1)的形式）。</p></li>
+<li><p>描述最大间隔分类器的分类规则。其形式应类似于：“若 <span class="math inline">\(\beta_0+\beta_1X_1+\beta_2X_2&gt;0\)</span>，则划为Red类，否则划为Blue类。”给出 <span class="math inline">\(\beta_0\)</span>、<span class="math inline">\(\beta_1\)</span> 和 <span class="math inline">\(\beta_2\)</span> 的值。</p></li>
+<li><p>在图中标出最大间隔超平面的间隔。</p></li>
+<li><p>标出最大间隔分类器的支持向量。</p></li>
+<li><p>说明为什么对第七个观测进行小幅移动不会影响最大间隔超平面。</p></li>
+<li><p>画出一个<em>不是</em>最优分离超平面的超平面，并给出其方程。</p></li>
+<li><p>在图中增加一个观测，使两个类别不再能被一个超平面分开。</p></li>
+</ol></li>
+</ol>
+</section>
+<section id="应用题" class="level3">
+<h3 class="anchored" data-anchor-id="应用题">应用题</h3>
+<ol start="4" type="1">
+<li><p>生成一个模拟的二分类数据集，包含100个观测和两个特征，两类之间有明显的非线性分界。证明在这种情形下，采用多项式核（次数大于1）或径向核的支持向量机在训练数据上的表现优于支持向量分类器。哪种方法在测试数据上表现最好？画图并报告训练错误率和测试错误率，以支持你的判断。</p></li>
+<li><p>我们已经看到，可以拟合采用非线性核的SVM，利用非线性决策边界进行分类。现在将看到，对特征进行非线性变换后再做逻辑回归，也可以得到非线性决策边界。</p>
+<ol type="a">
+<li>生成一个 <span class="math inline">\(n=500\)</span>、<span class="math inline">\(p=2\)</span> 的数据集，使观测属于两个类别，两类之间的决策边界为二次曲线。例如，可以这样做：</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">5</span>)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>x1 <span class="op">=</span> rng.uniform(size<span class="op">=</span><span class="dv">500</span>) <span class="op">-</span> <span class="fl">0.5</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>x2 <span class="op">=</span> rng.uniform(size<span class="op">=</span><span class="dv">500</span>) <span class="op">-</span> <span class="fl">0.5</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> x1<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> x2<span class="op">**</span><span class="dv">2</span> <span class="op">&gt;</span> <span class="dv">0</span></span></code></pre></div><button title="复制到剪贴板" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="a">
+<li><p>画出观测，并按类别标签着色。图中应以 <span class="math inline">\(X_1\)</span> 为横轴，<span class="math inline">\(X_2\)</span> 为纵轴。</p></li>
+<li><p>以 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 为预测变量，对数据拟合逻辑回归模型。</p></li>
+<li><p>将该模型用于<em>训练数据</em>，为每个训练观测得到一个预测类别标签。画出观测，并按<em>预测类别标签</em>着色。决策边界应为线性的。</p></li>
+<li><p>现在以 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 的非线性函数（例如 <span class="math inline">\(X_1^2\)</span>、<span class="math inline">\(X_1\times X_2\)</span>、<span class="math inline">\(\log(X_2)\)</span> 等）为预测变量，对数据拟合逻辑回归模型。</p></li>
+<li><p>将该模型用于<em>训练数据</em>，为每个训练观测得到一个预测类别标签。画出观测，并按<em>预测类别标签</em>着色。决策边界应明显为非线性的。若不是，则重复(a)–(e)，直到得到一个预测类别标签呈明显非线性分布的例子。</p></li>
+<li><p>以 <span class="math inline">\(X_1\)</span> 和 <span class="math inline">\(X_2\)</span> 为预测变量，对数据拟合支持向量分类器。为每个训练观测得到一个类别预测。画出观测，并按<em>预测类别标签</em>着色。</p></li>
+<li><p>对数据拟合采用非线性核的SVM。为每个训练观测得到一个类别预测。画出观测，并按<em>预测类别标签</em>着色。</p></li>
+<li><p>评价你的结果。</p></li>
+</ol></li>
+<li><p>第9.6.1节末尾提出：当数据恰好勉强线性可分时，采用较小 <span class="math inline">\(C\)</span> 值、错分少数训练观测的支持向量分类器，在测试数据上的表现可能优于采用很大 <span class="math inline">\(C\)</span> 值、不错分任何训练观测的分类器。现在来考察这一说法。</p>
+<ol type="a">
+<li><p>生成 <span class="math inline">\(p=2\)</span> 的二分类数据，使两个类别恰好勉强线性可分。</p></li>
+<li><p>对一系列不同的 <span class="math inline">\(C\)</span> 值，计算支持向量分类器的交叉验证错误率。对于考察的每个 <span class="math inline">\(C\)</span> 值，有多少个训练观测被错分？这与所得交叉验证误差之间有什么关系？</p></li>
+<li><p>生成适当的测试数据集，计算所考察的每个 <span class="math inline">\(C\)</span> 值对应的测试误差。哪个 <span class="math inline">\(C\)</span> 值产生的测试错误最少？与产生最少训练错误和最少交叉验证错误的 <span class="math inline">\(C\)</span> 值相比如何？</p></li>
+<li><p>讨论你的结果。</p></li>
+</ol></li>
+<li><p>本题根据 <code>Auto</code> 数据集，利用支持向量方法预测给定汽车的燃油里程是高还是低。</p>
+<ol type="a">
+<li><p>创建一个二元变量：燃油里程高于中位数的汽车取值为1，低于中位数的汽车取值为0。</p></li>
+<li><p>使用不同的 <span class="math inline">\(C\)</span> 值对数据拟合支持向量分类器，预测汽车的燃油里程是高还是低。报告这个参数不同取值对应的交叉验证误差，并评价你的结果。注意：为得到合理结果，拟合分类器时需要排除燃油里程变量。</p></li>
+<li><p>重复(b)，这次采用径向核和多项式基核的SVM，并使用不同的 <code>gamma</code>、<code>degree</code> 和 <span class="math inline">\(C\)</span> 值。评价你的结果。</p></li>
+<li><p>画一些图，以支持你在(b)和(c)中的判断。</p></li>
+</ol>
+<p><em>提示：在实验中，我们对拟合后的SVM使用了 <code>plot_svm()</code> 函数。当 <span class="math inline">\(p&gt;2\)</span> 时，可以使用关键字参数 <code>features</code>，每次画出一对变量的图。</em></p></li>
+<li><p>本题使用 <code>ISLP</code> 包中的 <code>OJ</code> 数据集。</p>
+<ol type="a">
+<li><p>从数据中随机抽取800个观测作为训练集，其余观测构成测试集。</p></li>
+<li><p>采用 <span class="math inline">\(C=0.01\)</span>，以 <code>Purchase</code> 为响应、其余变量为预测变量，对训练数据拟合支持向量分类器。有多少个支持点？</p></li>
+<li><p>训练错误率和测试错误率分别是多少？</p></li>
+<li><p>使用交叉验证选择最优的 <span class="math inline">\(C\)</span>。考虑0.01至10范围内的取值。</p></li>
+<li><p>使用这个新的 <span class="math inline">\(C\)</span> 值，计算训练错误率和测试错误率。</p></li>
+<li><p>采用径向核的支持向量机，重复(b)至(e)。使用 <code>gamma</code> 的默认值。</p></li>
+<li><p>采用多项式核的支持向量机，重复(b)至(e)。设 <code>degree = 2</code>。</p></li>
+<li><p>总体而言，哪种方法在这些数据上似乎给出了最好的结果？</p></li>
+</ol></li>
+</ol>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "已复制");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "已复制");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"可滚动的代码","output":"可滚动的输出"};
+  </script>
+<nav class="page-navigation" aria-label="页面">
+  <div class="nav-page nav-page-previous">
+      <a href="../dist/chapter8.html" class="pagination-link" aria-label="第八章　基于树的方法">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">第八章　基于树的方法</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>An Introduction to Statistical Learning: with Applications in Python<br> Authors: Gareth James et al.<br> Translator: Yuechen Qi</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This book was built with <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
