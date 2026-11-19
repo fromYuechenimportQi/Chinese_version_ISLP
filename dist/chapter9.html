@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>第九章 支持向量机 – 统计学习导论：Python 应用 · 中文译本</title>
+<title>第九章　支持向量机 – 统计学习导论：Python 应用 · 中文译本</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -71,6 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../dist/chapter10.html" rel="next">
 <link href="../dist/chapter8.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -152,7 +153,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="展开或折叠侧边栏导航" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter9.html"><span class="chapter-title">第九章 支持向量机</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="路径"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../dist/chapter9.html"><span class="chapter-title">第九章　支持向量机</span></a></li></ol></nav>
         <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="搜索" onclick="window.quartoOpenSearch();">
@@ -228,7 +229,12 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../dist/chapter9.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第九章 支持向量机</span></a>
+  <a href="../dist/chapter9.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">第九章　支持向量机</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../dist/chapter10.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">第十章　深度学习</span></a>
   </div>
 </li>
     </ul>
@@ -287,7 +293,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-title">第九章 支持向量机</span></h1>
+<h1 class="title"><span class="chapter-title">第九章　支持向量机</span></h1>
 </div>
 
 
@@ -377,7 +383,7 @@ y_i(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip})&gt;0 \tag{9.8}
 <section id="最大间隔分类器-1" class="level3">
 <h3 class="anchored" data-anchor-id="最大间隔分类器-1">9.1.3 最大间隔分类器</h3>
 <p>一般来说，如果数据能被一个超平面完全分开，那么实际上会存在无穷多个这样的超平面。这是因为，通常可以把给定的分离超平面稍微向上或向下移动，或稍微旋转，而不碰到任何观测。图9.2左图展示了三个可能的分离超平面。要根据分离超平面构建分类器，就必须有合理的方法，从无穷多个可能的分离超平面中决定采用哪一个。</p>
-<p>一个自然的选择是<strong>最大间隔超平面（maximal margin hyperplane）</strong>，也称最优分离超平面，即离训练观测最远的分离超平面。具体而言，对于一个给定的分离超平面，可以计算每个训练观测到它的垂直距离；这些距离中的最小值，就是观测到该超平面的最短距离，称为<strong>间隔（margin）</strong>。最大间隔超平面，就是使间隔达到最大的分离超平面；换言之，它到训练观测的最短距离最大。随后，根据测试观测位于最大间隔超平面的哪一侧，对其分类。这就称为最大间隔分类器。</p>
+<p>一个自然的选择是<strong>最大间隔超平面（maximal margin hyperplane）</strong>，也称<strong>最优分离超平面</strong>，即离训练观测最远的分离超平面。具体而言，对于一个给定的分离超平面，可以计算每个训练观测到它的垂直距离；这些距离中的最小值，就是观测到该超平面的最短距离，称为<strong>间隔（margin）</strong>。最大间隔超平面，就是使间隔达到最大的分离超平面；换言之，它到训练观测的最短距离最大。随后，根据测试观测位于最大间隔超平面的哪一侧，对其分类。这就称为最大间隔分类器。</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../assets/display-crops/figure-9-3.png" class="img-fluid figure-img"></p>
@@ -1635,6 +1641,9 @@ Predicted
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../dist/chapter10.html" class="pagination-link" aria-label="第十章　深度学习">
+        <span class="nav-page-text"><span class="chapter-title">第十章　深度学习</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
